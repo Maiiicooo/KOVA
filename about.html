@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About – I know a spot</title>
+  <link rel="stylesheet" href="about.css" />
+</head>
+
+<body>
+  <!-- Fullscreen map op de achtergrond -->
+  <div id="map"></div>
+
+  <!-- Overlay-top met hetzelfde logo als op de index -->
+  <div class="overlay-top">
+    <a href="index.html">
+      <img src="images/image.png" alt="I know a spot" id="logo" />
+    </a>
+  </div>
+
+  <!-- About-container als overlay boven de kaart -->
+  <main class="about-container">
+    <section class="about-header">
+      <h1>About <span class="highlight">I know a spot</span></h1>
+      <p>Discover and share the best hidden chill spots around you.</p>
+    </section>
+
+    <section class="about-section">
+      <h2>Why this website?</h2>
+      <p>There aren't many places online where you can find truly good spots to relax – think peaceful parks, hidden
+        beaches, or cozy hideaways. I built this platform so that everyone can discover and share their favorite spots
+        with others.</p>
+    </section>
+
+    <section class="about-section">
+      <h2>How does it work?</h2>
+      <ul>
+        <li><strong>Search:</strong> Use the search bar or explore the map to find spots near you.</li>
+        <li><strong>View:</strong> Click on a spot to see details and photos.</li>
+        <li><strong>Add:</strong> Know a great place? Click "➕ Add Spot" and share it easily.</li>
+        <li><strong>Approval:</strong> Every spot is manually reviewed before appearing on the map.</li>
+      </ul>
+    </section>
+
+    <section class="about-section support">
+      <h2>Support the developer</h2>
+      <p>If you find this website useful or just like what I'm doing, you can support the project to help it grow and
+        stay online.</p>
+      <a href="https://www.buymeacoffee.com/jouwgebruikersnaam" target="_blank" class="support-link">Buy Me a Beer</a>
+    </section>
+
+    <section class="about-footer">
+      <p>Thank you for visiting and happy spot hunting.</p>
+      <a href="index.html" class="back-link">← Back to the map</a>
+    </section>
+  </main>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDs-2R2Fsqb_JUa98FPgo1hIOu5_GEf0NE&callback=initMap"
+    async defer></script>
+  <script>
+    function initMap() {
+      new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 50.8503, lng: 4.3517 },
+        zoom: 10
+      });
+    }
+  </script>
+</body>
+
+</html>

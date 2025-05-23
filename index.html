@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KOVA - Official Map</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <!-- 1) De kaart, blijft altijd geladen -->
+  <div id="map"></div>
+
+  <!-- 2) Bovenste balk met logo, search, add & about -->
+  <div class="overlay-top">
+    <img src="/images/testje.png" alt="I know a spot" id="logo"/>
+
+    <div class="header-controls">
+      <div class="search-container">
+        <input id="searchInput" type="text" placeholder="SEARCH" autocomplete="off"/>
+        <div id="suggestions" class="suggestions hidden"></div>
+      </div>
+      <button id="addBtn">ADD</button>
+      <a href="#" id="aboutBtn" class="about-link">ABOUT</a>
+    </div>
+  </div>
+
+  <!-- 3) Spot-formulier -->
+  <div id="formContainer">
+    <button class="close-btn" id="closeForm">&times;</button>
+    <h2>Nieuwe Chill Spot</h2>
+    <form id="spotForm" action="https://formspree.io/f/mjkwvzbv" method="POST">
+      <label for="name">Naam</label>
+      <input type="text" name="name" id="name" placeholder="Naam van de spot" required/>
+      <label for="description">Beschrijving</label>
+      <textarea name="description" id="description" placeholder="Beschrijving" rows="2" required></textarea>
+      <label for="autocomplete">Locatie</label>
+      <input name="location" id="autocomplete" type="text" placeholder="Typ locatie" autocomplete="off" required/>
+      <input type="hidden" name="lat" id="lat"/>
+      <input type="hidden" name="lng" id="lng"/>
+      <label for="photo">Foto URL (optioneel)</label>
+      <input type="url" name="photo" id="photo" placeholder="https://..."/>
+      <button type="submit">Verstuur</button>
+    </form>
+    <div id="formMsg"></div>
+  </div>
+
+  <!-- 4) About-overlay (verborgen tot About geklikt wordt) -->
+  <main id="aboutContainer" class="about-container hidden">
+    <section class="about-header">
+      <h1>About <span class="highlight">I know a spot</span></h1>
+      <p>Discover and share the best hidden chill spots around you.</p>
+    </section>
+    <section class="about-section">
+      <h2>Why this website?</h2>
+      <p>There aren't many places online where you can find truly good spots to relax – think peaceful parks, hidden beaches, or cozy hideaways. I built this platform so that everyone can discover and share their favorite spots with others.</p>
+    </section>
+    <section class="about-section">
+      <h2>How does it work?</h2>
+      <ul>
+        <li><strong>Search:</strong> Use the search bar or explore the map to find spots near you.</li>
+        <li><strong>View:</strong> Click on a spot to see details and photos.</li>
+        <li><strong>Add:</strong> Know a great place? Click "➕ Add Spot" and share it easily.</li>
+        <li><strong>Approval:</strong> Every spot is manually reviewed before appearing on the map.</li>
+      </ul>
+    </section>
+    <section class="about-section support">
+      <h2>Support the developer</h2>
+      <p>If you find this website useful or just like what I'm doing, you can support the project to help it grow and stay online.</p>
+      <a href="https://www.buymeacoffee.com/jouwgebruikersnaam" target="_blank" class="support-link">Buy Me a Beer</a>
+    </section>
+    <section class="about-footer">
+      <p>Thank you for visiting and happy spot hunting.</p>
+      <button id="backToMap" class="back-link">← Back to the map</button>
+    </section>
+  </main>
+
+  <!-- JS -->
+  <script src="main.js" defer></script>
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDs-2R2Fsqb_JUa98FPgo1hIOu5_GEf0NE&libraries=places&callback=initMap"
+    async defer
+  ></script>
+</body>
+</html>
