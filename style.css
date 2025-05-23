@@ -67,9 +67,27 @@ body.about-active #map {
   background: transparent;
   color: #fff;
   border: none;
-  padding: 0.4rem;
-  width: 180px;
+  padding: 0;  /* removed extra padding */
+  width: fit-content;  /* shrink width to match text */
   outline: none;
+}
+
+.search-container input:focus {
+  color: #7f7557;
+  caret-color: #7f7557;
+}
+
+.search-container input:hover {
+  color: #7f7557;
+  caret-color: #7f7557;
+}
+
+.search-container input:focus::placeholder {
+  color: #7f7557;
+}
+
+.search-container input:hover::placeholder {
+  color: #7f7557;
 }
 
 .search-container input::placeholder {
