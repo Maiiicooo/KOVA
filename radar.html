@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Radar View</title>
+  <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
+  <link href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css" rel="stylesheet" />
+  <script src="https://cdn.maptiler.com/maptiler-weather/v3.0.1/maptiler-weather.umd.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      background-color: #444952;
+      z-index: 0;
+      will-change: transform;
+    }
+
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      display: flex;
+      align-items: flex-start;
+      padding: 0 20px;
+      background-color: rgba(0, 0, 0, 0);
+      z-index: 10;
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 30px;
+    }
+
+    .navbar-logo {
+      width: 140px;
+      height: auto;
+      margin-top: 10px;
+    }
+
+    .navbar-items {
+      display: flex;
+      gap: 20px;
+    }
+
+    .navbar-items a,
+    .search-wrapper {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 60px;
+      transition: color 0.3s ease;
+      cursor: pointer;
+    }
+
+    .navbar-items a:hover,
+    .search-wrapper:hover span {
+      color: #8b7108;
+    }
+
+    .search-wrapper {
+      position: relative;
+      width: 100px;
+    }
+
+    .search-wrapper span {
+      position: absolute;
+      top: 0;
+      left: 0;
+      line-height: 60px;
+      color: white;
+      pointer-events: none;
+      transition: opacity 0.2s ease, color 0.3s ease;
+    }
+
+    .search-wrapper.active span {
+      opacity: 0;
+    }
+
+    .search-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #8b7108;
+      font-size: 16px;
+      line-height: 60px;
+      caret-color: #8b7108;
+      outline: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .search-input::placeholder {
+      color: transparent;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="navbar">
+    <div class="navbar-left">
+      <img src="/images/testje.png" alt="Logo" class="navbar-logo" id="mainLogo">
+      <div class="navbar-items">
+        <div class="search-wrapper" id="searchWrapper">
+          <span>SEARCH</span>
+          <input type="text" class="search-input" id="searchInput" placeholder="SEARCH">
+        </div>
+        <a href="index.html" id="backButton">NV</a>
+        <a href="#">ABOUT</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="map"></div>
+
+  <script>
+    maptilersdk.config.apiKey = '7TBqy4hTdFfQeIq7oXKj';
+
+    const map = new maptilersdk.Map({
+      container: 'map',
+      style: 'https://api.maptiler.com/maps/dataviz-dark/style.json?key=7TBqy4hTdFfQeIq7oXKj',
+      zoom: 7.5,
+      center: [4.5, 50.85],
+      projection: "mercator",
+      antialias: false,
+      fadeDuration: 0,
+      hash: false,
+      minZoom: 5,
+      maxZoom: 10,
+      projectionControl: true
+    });
+
+    const weatherLayer = new maptilerweather.RadarLayer({ opacity: 0.7 });
+
+    map.on('load', function () {
+      map.addLayer(weatherLayer);
+
+      //dit is current radar frame update elke 5min
+      weatherLayer.setTimeToLatest();
+
+      setInterval(() => {
+        weatherLayer.setTimeToLatest();
+      }, 5 * 60 * 1000); // elke 5 minuten
+
+
+      //dit is live radar maar is kk laggy
+      //weatherLayer.animateByFactor(3600);
+    });
+
+    // Zoekveld gedrag
+    const searchWrapper = document.getElementById('searchWrapper');
+    const searchInput = document.getElementById('searchInput');
+
+    if (searchWrapper && searchInput) {
+      searchWrapper.addEventListener('click', () => {
+        searchWrapper.classList.add('active');
+        searchInput.focus();
+      });
+
+      searchInput.addEventListener('blur', () => {
+        if (searchInput.value.trim() === '') {
+          searchWrapper.classList.remove('active');
+        }
+      });
+    }
+
+    // Logo hover swap
+    const logo = document.getElementById('mainLogo');
+    if (logo) {
+      logo.addEventListener('mouseenter', () => {
+        logo.src = '/images/logohover.png';
+      });
+      logo.addEventListener('mouseleave', () => {
+        logo.src = '/images/testje.png';
+      });
+    }
+  </script>
+</body>
+
+</html>

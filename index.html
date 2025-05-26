@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Display a map</title>
+  <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
+  <link href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      z-index: 0;
+    }
+
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      display: flex;
+      align-items: flex-start;
+      padding: 0 20px;
+      background-color: rgba(0, 0, 0, 0);
+      z-index: 10;
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 30px;
+    }
+
+    .navbar-logo {
+      width: 140px;
+      height: auto;
+      margin-top: 10px;
+    }
+
+    .navbar-items {
+      display: flex;
+      gap: 20px;
+    }
+
+    .navbar-items a,
+    .search-wrapper {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 60px;
+      transition: color 0.3s ease;
+      cursor: pointer;
+    }
+
+    .navbar-items a:hover,
+    .search-wrapper:hover span {
+      color: #8b7108;
+    }
+
+    .search-wrapper {
+      position: relative;
+      width: 100px;
+    }
+
+    .search-wrapper span {
+      position: absolute;
+      top: 0;
+      left: 0;
+      line-height: 60px;
+      color: white;
+      pointer-events: none;
+      transition: opacity 0.2s ease, color 0.3s ease;
+    }
+
+    .search-wrapper.active span {
+      opacity: 0;
+    }
+
+    .search-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: #8b7108;
+      font-size: 16px;
+      line-height: 60px;
+      caret-color: #8b7108;
+      outline: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .search-input::placeholder {
+      color: transparent;
+    }
+
+    .maplibregl-popup-content {
+  background-color: #000 !important;
+  color: white !important;
+  padding: 0 !important;
+}
+
+  </style>
+</head>
+
+<body>
+  <div class="navbar">
+    <div class="navbar-left">
+      <img src="/images/testje.png" alt="Logo" class="navbar-logo" id="mainLogo" />
+      <div class="navbar-items">
+        <div class="search-wrapper" id="searchWrapper">
+          <span>SEARCH</span>
+          <input type="text" class="search-input" id="searchInput" placeholder="SEARCH" />
+        </div>
+        <a href="radar.html" id="wxButton">WX</a>
+        <a href="#" id="eqButton">EQ</a>
+        <a href="#">ABOUT</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="map"></div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Map init
+      maptilersdk.config.apiKey = "7TBqy4hTdFfQeIq7oXKj";
+      const map = new maptilersdk.Map({
+        container: "map",
+        style: "https://api.maptiler.com/maps/dataviz-dark/style.json?key=7TBqy4hTdFfQeIq7oXKj",
+        center: [4.5, 50.85],
+        zoom: 7.5
+      });
+
+      // Hike marker
+      const hikeMarker = new maptilersdk.Marker()
+        .setLngLat([4.5, 50.85])
+        .addTo(map);
+
+      const popupContent = `
+        <div style="
+          background-color: #000;
+          color: white;
+          padding: 10px;
+          font-size: 14px;
+          border-radius: 8px;
+          max-width: 220px;
+          font-family: sans-serif;">
+          <strong style="font-size: 16px;">Hike: Ninglinspo Trail</strong><br/>
+          Moeilijkheid: 🟡 Medium<br/>
+          Afstand: 14 km<br/>
+          Duur: ±4 uur<br/>
+          <button id="showRouteBtn" style="
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #8b7108;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;">
+            Toon route
+          </button>
+        </div>
+      `;
+
+      const popup = new maptilersdk.Popup({ offset: 25 }).setHTML(popupContent);
+      hikeMarker.setPopup(popup);
+
+      const hikeRouteGeoJSON = {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [4.5, 50.85],
+            [4.505, 50.851],
+            [4.51, 50.853],
+            [4.515, 50.856],
+            [4.52, 50.86],
+            [4.525, 50.865]
+          ]
+        }
+      };
+
+      // Route tekenen op klik
+      popup.on("open", () => {
+        const btn = document.getElementById("showRouteBtn");
+        if (btn) {
+          btn.addEventListener("click", () => {
+            if (map.getSource("hikeRoute")) return;
+
+            map.addSource("hikeRoute", {
+              type: "geojson",
+              data: hikeRouteGeoJSON
+            });
+
+            map.addLayer({
+              id: "hikeRouteLine",
+              type: "line",
+              source: "hikeRoute",
+              paint: {
+                "line-color": "#a14be6",
+                "line-width": 5,
+                "line-blur": 1.5,
+                "line-opacity": 0.9
+              }
+            });
+
+            const bounds = new maptilersdk.LngLatBounds();
+            hikeRouteGeoJSON.geometry.coordinates.forEach(coord => bounds.extend(coord));
+            map.fitBounds(bounds, {
+              padding: 50,
+              maxZoom: 14,
+              duration: 1000
+            });
+          });
+        }
+      });
+
+      // Route verwijderen bij sluiten popup
+      popup.on("close", () => {
+        if (map.getLayer("hikeRouteLine")) map.removeLayer("hikeRouteLine");
+        if (map.getSource("hikeRoute")) map.removeSource("hikeRoute");
+      });
+
+      // Search gedrag
+      const searchWrapper = document.getElementById("searchWrapper");
+      const searchInput = document.getElementById("searchInput");
+
+      if (searchWrapper && searchInput) {
+        searchWrapper.addEventListener("click", () => {
+          searchWrapper.classList.add("active");
+          searchInput.focus();
+        });
+
+        searchInput.addEventListener("blur", () => {
+          if (searchInput.value.trim() === "") {
+            searchWrapper.classList.remove("active");
+          }
+        });
+      }
+
+      // Logo hover swap
+      const logo = document.getElementById("mainLogo");
+      if (logo) {
+        logo.addEventListener("mouseenter", () => {
+          logo.src = "/images/logohover.png";
+        });
+        logo.addEventListener("mouseleave", () => {
+          logo.src = "/images/testje.png";
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>
