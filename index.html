@@ -106,11 +106,10 @@
     }
 
     .maplibregl-popup-content {
-  background-color: #000 !important;
-  color: white !important;
-  padding: 0 !important;
-}
-
+      background-color: #000 !important;
+      color: white !important;
+      padding: 0 !important;
+    }
   </style>
 </head>
 
@@ -119,15 +118,7 @@
     <div class="navbar-left">
       <img src="/images/testje.png" alt="Logo" class="navbar-logo" id="mainLogo" />
       <div class="navbar-items">
-        <div class="search-wrapper" id="searchWrapper">
-          <span>SEARCH</span>
-          <input type="text" class="search-input" id="searchInput" placeholder="SEARCH" />
-        </div>
-        <a href="#" id="mkButton">MK</a>
         <a href="radar.html" id="wxButton">WX</a>
-        <a href="#" id="eqButton">EQ</a>
-        <a href="#" id="xyzButton">XYZ</a>
-        <a href="#">ABOUT</a>
       </div>
     </div>
   </div>
@@ -142,7 +133,10 @@
         container: "map",
         style: "https://api.maptiler.com/maps/dataviz-dark/style.json?key=7TBqy4hTdFfQeIq7oXKj",
         center: [4.5, 50.85],
-        zoom: 7.5
+        zoom: 7.5,
+        navigationControl: false,
+        projectionControl: false,
+        GeolocateControl: false,
       });
 
       // Hike marker

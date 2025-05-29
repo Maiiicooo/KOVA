@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 
 <head>
   <meta charset="UTF-8" />
@@ -20,9 +20,7 @@
       top: 0;
       bottom: 0;
       width: 100%;
-      background-color: #444952;
-      z-index: 0;
-      will-change: transform;
+      background: #444952;
     }
 
     .navbar {
@@ -34,7 +32,7 @@
       display: flex;
       align-items: flex-start;
       padding: 0 20px;
-      background-color: rgba(0, 0, 0, 0);
+      background: rgba(0, 0, 0, 0);
       z-index: 10;
     }
 
@@ -44,10 +42,23 @@
       gap: 30px;
     }
 
+    .logo-time {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-top: 10px;
+    }
+
     .navbar-logo {
       width: 140px;
-      height: auto;
-      margin-top: 10px;
+    }
+
+    #time-info {
+      margin-top: 4px;
+      font-size: 12px;
+      color: white;
+      text-shadow: 0 0 4px black;
+      line-height: 1;
     }
 
     .navbar-items {
@@ -62,8 +73,8 @@
       font-weight: 500;
       font-size: 16px;
       line-height: 60px;
-      transition: color 0.3s ease;
       cursor: pointer;
+      transition: color .3s;
     }
 
     .navbar-items a:hover,
@@ -83,7 +94,6 @@
       line-height: 60px;
       color: white;
       pointer-events: none;
-      transition: opacity 0.2s ease, color 0.3s ease;
     }
 
     .search-wrapper.active span {
@@ -91,6 +101,9 @@
     }
 
     .search-input {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       background: transparent;
       border: none;
@@ -99,9 +112,6 @@
       line-height: 60px;
       caret-color: #8b7108;
       outline: none;
-      position: absolute;
-      top: 0;
-      left: 0;
     }
 
     .search-input::placeholder {
@@ -113,15 +123,14 @@
 <body>
   <div class="navbar">
     <div class="navbar-left">
-      <img src="/images/testje.png" alt="Logo" class="navbar-logo" id="mainLogo">
+      <div class="logo-time">
+        <img src="/images/testje.png" class="navbar-logo" id="mainLogo" alt="Logo">
+        <div id="time-info"><span id="time-text">Laden…</span></div>
+      </div>
       <div class="navbar-items">
-        <div class="search-wrapper" id="searchWrapper">
-          <span>SEARCH</span>
-          <input type="text" class="search-input" id="searchInput" placeholder="SEARCH">
-        </div>
         <a href="index.html" id="backButton">NV</a>
-        <a href="#" id="4hButton">4H</a>
-        <a href="#">ABOUT</a>
+        <a href="#" id="fourHButton">4H</a>
+        <a href="#" id="ctButton">CT</a>
       </div>
     </div>
   </div>
@@ -130,64 +139,88 @@
 
   <script>
     maptilersdk.config.apiKey = '7TBqy4hTdFfQeIq7oXKj';
-
     const map = new maptilersdk.Map({
       container: 'map',
       style: 'https://api.maptiler.com/maps/dataviz-dark/style.json?key=7TBqy4hTdFfQeIq7oXKj',
-      zoom: 7.5,
-      center: [4.5, 50.85],
-      projection: "mercator",
-      antialias: false,
-      fadeDuration: 0,
-      hash: false,
-      minZoom: 5,
-      maxZoom: 10,
-      projectionControl: true
+      zoom: 7.5, center: [4.5, 50.85],
+      projection: "mercator", antialias: false, fadeDuration: 0,
+      hash: false, minZoom: 5, maxZoom: 10,
+      projectionControl: false,
+      navigationControl: false,
+      geolocateControl: false,
     });
-
     const weatherLayer = new maptilerweather.RadarLayer({ opacity: 0.7 });
 
-    map.on('load', function () {
-      map.addLayer(weatherLayer);
+    let liveTimer;
+    let isForecasting = false;
 
-      //dit is current radar frame update elke 5min
-      weatherLayer.setTimeToLatest();
-
-      setInterval(() => {
-        weatherLayer.setTimeToLatest();
-      }, 5 * 60 * 1000); // elke 5 minuten
-
-
-      //dit is live radar maar is kk laggy
-      //weatherLayer.animateByFactor(3600);
-    });
-
-    // Zoekveld gedrag
-    const searchWrapper = document.getElementById('searchWrapper');
-    const searchInput = document.getElementById('searchInput');
-
-    if (searchWrapper && searchInput) {
-      searchWrapper.addEventListener('click', () => {
-        searchWrapper.classList.add('active');
-        searchInput.focus();
-      });
-
-      searchInput.addEventListener('blur', () => {
-        if (searchInput.value.trim() === '') {
-          searchWrapper.classList.remove('active');
-        }
-      });
+    // toont échte huidige tijd en zet laag daarop
+    function tickLive() {
+      const now = new Date();
+      document.getElementById('time-text').innerText =
+        now.toLocaleString('nl-BE', {
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit', second: '2-digit'
+        });
+      weatherLayer.setAnimationTime(Math.floor(now.getTime() / 1000));
     }
 
-    // Logo hover swap
+    // toont forecast-tijd bij elke animatie-frame
+    function tickForecast() {
+      const d = weatherLayer.getAnimationTimeDate();
+      document.getElementById('time-text').innerText =
+        d.toLocaleString('nl-BE', {
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit', second: '2-digit'
+        });
+    }
+
+    // start live‐mode: echte klok + laag, elke 1s update
+    function startLive() {
+      isForecasting = false;
+      weatherLayer.animateByFactor(0);
+      clearInterval(liveTimer);
+      weatherLayer.off('tick', tickForecast);
+      tickLive();
+      liveTimer = setInterval(tickLive, 1000);
+    }
+
+    // start forecast‐mode: laag-animatie en tickForecast
+    function startForecast() {
+      isForecasting = true;
+      clearInterval(liveTimer);
+      weatherLayer.on('tick', tickForecast);
+      weatherLayer.animateByFactor(3600); // 1s = 1u
+    }
+
+    map.on('load', () => {
+      map.addLayer(weatherLayer);
+      startLive();
+    });
+
+    document.getElementById('fourHButton').addEventListener('click', e => {
+      e.preventDefault();
+      if (!isForecasting) startForecast();
+    });
+
+    document.getElementById('ctButton').addEventListener('click', e => {
+      e.preventDefault();
+      if (isForecasting) startLive();
+    });
+
+    // search-behavior
+    const sw = document.getElementById('searchWrapper'),
+      si = document.getElementById('searchInput');
+    if (sw && si) {
+      sw.addEventListener('click', () => { sw.classList.add('active'); si.focus(); });
+      si.addEventListener('blur', () => { if (!si.value.trim()) sw.classList.remove('active'); });
+    }
+
+    // logo hover
     const logo = document.getElementById('mainLogo');
     if (logo) {
-      logo.addEventListener('mouseenter', () => {
-        logo.src = '/images/logohover.png';
-      });
-      logo.addEventListener('mouseleave', () => {
-        logo.src = '/images/testje.png';
-      });
+      logo.addEventListener('mouseenter', () => logo.src = '/images/logohover.png');
+      logo.addEventListener('mouseleave', () => logo.src = '/images/testje.png');
     }
   </script>
 </body>
