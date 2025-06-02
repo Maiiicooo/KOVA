@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About - KOVA</title>
+  <link rel="stylesheet" href="">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body,
+    html {
+      height: 100%;
+      font-family: sans-serif;
+      background-color: black;
+      color: white;
+      overflow: hidden;
+      font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    }
+
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      display: flex;
+      align-items: flex-start;
+      padding: 0 20px;
+      background-color: transparent;
+      z-index: 10;
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 30px;
+    }
+
+    .navbar-logo {
+      width: 140px;
+      height: auto;
+      margin-top: 10px;
+    }
+
+    .navbar-items {
+      display: flex;
+      gap: 20px;
+    }
+
+    .navbar-items a {
+      color: #8b7108;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 60px;
+      transition: color 0.3s ease;
+      cursor: pointer;
+    }
+
+    .navbar-items a:hover {
+      color: #ffffff;
+    }
+
+    .split-container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .about-image {
+      flex: 1;
+      background-image: url('/images/aboutpage.jpg');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .about-text {
+      flex: 1;
+      overflow-y: auto;
+      padding: 120px 60px 60px 60px;
+      background-color: black;
+    }
+
+    .about-text h1 {
+      font-size: 50px;
+      margin-bottom: 40px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .about-text p {
+      font-size: 16px;
+      line-height: 1.8;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="navbar">
+    <div class="navbar-left">
+      <img src="/images/logohover.png" alt="Logo" class="navbar-logo" id="mainLogo" />
+      <div class="navbar-items">
+        <a href="index.html" id="mkButton">MK</a>
+        <a href="radar.html" id="wxButton">WX</a>
+        <a href="#" id="eqButton">EQ</a>
+        <a href="#" id="lookbookButton">LOOKBOOK</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="split-container">
+    <div class="about-image"></div>
+    <div class="about-text">
+      <h1>A new approach to movement through landscapes.</h1>
+      <p>
+        KOVA is a digital hiking utility designed and developed in Belgium. <br>
+
+        Rooted in the language of weather systems, topographic mapping, and minimalist design,<br> KOVA merges
+        real-time forecasting, intuitive navigation, and curated hiking trails into a <br>unified interface — shaped
+        for modern outdoor movement.
+
+        KOVA approaches exploration as a system: clean, adaptive, and responsive. Inspired by the dynamics of
+        nature and the logic of technology, the platform operates as a modular tool — designed to support every
+        step, from spontaneous single-day hikes to multi-day treks. <br><br>
+
+        <strong>Built for hikers. Sharpened by data.</strong>
+      </p>
+    </div>
+  </div>
+  <script>
+    // Logo hover swap
+    const logo = document.getElementById("mainLogo");
+    if (logo) {
+      logo.addEventListener("mouseenter", () => {
+        logo.src = "/images/testje.png";
+      });
+      logo.addEventListener("mouseleave", () => {
+        logo.src = "/images/logohover.png";
+      });
+    }
+  </script>
+
+</body>
+
+</html>
