@@ -118,7 +118,8 @@
       color: white !important;
       padding: 0 !important;
     }
-    /* dit hide the maptiler watermark */ 
+
+    /* dit hide the maptiler watermark */
     .maplibregl-ctrl-bottom-left,
     .maplibregl-ctrl-logo,
     .maplibregl-ctrl-attrib,
@@ -158,36 +159,98 @@
         geolocateControl: false,
       });
 
-      // Hike marker
-      const hikeMarker = new maptilersdk.Marker()
-        .setLngLat([4.5, 50.85])
-        .addTo(map);
+      // Vraag toestemming voor geolocatie
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const userLng = position.coords.longitude;
+            const userLat = position.coords.latitude;
 
-      const popupContent = `
-        <div style="
-          background-color: #000;
-          color: white;
-          padding: 10px;
-          font-size: 14px;
-          border-radius: 8px;
-          max-width: 220px;
-          font-family: sans-serif;">
-          <strong style="font-size: 16px;">Hike: Ninglinspo Trail</strong><br/>
-          Moeilijkheid: 🟡 Medium<br/>
-          Afstand: 14 km<br/>
-          Duur: ±4 uur<br/>
-          <button id="showRouteBtn" style="
-            margin-top: 10px;
-            padding: 5px 10px;
-            background-color: #8b7108;
-            border: none;
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;">
-            Toon route
-          </button>
-        </div>
-      `;
+            const userMarkerEl = document.createElement('img');
+            userMarkerEl.src = 'images/player.png'; // pad naar je eigen icoon
+            userMarkerEl.style.width = '28px';       // pas aan naar gewenste grootte
+            userMarkerEl.style.height = '28px';
+            userMarkerEl.style.transform = 'translate(-50%, -50%)';
+            userMarkerEl.style.position = 'relative'; // zodat center correct werkt
+
+
+            new maptilersdk.Marker({ element: userMarkerEl })
+              .setLngLat([userLng, userLat])
+              .addTo(map);
+
+
+            // Zoom naar locatie
+            map.flyTo({ center: [userLng, userLat], zoom: 13 });
+          },
+          (error) => {
+            console.warn("Locatie niet toegestaan of mislukt:", error.message);
+          }
+        );
+      } else {
+        console.warn("Geolocatie wordt niet ondersteund door deze browser.");
+      }
+
+
+      /*       // Hike marker mss add ik dit in de toekomst idk
+            const hikeMarkerEl = document.createElement('div');
+            hikeMarkerEl.style.backgroundColor = '#8b7108'; // blauw
+            hikeMarkerEl.style.width = '20px';
+            hikeMarkerEl.style.height = '20px';
+            hikeMarkerEl.style.borderRadius = '50%';
+            hikeMarkerEl.style.border = '2px solid white';
+            hikeMarkerEl.style.boxShadow = '0 0 4px rgba(0,0,0,0.5)';
+      
+            const hikeMarker = new maptilersdk.Marker(hikeMarkerEl)
+              .setLngLat([4.5, 50.85])
+              .addTo(map);
+      
+      
+            const popupContent = `
+              <div style="
+                background-color: #000;
+                color: white;
+                padding: 10px;
+                font-size: 14px;
+                border-radius: 8px;
+                max-width: 220px;
+                font-family: sans-serif;">
+                <strong style="font-size: 16px;">Hike: Ninglinspo Trail</strong><br/>
+                Moeilijkheid:  Medium<br/>
+                Afstand: 14 km<br/>
+                Duur: ±4 uur<br/>
+                <button id="showRouteBtn" style="
+                  margin-top: 10px;
+                  padding: 5px 10px;
+                  background-color: #8b7108;
+                  border: none;
+                  color: white;
+                  border-radius: 4px;
+                  cursor: pointer;">
+                  Toon route
+                </button>
+              </div>
+            `; */
+
+      // als ik andere spots of hikes's wil adden
+      /*
+            function createMarker(color, lng, lat) {
+              const el = document.createElement('div');
+              el.style.backgroundColor = color;
+              el.style.width = '20px';
+              el.style.height = '20px';
+              el.style.borderRadius = '50%';
+              el.style.border = '2px solid white';
+              el.style.boxShadow = '0 0 4px rgba(0,0,0,0.5)';
+      
+              return new maptilersdk.Marker(el).setLngLat([lng, lat]).addTo(map);
+            }
+      
+            // Voorbeelden:
+            createMarker('#007BFF', 4.5, 50.85); // blauw
+            createMarker('#28a745', 4.51, 50.86); // groen
+            createMarker('#ffc107', 4.52, 50.87); // geel
+            createMarker('#dc3545', 4.53, 50.88); // rood
+       */
 
       const popup = new maptilersdk.Popup({ offset: 25 }).setHTML(popupContent);
       hikeMarker.setPopup(popup);

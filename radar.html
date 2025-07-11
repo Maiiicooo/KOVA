@@ -186,19 +186,16 @@
         <div id="time-info"><span id="time-text">Laden…</span></div>
       </div>
       <div class="navbar-items">
+        <a href="#" id="fourHButton">▶︎</a>
+        <a href="#" id="ctButton">‖</a>
         <a href="index.html" id="backButton">NV</a>
-        <a href="#" id="fourHButton">4H</a>
-        <a href="#" id="ctButton">CT</a>
-        <a href="#" id="sfButton">SF</a>
+        <a href="radar+wind.html" id="sfButton">SF</a>
         <a href="about.html" id="aboutButton">ABOUT</a>
       </div>
     </div>
   </div>
 
-  <!-- Overlay voor Windsnelheid -->
-  <div id="variable-name">Wind</div>
-  <div id="pointer-data"></div>
-  <div id="wind-toggle">Schakel Wind UIT</div>
+
 
   <!-- Kaartcontainer -->
   <div id="map"></div>
@@ -217,8 +214,6 @@
       antialias: false,
       fadeDuration: 0,
       hash: false,
-      minZoom: 5,
-      maxZoom: 10,
       projectionControl: false,
       navigationControl: false,
       geolocateControl: false,
@@ -282,7 +277,7 @@
 
     // Voeg lagen toe zodra de map geladen is (wind eerst, radar daarna)
     map.on('load', () => {
-      map.addLayer(windLayer);
+      //map.addLayer(windLayer);
       map.addLayer(radarLayer);
       startLive();
     });
