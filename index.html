@@ -169,8 +169,11 @@
             userMarkerEl.src = 'images/playericon.png';
             userMarkerEl.style.width = '28px';
             userMarkerEl.style.height = '28px';
+            userMarkerEl.style.position = 'absolute';
             userMarkerEl.style.transform = 'translate(-50%, -50%) rotate(0deg)';
-            userMarkerEl.style.position = 'relative';
+            userMarkerEl.style.transformOrigin = 'center';
+
+
 
             const userMarker = new maptilersdk.Marker({ element: userMarkerEl })
               .setLngLat([userLng, userLat])
@@ -182,9 +185,9 @@
                 if (event.alpha !== null) {
                   const heading = 360 - event.alpha;
                   userMarkerEl.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
-                  console.log("alpha:", event.alpha); // debug
                 }
               };
+
 
               const enableOrientation = () => {
                 window.addEventListener('deviceorientationabsolute', handleOrientation, true);
