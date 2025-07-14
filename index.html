@@ -145,6 +145,35 @@
 
   <div id="map"></div>
 
+  <!-- Orientation Permission Popup -->
+  <div id="orientationOverlay" style="
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 9999;
+  padding: 20px;
+  font-family: sans-serif;">
+    <h2 style="margin-bottom: 10px;">Compass access</h2>
+    <p style="margin-bottom: 20px; max-width: 300px;">To orient the map with your movement, we need access to your
+      device's compass.</p>
+    <button id="enableOrientationBtn" style="
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #8b7108;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;">
+      Allow Compass
+    </button>
+  </div>
+
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       // Map init
@@ -172,6 +201,47 @@
             userMarkerEl.style.position = 'absolute';
             userMarkerEl.style.transform = 'translate(-50%, -50%) rotate(0deg)';
             userMarkerEl.style.transformOrigin = 'center';
+
+
+            const orientationOverlay = document.getElementById("orientationOverlay");
+            const enableBtn = document.getElementById("enableOrientationBtn");
+
+            if (window.DeviceOrientationEvent && enableBtn && orientationOverlay) {
+              enableBtn.addEventListener("click", () => {
+                if (typeof DeviceOrientationEvent.requestPermission === "function") {
+                  DeviceOrientationEvent.requestPermission()
+                    .then(permission => {
+                      if (permission === "granted") {
+                        // Start tracking orientation
+                        const handleOrientation = (event) => {
+                          if (event.alpha !== null) {
+                            const heading = 360 - event.alpha;
+                            userMarkerEl.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
+                          }
+                        };
+                        window.addEventListener("deviceorientation", handleOrientation, true);
+                        window.addEventListener("deviceorientationabsolute", handleOrientation, true);
+
+                        // Hide overlay
+                        orientationOverlay.remove();
+                      } else {
+                        alert("Permission denied.");
+                      }
+                    })
+                    .catch(console.error);
+                } else {
+                  // Android of browsers die geen toestemming vereisen
+                  const handleOrientation = (event) => {
+                    if (event.alpha !== null) {
+                      const heading = 360 - event.alpha;
+                      userMarkerEl.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
+                    }
+                  };
+                  window.addEventListener("deviceorientation", handleOrientation, true);
+                  orientationOverlay.remove();
+                }
+              });
+            }
 
 
 
