@@ -159,7 +159,6 @@
         geolocateControl: false,
       });
 
-      // Vraag toestemming voor geolocatie
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
@@ -173,37 +172,41 @@
             userMarkerEl.style.transform = 'translate(-50%, -50%) rotate(0deg)';
             userMarkerEl.style.position = 'relative';
 
-            // Sla referentie op om later te roteren
             const userMarker = new maptilersdk.Marker({ element: userMarkerEl })
               .setLngLat([userLng, userLat])
               .addTo(map);
 
-
+            // Device orientation fix
             if (window.DeviceOrientationEvent) {
-              const enableOrientation = () => {
-                window.addEventListener('deviceorientationabsolute', (event) => {
-                  if (event.alpha !== null) {
-                    const heading = 360 - event.alpha; // zodat 0° = noord
-                    userMarkerEl.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
-                  }
-                }, true);
+              const handleOrientation = (event) => {
+                if (event.alpha !== null) {
+                  const heading = 360 - event.alpha;
+                  userMarkerEl.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
+                  console.log("alpha:", event.alpha); // debug
+                }
               };
 
-              // iOS vereist toestemming
+              const enableOrientation = () => {
+                window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+                window.addEventListener('deviceorientation', handleOrientation, true);
+              };
+
               if (typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
                   .then(permission => {
-                    if (permission === 'granted') enableOrientation();
+                    if (permission === 'granted') {
+                      enableOrientation();
+                    } else {
+                      console.warn("Toestemming geweigerd voor device orientation");
+                    }
                   })
                   .catch(console.error);
               } else {
                 enableOrientation();
               }
             }
-            
 
-
-            // Zoom naar locatie
+            // Zoom naar gebruiker
             map.flyTo({ center: [userLng, userLat], zoom: 13 });
           },
           (error) => {
