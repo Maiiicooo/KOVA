@@ -214,7 +214,8 @@
                         const handleOrientation = (event) => {
                           if (event.alpha !== null) {
                             const heading = 360 - event.alpha;
-                            userMarkerEl.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
+                            userMarkerEl.style.transform = `rotate(${heading}deg)`;
+
                           }
                         };
                         window.addEventListener("deviceorientation", handleOrientation, true);
@@ -232,7 +233,8 @@
                   const handleOrientation = (event) => {
                     if (event.alpha !== null) {
                       const heading = 360 - event.alpha;
-                      userMarkerEl.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
+                      userMarkerEl.style.transform = `rotate(${heading}deg)`;
+
                     }
                   };
                   window.addEventListener("deviceorientation", handleOrientation, true);
@@ -252,7 +254,7 @@
               const handleOrientation = (event) => {
                 if (event.alpha !== null) {
                   const heading = 360 - event.alpha;
-                  userMarkerEl.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
+                  userMarkerEl.style.transform = `rotate(${heading}deg)`;
                 }
               };
 
