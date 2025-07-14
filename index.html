@@ -167,16 +167,40 @@
             const userLat = position.coords.latitude;
 
             const userMarkerEl = document.createElement('img');
-            userMarkerEl.src = 'images/player.png'; // pad naar je eigen icoon
-            userMarkerEl.style.width = '28px';       // pas aan naar gewenste grootte
+            userMarkerEl.src = 'images/playericon.png';
+            userMarkerEl.style.width = '28px';
             userMarkerEl.style.height = '28px';
-            userMarkerEl.style.transform = 'translate(-50%, -50%)';
-            userMarkerEl.style.position = 'relative'; // zodat center correct werkt
+            userMarkerEl.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+            userMarkerEl.style.position = 'relative';
 
-
-            new maptilersdk.Marker({ element: userMarkerEl })
+            // Sla referentie op om later te roteren
+            const userMarker = new maptilersdk.Marker({ element: userMarkerEl })
               .setLngLat([userLng, userLat])
               .addTo(map);
+
+
+            if (window.DeviceOrientationEvent) {
+              const enableOrientation = () => {
+                window.addEventListener('deviceorientationabsolute', (event) => {
+                  if (event.alpha !== null) {
+                    const heading = 360 - event.alpha; // zodat 0° = noord
+                    userMarkerEl.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
+                  }
+                }, true);
+              };
+
+              // iOS vereist toestemming
+              if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                  .then(permission => {
+                    if (permission === 'granted') enableOrientation();
+                  })
+                  .catch(console.error);
+              } else {
+                enableOrientation();
+              }
+            }
+            
 
 
             // Zoom naar locatie
