@@ -195,8 +195,11 @@
         userMarkerEl.style.width = '28px';
         userMarkerEl.style.height = '28px';
         userMarkerEl.style.transformOrigin = 'center';
-        userMarkerEl.style.transformOrigin = 'center';
-        userMarkerEl.style.transform = 'rotate(0deg)';
+        userMarkerEl.style.position = 'absolute';
+        userMarkerEl.style.left = '0';
+        userMarkerEl.style.top = '0';
+        userMarkerEl.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+
 
 
         const userMarker = new maptilersdk.Marker({ element: userMarkerEl })
