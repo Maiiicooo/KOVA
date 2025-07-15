@@ -189,109 +189,87 @@
       });
 
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const userLng = position.coords.longitude;
-            const userLat = position.coords.latitude;
-
-            const userMarkerEl = document.createElement('img');
-            userMarkerEl.src = 'images/playericon.png';
-            userMarkerEl.style.width = '28px';
-            userMarkerEl.style.height = '28px';
-            userMarkerEl.style.transformOrigin = 'center';
-            userMarkerEl.style.position = 'absolute';
-            userMarkerEl.style.left = '50%';
-            userMarkerEl.style.top = '50%';
-            userMarkerEl.style.transform = 'translate(-50%, -50%)'; // default zonder rotatie
+        // 1. Maak de userMarker één keer aan
+        const userMarkerEl = document.createElement('img');
+        userMarkerEl.src = 'images/playericon.png';
+        userMarkerEl.style.width = '28px';
+        userMarkerEl.style.height = '28px';
+        userMarkerEl.style.transformOrigin = 'center';
+        userMarkerEl.style.transformOrigin = 'center';
+        userMarkerEl.style.transform = 'rotate(0deg)';
 
 
+        const userMarker = new maptilersdk.Marker({ element: userMarkerEl })
+          .setLngLat([0, 0]) // tijdelijk, wordt meteen geüpdatet
+          .addTo(map);
 
-            const orientationOverlay = document.getElementById("orientationOverlay");
-            const enableBtn = document.getElementById("enableOrientationBtn");
+        // 2. Compass functionaliteit
+        const orientationOverlay = document.getElementById("orientationOverlay");
+        const enableBtn = document.getElementById("enableOrientationBtn");
 
-            if (window.DeviceOrientationEvent && enableBtn && orientationOverlay) {
-              enableBtn.addEventListener("click", () => {
-                if (typeof DeviceOrientationEvent.requestPermission === "function") {
-                  DeviceOrientationEvent.requestPermission()
-                    .then(permission => {
-                      if (permission === "granted") {
-                        // Start tracking orientation
-                        const handleOrientation = (event) => {
-                          if (event.alpha !== null) {
-                            const heading = 360 - event.alpha;
-                            userMarkerEl.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
-                          }
-                        };
-                        window.addEventListener("deviceorientation", handleOrientation, true);
-                        window.addEventListener("deviceorientationabsolute", handleOrientation, true);
+        const handleOrientation = (event) => {
+          if (event.alpha !== null) {
+            const heading = 360 - event.alpha;
+            userMarkerEl.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
+          }
+        };
 
-                        // Hide overlay
-                        orientationOverlay.remove();
-                      } else {
-                        alert("Permission denied.");
-                      }
-                    })
-                    .catch(console.error);
-                } else {
-                  // Android of browsers die geen toestemming vereisen
-                  const handleOrientation = (event) => {
-                    if (event.alpha !== null) {
-                      const heading = 360 - event.alpha;
-                      userMarkerEl.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
-                    }
-                  };
-                  window.addEventListener("deviceorientation", handleOrientation, true);
-                  orientationOverlay.remove();
-                }
-              });
-            }
+        const enableOrientation = () => {
+          window.addEventListener("deviceorientationabsolute", handleOrientation, true);
+          window.addEventListener("deviceorientation", handleOrientation, true);
+        };
 
+        const previouslyGranted = localStorage.getItem("compassPermissionGranted");
 
+        if (window.DeviceOrientationEvent && enableBtn && orientationOverlay) {
+          const startCompass = () => {
+            enableOrientation();
+            orientationOverlay.remove();
+            localStorage.setItem("compassPermissionGranted", "true");
+          };
 
-            const userMarker = new maptilersdk.Marker({ element: userMarkerEl })
-              .setLngLat([userLng, userLat])
-              .addTo(map);
-
-            // Device orientation fix
-            if (window.DeviceOrientationEvent) {
-              const handleOrientation = (event) => {
-                if (event.alpha !== null) {
-                  const heading = 360 - event.alpha;
-                  userMarkerEl.style.transform = `translate(-50%, -50%) rotate(${heading}deg)`;
-                }
-              };
-
-
-              const enableOrientation = () => {
-                window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-                window.addEventListener('deviceorientation', handleOrientation, true);
-              };
-
-              if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+          if (previouslyGranted === "true") {
+            startCompass(); // automatisch toestaan
+          } else {
+            enableBtn.addEventListener("click", () => {
+              if (typeof DeviceOrientationEvent.requestPermission === "function") {
                 DeviceOrientationEvent.requestPermission()
                   .then(permission => {
-                    if (permission === 'granted') {
-                      enableOrientation();
+                    if (permission === "granted") {
+                      startCompass();
                     } else {
-                      console.warn("Toestemming geweigerd voor device orientation");
+                      alert("Compass permission denied.");
                     }
                   })
                   .catch(console.error);
               } else {
-                enableOrientation();
+                startCompass();
               }
-            }
+            });
+          }
+        }
 
-            // Zoom naar gebruiker
-            map.flyTo({ center: [userLng, userLat], zoom: 13 });
+
+        // 3. Live locatie volgen
+        navigator.geolocation.watchPosition(
+          (position) => {
+            const userLng = position.coords.longitude;
+            const userLat = position.coords.latitude;
+
+            userMarker.setLngLat([userLng, userLat]);
+            map.setCenter([userLng, userLat]);
           },
           (error) => {
-            console.warn("Locatie niet toegestaan of mislukt:", error.message);
+            console.warn("Locatie fout:", error.message);
+          },
+          {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 5000
           }
         );
-      } else {
-        console.warn("Geolocatie wordt niet ondersteund door deze browser.");
       }
+
 
 
       /*       // Hike marker mss add ik dit in de toekomst idk
