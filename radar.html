@@ -160,7 +160,7 @@
     }
 
     /* Buttons onderaan voor Wind/Toggle (optioneel) */
-    #wind-toggle {
+    /* #wind-toggle {
       z-index: 11;
       position: fixed;
       bottom: 20px;
@@ -173,6 +173,16 @@
       font-weight: 600;
       cursor: pointer;
       user-select: none;
+    } */
+
+    /* dit hide the maptiler watermark */
+    .maplibregl-ctrl-bottom-left,
+    .maplibregl-ctrl-logo,
+    .maplibregl-ctrl-attrib,
+    .maptiler-attribution {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
     }
   </style>
 </head>

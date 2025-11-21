@@ -140,7 +140,7 @@
       font-weight: 600;
       color: white;
       text-shadow: 0 0 6px black;
-      background:transparent;
+      background: transparent;
       padding: 4px 8px;
       border-radius: 4px;
     }
@@ -154,13 +154,13 @@
       font-weight: 700;
       color: white;
       text-shadow: 0 0 8px black;
-      background:transparent;
+      background: transparent;
       padding: 4px 8px;
       border-radius: 4px;
     }
 
     /* Buttons onderaan voor Wind/Toggle (optioneel) */
-    #wind-toggle {
+    /* #wind-toggle {
       z-index: 11;
       position: fixed;
       bottom: 10px;
@@ -173,6 +173,16 @@
       font-weight: 600;
       cursor: pointer;
       user-select: none;
+    } */ */
+
+    /* dit hide the maptiler watermark */
+    .maplibregl-ctrl-bottom-left,
+    .maplibregl-ctrl-logo,
+    .maplibregl-ctrl-attrib,
+    .maptiler-attribution {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
     }
   </style>
 </head>
@@ -225,7 +235,7 @@
 
     // Maak zowel een Wind- als een Radar-laag aan
     const windLayer = new maptilerweather.WindLayer({ opacity: 0.5 });
-    const radarLayer = new maptilerweather.RadarLayer({ opacity: 0.7 });
+    //const radarLayer = new maptilerweather.RadarLayer({ opacity: 0.7 });
 
     let liveTimer;
     let isForecasting = false;
@@ -321,17 +331,17 @@
     });
 
     // Toggle-knop om windlaag in/uit te schakelen
-    document.getElementById('wind-toggle').addEventListener('click', () => {
-      const btn = document.getElementById('wind-toggle');
-      if (windVisible) {
-        map.setLayoutProperty(windLayer.id, 'visibility', 'none');
-        btn.innerText = 'Schakel Wind IN';
-      } else {
-        map.setLayoutProperty(windLayer.id, 'visibility', 'visible');
-        btn.innerText = 'Schakel Wind UIT';
-      }
-      windVisible = !windVisible;
-    });
+    // document.getElementById('wind-toggle').addEventListener('click', () => {
+    //   const btn = document.getElementById('wind-toggle');
+    //   if (windVisible) {
+    //     map.setLayoutProperty(windLayer.id, 'visibility', 'none');
+    //     btn.innerText = 'Schakel Wind IN';
+    //   } else {
+    //     map.setLayoutProperty(windLayer.id, 'visibility', 'visible');
+    //     btn.innerText = 'Schakel Wind UIT';
+    //   }
+    //   windVisible = !windVisible;
+    // });
 
     // (Optioneel) Search-input gedrag
     const sw = document.getElementById('searchWrapper'),
