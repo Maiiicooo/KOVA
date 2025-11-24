@@ -11,7 +11,7 @@
 
   <!-- Apple-web-app -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="/KOVA/images/appicon.JPG">
 
   <!-- MapTiler SDK + Weather-plugin -->
@@ -51,7 +51,6 @@
     .navbar-left {
       display: flex;
       align-items: flex-start;
-      gap: 30px;
     }
 
     .logo-time {
@@ -92,42 +91,6 @@
     .navbar-items a:hover,
     .search-wrapper:hover span {
       color: #8b7108;
-    }
-
-    .search-wrapper {
-      position: relative;
-      width: 100px;
-    }
-
-    .search-wrapper span {
-      position: absolute;
-      top: 0;
-      left: 0;
-      line-height: 60px;
-      color: white;
-      pointer-events: none;
-    }
-
-    .search-wrapper.active span {
-      opacity: 0;
-    }
-
-    .search-input {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background: transparent;
-      border: none;
-      color: #8b7108;
-      font-size: 16px;
-      line-height: 60px;
-      caret-color: #8b7108;
-      outline: none;
-    }
-
-    .search-input::placeholder {
-      color: transparent;
     }
 
     /* Windsnelheid-overlay */
@@ -197,7 +160,7 @@
       </div>
       <div class="navbar-items">
         <a href="#" id="fourHButton">▶︎</a>
-        <a href="#" id="ctButton">‖</a>
+        <a href="#" id="ctButton">◼</a>
         <a href="index.html" id="backButton">NV</a>
         <a href="radar+wind.html" id="sfButton">SF</a>
         <a href="about.html" id="aboutButton">ABOUT</a>
@@ -224,10 +187,47 @@
       antialias: false,
       fadeDuration: 0,
       hash: false,
+      minZoom: 5,
+      maxZoom: 10,
       projectionControl: false,
       navigationControl: false,
       geolocateControl: false,
     });
+
+    // GEOLOCATIE
+    if (navigator.geolocation) {
+      const userMarkerEl = document.createElement("img");
+      userMarkerEl.src = "images/playericon.png";
+      userMarkerEl.style.width = "28px";
+      userMarkerEl.style.height = "28px";
+      userMarkerEl.style.transform = "translate(-50%, -50%)";
+      userMarkerEl.classList.add("marker-clickable");
+
+
+      const userPopupHTML = `
+          <div style="width:150px; text-align:center; font-family:sans-serif;">
+            <img src="images/playeravatar.png" style="width:100%; height:auto; border-radius:6px; margin-bottom:6px;">
+            <strong>This is you</strong><br>
+          </div>
+        `;
+      const userPopup = new maptilersdk.Popup({ offset: 25 }).setHTML(userPopupHTML);
+
+      const userMarker = new maptilersdk.Marker({ element: userMarkerEl })
+        .setLngLat([0, 0])
+        .setPopup(userPopup)
+        .addTo(map);
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lng = position.coords.longitude;
+          const lat = position.coords.latitude;
+          userMarker.setLngLat([lng, lat]);
+          map.setCenter([lng, lat]);
+        },
+        (err) => console.warn("Locatie fout:", err.message),
+        { enableHighAccuracy: true }
+      );
+    }
 
     // Maak zowel een Wind- als een Radar-laag aan
     const windLayer = new maptilerweather.WindLayer({ opacity: 0.5 });
@@ -348,6 +348,5 @@
     }
   </script>
 </body>
-
 
 </html>
