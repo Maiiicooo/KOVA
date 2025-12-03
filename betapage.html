@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Kova — Beta</title>
+
+    <style>
+        :root {
+            --bg: #161515;
+            --fg: #fff;
+            --muted: rgba(255, 255, 255, 0.6);
+            --line: rgba(255, 255, 255, 0.12);
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--fg);
+            font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* NAVBAR ------------------------------------------------------ */
+        nav {
+            width: 100%;
+            padding: 22px 34px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--line);
+            box-sizing: border-box;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-left img {
+            height: 50px;
+            width: auto;
+        }
+
+        .beta {
+            padding: 2px;
+            font-size: 0.85rem;
+            background-color: #8b7108;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-right a {
+            margin-left: 32px;
+            text-decoration: none;
+            color: var(--fg);
+            font-size: 0.95rem;
+            opacity: 0.8;
+            transition: opacity 0.25s;
+        }
+
+        .navbar-seperator {
+            margin-left: 20px;
+        }
+
+        .nav-right a:hover {
+            opacity: 1;
+            color: #8b7108;
+        }
+
+        /* CENTER ------------------------------------------------------ */
+        .center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+
+        .quote {
+            font-size: 1.3rem;
+            color: var(--muted);
+            max-width: 600px;
+            line-height: 1.45;
+        }
+
+        .center {
+            text-align: center;
+            margin-top: 18vh;
+            color: white;
+        }
+
+        .main-logo {
+            width: 300px;
+            opacity: 0;
+            transform: scale(0.85);
+            animation: fadeInScale 1.8s ease forwards;
+        }
+
+        @keyframes fadeInScale {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .quote {
+            font-size: 15px;
+            font-weight: 500;
+            min-height: 32px;
+            letter-spacing: 0.5px;
+        }
+
+        .updates-section {
+            margin-top: 35px;
+            opacity: 0;
+            animation: fadeIn 1.3s ease forwards;
+            animation-delay: 2.2s;
+            /* komt na de quote */
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .updates-title {
+            font-size: 28px;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .updates-form {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .updates-form input {
+            padding: 10px 14px;
+            border: none;
+            outline: none;
+            width: 220px;
+            font-size: 15px;
+        }
+
+        .updates-form button {
+            padding: 10px 18px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            background: white;
+            color: black;
+            transition: 0.25s;
+        }
+
+        .updates-form button:hover {
+            background: #e5e5e5;
+        }
+
+        @media (max-width: 600px) {
+            nav {
+                padding: 16px 18px;
+            }
+
+            .nav-left img {
+                height: 40px;
+            }
+
+            .nav-left .beta {
+                font-size: 0.7rem;
+                padding: 2px 5px;
+            }
+
+            .nav-right {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .nav-right a {
+                margin-left: 0;
+                font-size: 0.85rem;
+            }
+
+            .navbar-seperator {
+                margin-left: 0;
+                opacity: 0.5;
+            }
+
+            nav {
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-left">
+            <img src="appicon-removebg-preview.png" alt="Kova logo small">
+            <div class="beta">now in alpha!</div>
+        </div>
+
+        <div class="nav-right">
+            <a href="#">About</a>
+            <span class="navbar-seperator">//</span>
+            <a href="https://www.maicominne.com/blog/kova.html" target="_blank">Blog</a>
+            <span class="navbar-seperator">//</span>
+            <a href="#">Premium</a>
+        </div>
+    </nav>
+
+    <!-- CENTER CONTENT -->
+    <div class="center">
+        <img src="appicon-removebg-preview.png" class="main-logo" alt="Kova logo main">
+
+        <div class="quote" id="quote"></div>
+
+        <div class="updates-section">
+            <div class="updates-title">Join for more updates!</div>
+
+            <form class="updates-form">
+                <input type="email" placeholder="Your email" required>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const text = "Know what's ahead!";
+        const quoteElement = document.getElementById('quote');
+        let i = 0;
+
+        function typeEffect() {
+            if (i < text.length) {
+                quoteElement.textContent += text.charAt(i);
+                i++;
+                setTimeout(typeEffect, 65);
+            }
+        }
+
+        setTimeout(typeEffect, 1700);
+    </script>
+
+
+
+</body>
+
+</html>
