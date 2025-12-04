@@ -19,10 +19,11 @@
             background: var(--bg);
             color: var(--fg);
             font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+            height: 100dvh;
+            /* FIX: werkt goed met keyboard */
             overflow: hidden;
+            /* nooit scrollen */
+            position: relative;
         }
 
         /* NAVBAR ------------------------------------------------------ */
