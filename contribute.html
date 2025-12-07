@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Kova — premium</title>
+    <title>Kova — alpha</title>
 
     <style>
         :root {
@@ -77,57 +77,15 @@
             color: #8b7108;
         }
 
+        /* CONTENT */
 
-        /* CENTER ------------------------------------------------------ */
-        .center {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .contribute {
             justify-content: center;
-            /* perfect midden */
-            text-align: center;
-            padding: 0 20px;
-            box-sizing: border-box;
-            overflow: hidden;
-        }
-
-        .premium-content {
-            padding-top: 50px;
-            justify-content: end;
             align-items: center;
-            padding-left: 20px;
-        }
-  
-        .premium-date {
-            font-size: 0.9rem;
-            color: var(--muted);
-        }
-
-        .premium-info {
-            font-size: 1rem;
-            color: var(--muted);
-            margin: 10px 0 0 0;
-        }
-
-        .premium-title {
-            font-size: 2.5rem;
-            margin: 10px 0 0 0;
-        }
-
-        .join-page {
-            color: var(--fg);
-            position: absolute;
-            bottom: 0%;
-            right: 0%;
-            padding-bottom: 17px;
-            padding-right: 15px;
-        }
-
-        .kova-corp {
-            position: absolute;
-            bottom: 0%;
-            padding-left: 15px;
+            padding: 40px 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+            box-sizing: border-box;
         }
 
 
@@ -164,12 +122,17 @@
             nav {
                 gap: 12px;
             }
+
+            .main-logo {
+                width: 250px;
+            }
+
         }
     </style>
 
 </head>
 
-<body>
+   <body>
 
     <!-- NAV -->
     <nav>
@@ -187,17 +150,48 @@
         </div>
     </nav>
 
+    <!-- CONTENT -->
+    <section class="contribute">
+        <h1>Contribute to Kova</h1>
 
-    <div class="premium-content">
-        <p class="premium-date">December 7, 2025</p>
-        <p class="premium-title">Support kova <br> development!</p>
-        <p class="premium-info">More info coming soon</p>
-    </div>
+        <p>
+            Kova is a small, independent project built to make discovering great spots easier and more honest.
+            Right now it’s just me building everything — design, code, and the entire map.
+        </p>
 
-    <footer>
-        <p class="kova-corp">kova corp © 2025</p>
-        <a class="join-page" href="#">Contribute</a>
-    </footer>
+        <p>
+            The community is growing fast, and I could use your help.
+        </p>
+
+        <h2>What helps most:</h2>
+
+        <h3>Adding new spots</h3>
+        <p>
+            Share locations that others should know about and help the map grow.
+        </p>
+
+        <h3>Design input</h3>
+        <p>
+            Small UI touches, icons, visuals, or creative ideas that make Kova feel better.
+        </p>
+
+        <h3>General feedback</h3>
+        <p>
+            Thoughts on features, flow, or what Kova should become next.
+        </p>
+
+        <p class="contact">
+            If you want to contribute, reach out at <b>hello@kova.spot</b>
+            or submit a spot directly through the app.
+        </p>
+
+        <p class="tagline">
+            Kova gets better because people help build it.
+        </p>
+    </section>
+
+</body>
+
 
 </body>
 
