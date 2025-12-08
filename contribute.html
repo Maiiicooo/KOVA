@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Kova — alpha</title>
+    <title>Kova — contribute</title>
 
     <style>
         :root {
@@ -80,11 +80,17 @@
         /* CONTENT */
 
         .contribute {
-            justify-content: center;
-            align-items: center;
-            padding: 40px 20px;
-            flex-grow: 1;
+            max-width: 700px;
+            width: 100%;
+        }
+
+               /* NEW — Page wrapper like Doko */
+        .page-container {
+            flex: 1;
             overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
             box-sizing: border-box;
         }
 
@@ -151,44 +157,50 @@
     </nav>
 
     <!-- CONTENT -->
+<div class="page-container">
     <section class="contribute">
+
         <h1>Contribute to Kova</h1>
 
         <p>
-            Kova is a small, independent project built to make discovering great spots easier and more honest.
-            Right now it’s just me building everything — design, code, and the entire map.
+            Kova is still in its early alpha stage — a tiny, independent side-project built to make discovering great spots simple, real, and community-driven.
+            Right now it’s just me designing everything and writing every line of code.
         </p>
 
         <p>
-            The community is growing fast, and I could use your help.
+            The idea is growing faster than expected, and I genuinely need help from people who care about good spots, clean design, and honest tools.
         </p>
 
-        <h2>What helps most:</h2>
+        <h2>How you can help</h2>
 
-        <h3>Adding new spots</h3>
+        <h3>Share new spots</h3>
         <p>
-            Share locations that others should know about and help the map grow.
+            The map only becomes useful when people add the places they know.
+            If you’ve got a hidden gem, a chill spot, or a must-see location — adding it helps the whole community.
         </p>
 
-        <h3>Design input</h3>
+        <h3>Design contributions</h3>
         <p>
-            Small UI touches, icons, visuals, or creative ideas that make Kova feel better.
+            Icons, micro-animations, layout ideas, or UI refinements.  
+            Anything that pushes Kova toward a clean, outdoor-inspired vibe is deeply appreciated.
         </p>
 
-        <h3>General feedback</h3>
+        <h3>Feedback</h3>
         <p>
-            Thoughts on features, flow, or what Kova should become next.
+            Thoughts on usability, performance, features, or what Kova should eventually evolve into.
         </p>
 
-        <p class="contact">
-            If you want to contribute, reach out at <b>hello@kova.spot</b>
-            or submit a spot directly through the app.
-        </p>
-
-        <p class="tagline">
-            Kova gets better because people help build it.
+        <br>
+        
+        <p style="padding-bottom: 20px;">
+            <img src="images/5498_catJAM.gif" style="max-height: 30px; width: auto; object-fit: contain; padding-right: 10px;">
+            Send a mail to <a href="mailto:hello@kova.spot" style="color: #8b7108;">hello@kova.spot.</a>
+            
         </p>
     </section>
+</div>
+
+
 
 </body>
 
