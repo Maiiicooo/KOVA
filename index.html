@@ -270,6 +270,55 @@
       <a class="join-page" href="contribute.html">Contribute</a>
     </footer>
 
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        serverTimestamp,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js";
+
+      // Firebase configuratie
+      const firebaseConfig = {
+        apiKey: "AIzaSyARxFI9HyJxrINfzDazhxFHKSrGLX8KoBk",
+        authDomain: "kova-6052a.firebaseapp.com",
+        projectId: "kova-6052a",
+        storageBucket: "kova-6052a.firebasestorage.app",
+        messagingSenderId: "873689812978",
+        appId: "1:873689812978:web:e0581f3df823e51239656b",
+        measurementId: "G-VM5224Z3K6",
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const db = getFirestore(app);
+
+      // Form handler
+      const form = document.querySelector(".updates-form");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const emailInput = form.querySelector('input[type="email"]');
+        const email = emailInput.value.trim();
+
+        if (email) {
+          try {
+            await addDoc(collection(db, "emails"), {
+              email: email,
+              timestamp: serverTimestamp(),
+            });
+            alert("Thanks! Your email has been saved.");
+            emailInput.value = "";
+          } catch (err) {
+            console.error(err);
+            alert("Oops, something went wrong!");
+          }
+        }
+      });
+    </script>
+
     <script>
       const text = "Know what's ahead!";
       const quoteElement = document.getElementById("quote");
