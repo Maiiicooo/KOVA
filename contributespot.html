@@ -300,15 +300,16 @@
                 photoURL = await getDownloadURL(fileRef);
             }
 
-            await addDoc(collection(db, "spots"), {
-                name,
-                description: desc,
-                lat,
-                lng,
-                photoURL,
-                status: "pending",
-                timestamp: serverTimestamp()
-            });
+           await addDoc(collection(db, "pending_spots"), {
+    name,
+    description: desc,
+    lat,
+    lng,
+    photoURL,
+    status: "pending",
+    timestamp: serverTimestamp()
+});
+
 
             statusMsg.textContent = "Spot submitted! Thanks!";
             form.reset();
