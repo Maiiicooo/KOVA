@@ -1,43 +1,21 @@
-[[Changelog]]
-[[Spots]]
-[[Weather Utility]]
-[[BetaPage]]
-[[TO DO]]
-[[Ideas]]
+What is KOVA?
 
+KOVA is a digital outdoor utility focused on discovering chill spots and providing weather information for hikers and adventurers. It’s an app/website that combines map data with local spots and weather updates, helping users plan their outings smarter and more enjoyably.
 
+Why KOVA?
 
+The idea behind KOVA comes from personal experience: many great outdoor spots are hard to find, and the weather can suddenly change everything. KOVA brings these two elements together: spots and weather.
 
+Purpose of KOVA
 
+Spot discovery: users can add, view, and explore chill spots via an easy-to-use map.
 
+Weather utility: real-time weather information to plan your trips and activities effectively.
 
+User-friendly and clear: everything in one interface, without distractions.
 
+Community-driven: spots are submitted by users and only become visible after approval, ensuring quality and reliability.
 
-## Wat is KOVA?
+Vision
 
-KOVA is een digitale outdoor utility die zich richt op **chill spots ontdekken** en **weerinformatie** voor wandelaars en avonturiers. Het is een app/website die kaartdata combineert met lokale spots en weersinformatie, zodat gebruikers hun uitstapjes slimmer en aangenamer kunnen plannen.
-
-### Waarom KOVA?
-
-Het idee achter KOVA is ontstaan uit mijn eigen ervaring: veel plekken om buiten te relaxen of te verkennen zijn niet makkelijk te vinden, en het weer kan plots alles beïnvloeden. KOVA brengt deze twee elementen samen: spots en weather.
-
-### Doel van KOVA
-
-- **Spot discovery**: gebruikers kunnen chill spots toevoegen, bekijken en ontdekken via een overzichtelijke kaart.
-    
-- **Weer utility**: realtime weersinformatie zodat je je uitstapjes en activiteiten goed kunt plannen.
-    
-- **Gebruiksvriendelijk en overzichtelijk**: alles in één interface, zonder afleidingen.
-    
-- **Community-driven**: spots worden door gebruikers voorgesteld en pas na goedkeuring zichtbaar, zodat kwaliteit en betrouwbaarheid gewaarborgd zijn.
-    
-
-### Visie
-
-KOVA wil buitenbeleving toegankelijker maken. Niet enkel routes volgen, maar **plekken vinden waar je echt wilt zijn**, met de zekerheid dat je weet wat het weer doet en waar je veilig en prettig kunt verblijven. Het is een combinatie van **exploratie, gemak en betrouwbare informatie**.
-
-### Diagram 
-- **een snelle schets over de werking van KOVA (web vers.)
-
-
-![[kovagraph.pdf]]
+KOVA aims to make outdoor experiences more accessible. Not just following routes, but finding the places you really want to be, with confidence in the weather and a safe, pleasant environment. It’s a combination of exploration, convenience, and reliable information.
