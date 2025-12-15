@@ -55,6 +55,19 @@
         gap: 30px;
       }
 
+      .navbar-right {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        z-index: 20;
+      }
+
+      #loginIcon {
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+      }
+
       .logo-time {
         display: flex;
         flex-direction: column;
@@ -147,6 +160,11 @@
           <a href="radar+wind.html" id="sfButton">SF</a>
           <a href="about.html" id="aboutButton">ABOUT</a>
         </div>
+        <div class="navbar-right">
+          <a href="../../web/log/login.html">
+            <img src="../../images/loginicon$.png" alt="Login" id="loginIcon" />
+          </a>
+        </div>
       </div>
     </div>
 
@@ -163,6 +181,10 @@
           center: [4.5, 50.85],
           zoom: 7.5,
           minZoom: 5,
+          // Maptiler Stock controls
+          navigationControl: false,
+          projectionControl: false,
+          geolocateControl: false,
         });
 
         const firebaseConfig = {
@@ -268,6 +290,58 @@
       }
       setInterval(updateTime, 1000);
       updateTime();
+    </script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script>
+      const auth = firebase.auth();
+
+      const loginIconContainer = document.querySelector(".navbar-right a");
+      const loginIconImg = document.getElementById("loginIcon");
+
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          // Gebruiker is ingelogd
+          loginIconImg.src = user.photoURL || "../../images/loginicon$.png";
+          loginIconImg.style.borderRadius = "50%";
+          loginIconImg.style.objectFit = "cover";
+
+          loginIconContainer.onclick = (e) => {
+            e.preventDefault();
+            // dropdown maken
+            let dropdown = document.getElementById("userDropdown");
+            if (!dropdown) {
+              dropdown = document.createElement("div");
+              dropdown.id = "userDropdown";
+              dropdown.style.position = "absolute";
+              dropdown.style.top = "50px";
+              dropdown.style.right = "0";
+              dropdown.style.background = "#222";
+              dropdown.style.color = "white";
+              dropdown.style.padding = "10px";
+              dropdown.style.borderRadius = "6px";
+              dropdown.style.textAlign = "center";
+              dropdown.style.zIndex = "100";
+              dropdown.innerHTML = `
+            <div><strong>${user.displayName || "Gebruiker"}</strong></div>
+            <button id="logoutBtn">Log out</button>
+          `;
+              loginIconContainer.parentElement.appendChild(dropdown);
+
+              document.getElementById("logoutBtn").onclick = () => {
+                auth.signOut().then(() => location.reload());
+              };
+            } else {
+              // toggle dropdown
+              dropdown.remove();
+            }
+          };
+        } else {
+          // niet ingelogd
+          loginIconImg.src = "../../images/loginicon$.png";
+          loginIconContainer.href = "../../web/log/login.html";
+        }
+      });
     </script>
 
     <!-- <script>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KOVA - Login / Sign Up</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #111;
+        color: white;
+      }
+      .auth-container {
+        background: #222;
+        padding: 20px 30px;
+        border-radius: 10px;
+        width: 300px;
+        text-align: center;
+      }
+      input {
+        width: 100%;
+        margin: 8px 0;
+        padding: 10px;
+        border-radius: 6px;
+        border: none;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 6px;
+        background: #8b7108;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #a58e20;
+      }
+      .toggle {
+        margin-top: 12px;
+        cursor: pointer;
+        color: #8b7108;
+      }
+      #errorMsg {
+        color: #f55;
+        font-size: 14px;
+        margin-top: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-container">
+      <h2 id="formTitle">Login</h2>
+      <input type="text" id="name" placeholder="Naam" style="display: none" />
+      <input type="email" id="email" placeholder="E-mail" />
+      <input type="password" id="password" placeholder="Wachtwoord" />
+      <input
+        type="file"
+        id="photoFile"
+        accept="image/*"
+        style="display: none"
+      />
+      <button id="authBtn">Login</button>
+      <div id="errorMsg"></div>
+      <div class="toggle" id="toggleForm">Nog geen account? Sign Up</div>
+    </div>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyARxFI9HyJxrINfzDazhxFHKSrGLX8KoBk",
+        authDomain: "kova-6052a.firebaseapp.com",
+        projectId: "kova-6052a",
+        storageBucket: "kova-6052a.appspot.com",
+        messagingSenderId: "873689812978",
+        appId: "1:873689812978:web:e0581f3df823e51239656b",
+        measurementId: "G-VM5224Z3K6",
+      };
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      const storage = firebase.storage();
+
+      let isLogin = true;
+
+      const nameInput = document.getElementById("name");
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
+      const photoInput = document.getElementById("photoFile");
+      const authBtn = document.getElementById("authBtn");
+      const toggleForm = document.getElementById("toggleForm");
+      const formTitle = document.getElementById("formTitle");
+      const errorMsg = document.getElementById("errorMsg");
+
+      authBtn.addEventListener("click", async () => {
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        const displayName = nameInput.value;
+        errorMsg.innerText = "";
+
+        if (isLogin) {
+          auth
+            .signInWithEmailAndPassword(email, password)
+            .then(() => (window.location.href = "spots.html"))
+            .catch((err) => (errorMsg.innerText = err.message));
+        } else {
+          if (!displayName) {
+            errorMsg.innerText = "Vul een naam in!";
+            return;
+          }
+          try {
+            const userCred = await auth.createUserWithEmailAndPassword(
+              email,
+              password
+            );
+            let photoURL = "https://via.placeholder.com/100";
+
+            const file = photoInput.files[0];
+            if (file) {
+              const storageRef = storage.ref(
+                `profilePhotos/${Date.now()}_${file.name}`
+              );
+              const snapshot = await storageRef.put(file);
+              photoURL = await snapshot.ref.getDownloadURL();
+            }
+
+            await userCred.user.updateProfile({ displayName, photoURL });
+            window.location.href = "spots.html";
+          } catch (err) {
+            errorMsg.innerText = err.message;
+          }
+        }
+      });
+
+      toggleForm.addEventListener("click", () => {
+        isLogin = !isLogin;
+        formTitle.innerText = isLogin ? "Login" : "Sign Up";
+        authBtn.innerText = isLogin ? "Login" : "Sign Up";
+        toggleForm.innerText = isLogin
+          ? "Nog geen account? Sign Up"
+          : "Al een account? Login";
+        nameInput.style.display = isLogin ? "none" : "block";
+        photoInput.style.display = isLogin ? "none" : "block";
+      });
+    </script>
+  </body>
+</html>
