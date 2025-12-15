@@ -1,7 +1,7 @@
 {
   "name":             "KOVA Radar",
   "short_name":       "KOVA",
-  "start_url":        "./index.html",
+  "start_url":        "../index.html",
   "display":          "standalone",
   "background_color": "#444952",
   "theme_color":      "#000000",
