@@ -1,0 +1,65 @@
+// DEZE RULES GEBRUIKEN VOOR PENDING SPOT TE APROVEN
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Spots: iedereen kan lezen en schrijven tijdelijk
+    match /spots/{spotId} {
+      allow read, write: if true;
+    }
+
+    // Pending spots: iedereen kan lezen en schrijven tijdelijk
+    match /pending_spots/{spotId} {
+      allow read, write: if true;
+    }
+
+    // Emails: laat gewoon zoals het was
+    match /emails/{emailId} {
+      allow read: if false;
+      allow create: if true;
+    }
+
+    // Catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+
+
+
+
+
+// DEZE RULES GEBRUIKEN ZODAT NIEMAND ACCES HEEFT TOT FIREBASE BEHALVE IK
+
+
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /spots/{spotId} {
+      allow read: if true;
+      allow create: if false;
+      allow update, delete: if request.auth != null && request.auth.uid == "c5nGW1xH74R14A87h7544VC6hQP2";
+    }
+
+    match /pending_spots/{spotId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if request.auth != null && request.auth.uid == "c5nGW1xH74R14A87h7544VC6hQP2";
+    }
+
+    match /emails/{emailId} {
+      allow read: if false;
+      allow create: if true;
+    }
+
+    match /{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

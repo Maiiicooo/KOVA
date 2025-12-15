@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KOVA Admin - Approve Pending Spot</title>
+    <!-- Compat versies voor v9 zodat Live Server werkt -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  </head>
+  <body
+    style="
+      background: #161515;
+      color: #fff;
+      font-family: sans-serif;
+      padding: 20px;
+    "
+  >
+    <h1>Approve Pending Spot</h1>
+
+    <input
+      type="text"
+      id="pendingId"
+      placeholder="Enter pending spot ID"
+      style="padding: 8px; width: 300px"
+    />
+    <button
+      onclick="approvePendingSpot()"
+      style="padding: 8px 16px; margin-left: 10px"
+    >
+      Approve
+    </button>
+
+    <p id="status"></p>
+
+    <script>
+      // Firebase config
+      const firebaseConfig = {
+        apiKey: "AIzaSyARxFI9HyJxrINfzDazhxFHKSrGLX8KoBk",
+        authDomain: "kova-6052a.firebaseapp.com",
+        projectId: "kova-6052a",
+        storageBucket: "kova-6052a.firebasestorage.app",
+        messagingSenderId: "873689812978",
+        appId: "1:873689812978:web:e0581f3df823e51239656b",
+        measurementId: "G-VM5224Z3K6",
+      };
+
+      // Initialize Firebase
+      const app = firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      async function approvePendingSpot() {
+        const pendingId = document.getElementById("pendingId").value.trim();
+        if (!pendingId) return alert("Please enter a pending spot ID");
+
+        const status = document.getElementById("status");
+        status.textContent = "Processing...";
+
+        try {
+          const pendingRef = db.collection("pending_spots").doc(pendingId);
+          const pendingDoc = await pendingRef.get();
+
+          if (!pendingDoc.exists) {
+            status.textContent = "Pending spot not found!";
+            return;
+          }
+
+          // Kopieer naar spots collectie
+          await db.collection("spots").doc(pendingId).set(pendingDoc.data());
+
+
+          status.textContent = "Spot approved and moved to spots collection!";
+        } catch (err) {
+          console.error(err);
+          status.textContent = "Error: " + err.message;
+        }
+      }
+    </script>
+  </body>
+</html>
