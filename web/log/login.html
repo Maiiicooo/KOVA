@@ -7,6 +7,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <style>
       body {
         margin: 0;
@@ -80,7 +82,7 @@
         apiKey: "AIzaSyARxFI9HyJxrINfzDazhxFHKSrGLX8KoBk",
         authDomain: "kova-6052a.firebaseapp.com",
         projectId: "kova-6052a",
-        storageBucket: "kova-6052a.appspot.com",
+        storageBucket: "kova-6052a.firebasestorage.app",
         messagingSenderId: "873689812978",
         appId: "1:873689812978:web:e0581f3df823e51239656b",
         measurementId: "G-VM5224Z3K6",
@@ -88,6 +90,7 @@
       firebase.initializeApp(firebaseConfig);
       const auth = firebase.auth();
       const storage = firebase.storage();
+      const db = firebase.firestore();
 
       let isLogin = true;
 
@@ -117,12 +120,14 @@
             return;
           }
           try {
+            // 1. Auth account aanmaken
             const userCred = await auth.createUserWithEmailAndPassword(
               email,
               password
             );
             let photoURL = "https://via.placeholder.com/100";
 
+            // 2. Foto uploaden als aanwezig
             const file = photoInput.files[0];
             if (file) {
               const storageRef = storage.ref(
@@ -132,7 +137,18 @@
               photoURL = await snapshot.ref.getDownloadURL();
             }
 
+            // 3. Auth profiel updaten
             await userCred.user.updateProfile({ displayName, photoURL });
+
+            // 4. Firestore users collectie vullen
+            await db.collection("users").doc(userCred.user.uid).set({
+              displayName,
+              email,
+              photoURL,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+
+            // 5. Redirect
             window.location.href = "../../app/pages/index.html";
           } catch (err) {
             errorMsg.innerText = err.message;

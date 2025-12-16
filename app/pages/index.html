@@ -23,11 +23,9 @@
         padding: 0;
         font-family: sans-serif;
       }
-
       .marker-clickable {
         cursor: pointer !important;
       }
-
       #map {
         position: absolute;
         top: 0;
@@ -35,7 +33,6 @@
         width: 100%;
         z-index: 0;
       }
-
       .navbar {
         position: fixed;
         top: 0;
@@ -48,52 +45,43 @@
         background-color: rgba(0, 0, 0, 0);
         z-index: 10;
       }
-
       .navbar-left {
         display: flex;
         align-items: flex-start;
         gap: 30px;
       }
-
       .navbar-right {
         position: absolute;
         top: 10px;
         right: 20px;
         z-index: 20;
       }
-
       #loginIcon {
         width: 40px;
         height: 40px;
         cursor: pointer;
       }
-
       .logo-time {
         display: flex;
         flex-direction: column;
-        /* logo boven, tijd onder */
         align-items: flex-start;
         margin-top: 10px;
       }
-
       .navbar-logo {
         width: 70px;
         height: auto;
       }
-
       #time-info {
         margin-top: 4px;
         font-size: 10px;
         color: white;
         line-height: 1.2;
       }
-
       .navbar-items {
         display: flex;
         gap: 20px;
         align-items: center;
       }
-
       .navbar-items a {
         color: white;
         text-decoration: none;
@@ -103,18 +91,14 @@
         cursor: pointer;
         transition: color 0.3s ease;
       }
-
       .navbar-items a:hover {
         color: #8b7108;
       }
-
       .maplibregl-popup-content {
         background-color: #000 !important;
         color: white !important;
         padding: 0 !important;
       }
-
-      /* hide MapTiler watermark */
       .maplibregl-ctrl-bottom-left,
       .maplibregl-ctrl-logo,
       .maplibregl-ctrl-attrib,
@@ -123,7 +107,6 @@
         visibility: hidden !important;
         opacity: 0 !important;
       }
-
       .spot-marker {
         width: 20px;
         height: 20px;
@@ -134,7 +117,6 @@
         cursor: pointer;
         transform: translate(-50%, -50%);
       }
-
       .maplibregl-popup-close-button {
         color: red !important;
         background: transparent !important;
@@ -161,9 +143,7 @@
           <a href="about.html" id="aboutButton">ABOUT</a>
         </div>
         <div class="navbar-right">
-          <a href="../../web/log/login.html">
-            <img src="../../images/loginicon$.png" alt="Login" id="loginIcon" />
-          </a>
+          <img src="../../images/loginicon$.png" alt="Login" id="loginIcon" />
         </div>
       </div>
     </div>
@@ -173,7 +153,6 @@
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         maptilersdk.config.apiKey = "7TBqy4hTdFfQeIq7oXKj";
-
         const map = new maptilersdk.Map({
           container: "map",
           style:
@@ -181,7 +160,6 @@
           center: [4.5, 50.85],
           zoom: 7.5,
           minZoom: 5,
-          // Maptiler Stock controls
           navigationControl: false,
           projectionControl: false,
           geolocateControl: false,
@@ -196,11 +174,10 @@
           appId: "1:873689812978:web:e0581f3df823e51239656b",
           measurementId: "G-VM5224Z3K6",
         };
-
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Functie om spots te laden
+        // spots laden
         async function loadSpots() {
           try {
             const snapshot = await db.collection("spots").get();
@@ -208,22 +185,17 @@
               const spot = doc.data();
               const el = document.createElement("div");
               el.className = "spot-marker";
-
               const popupHTML = `
-          <div style="width:250px; text-align:center; font-family:sans-serif;">
-            <img src="${
-              spot.photoURL
-            }" style="width:100%; height:auto; border-radius:6px; margin-bottom:6px;">
-            <strong>${spot.name}</strong><br>
-            ${spot.description}<br>
-            Lat: ${spot.lat.toFixed(5)}, Lng: ${spot.lng.toFixed(5)}
-          </div>
-        `;
-
+                <div style="width:250px;text-align:center;font-family:sans-serif;">
+                  <img src="${
+                    spot.photoURL
+                  }" style="width:100%;height:auto;border-radius:6px;margin-bottom:6px;">
+                  <strong>${spot.name}</strong><br>${spot.description}<br>
+                  Lat: ${spot.lat.toFixed(5)}, Lng: ${spot.lng.toFixed(5)}
+                </div>`;
               const popup = new maptilersdk.Popup({ offset: 25 }).setHTML(
                 popupHTML
               );
-
               new maptilersdk.Marker({ element: el })
                 .setLngLat([spot.lng, spot.lat])
                 .setPopup(popup)
@@ -233,39 +205,31 @@
             console.error("Error loading spots:", err);
           }
         }
+        loadSpots();
 
-        loadSpots(); // roep pas aan **na** db init
-
-        // GEOLOCATIE
+        // geolocatie
         if (navigator.geolocation) {
           const userMarkerEl = document.createElement("img");
           userMarkerEl.src = "../../images/playericon.png";
           userMarkerEl.style.width = "28px";
           userMarkerEl.style.height = "28px";
-          userMarkerEl.style.transform = "translate(-50%, -50%)";
+          userMarkerEl.style.transform = "translate(-50%,-50%)";
           userMarkerEl.classList.add("marker-clickable");
-
-          const userPopupHTML = `
-      <div style="width:150px; text-align:center; font-family:sans-serif;">
-        <img src="../../images/playeravatar.png" style="width:100%; height:auto; border-radius:6px; margin-bottom:6px;">
-        <strong>This is you</strong><br>
-      </div>
-    `;
+          const userPopupHTML = `<div style="width:150px;text-align:center;font-family:sans-serif;">
+            <img src="../../images/playeravatar.png" style="width:100%;height:auto;border-radius:6px;margin-bottom:6px;">
+            <strong>This is you</strong><br></div>`;
           const userPopup = new maptilersdk.Popup({ offset: 25 }).setHTML(
             userPopupHTML
           );
-
           const userMarker = new maptilersdk.Marker({ element: userMarkerEl })
             .setLngLat([0, 0])
             .setPopup(userPopup)
             .addTo(map);
 
           navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const lng = position.coords.longitude;
-              const lat = position.coords.latitude;
-              userMarker.setLngLat([lng, lat]);
-              map.setCenter([lng, lat]);
+            (pos) => {
+              userMarker.setLngLat([pos.coords.longitude, pos.coords.latitude]);
+              map.setCenter([pos.coords.longitude, pos.coords.latitude]);
             },
             (err) => console.warn("Locatie fout:", err.message),
             { enableHighAccuracy: true }
@@ -273,10 +237,10 @@
         }
       });
 
-      // Live tijd functie
+      // live tijd
       function updateTime() {
         const now = new Date();
-        const timeText = document.getElementById("time-text"); // alleen span
+        const timeText = document.getElementById("time-text");
         if (timeText) {
           timeText.innerText = now.toLocaleString("nl-BE", {
             day: "2-digit",
@@ -295,66 +259,142 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script>
       const auth = firebase.auth();
-      const loginIconContainer = document.querySelector(".navbar-right a");
-      const loginIconImg = document.getElementById("loginIcon");
+      const loginIcon = document.getElementById("loginIcon");
+      let currentUser = null;
 
+      // auth state listener
       auth.onAuthStateChanged((user) => {
-        if (user) {
-          // Gebruiker is ingelogd
-          loginIconImg.src = user.photoURL || "../../images/loginicon$.png";
-          loginIconImg.style.borderRadius = "50%";
-          loginIconImg.style.objectFit = "cover";
+        currentUser = user;
+        loginIcon.src = user?.photoURL || "../../images/loginicon$.png";
+        loginIcon.style.borderRadius = user ? "50%" : "";
+        loginIcon.style.objectFit = user ? "cover" : "";
+      });
 
-          loginIconContainer.onclick = (e) => {
-            e.preventDefault();
-            let dropdown = document.getElementById("userDropdown");
-            if (!dropdown) {
-              dropdown = document.createElement("div");
-              dropdown.id = "userDropdown";
-              dropdown.style.position = "absolute";
-              dropdown.style.top = "50px";
-              dropdown.style.right = "0";
-              dropdown.style.background = "#222";
-              dropdown.style.color = "white";
-              dropdown.style.padding = "10px";
-              dropdown.style.borderRadius = "6px";
-              dropdown.style.textAlign = "center";
-              dropdown.style.zIndex = "100";
-              dropdown.innerHTML = `
-          <div><strong>${user.displayName || "Gebruiker"}</strong></div>
-          <button id="logoutBtn">Log out</button>
-        `;
-              loginIconContainer.parentElement.appendChild(dropdown);
-
-              document.getElementById("logoutBtn").onclick = () => {
-                auth.signOut().then(() => location.reload());
-              };
-            } else {
-              dropdown.remove();
-            }
-          };
+      // login knop click
+      loginIcon.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (currentUser) {
+          // dropdown toggle
+          let dropdown = document.getElementById("userDropdown");
+          if (!dropdown) {
+            dropdown = document.createElement("div");
+            dropdown.id = "userDropdown";
+            dropdown.style.cssText =
+              "position:absolute;top:60px;right:20px;background:#222;color:white;padding:10px;border-radius:6px;text-align:center;z-index:100;";
+            dropdown.innerHTML = `
+              <div><strong>${
+                currentUser.displayName || "Gebruiker"
+              }</strong></div>
+              <button id="logoutBtn">Log out</button>
+            `;
+            document.body.appendChild(dropdown);
+            document.getElementById("logoutBtn").onclick = () => {
+              auth.signOut().then(() => location.reload());
+            };
+            document.addEventListener("click", function handler(ev) {
+              if (!dropdown.contains(ev.target) && ev.target !== loginIcon) {
+                dropdown.remove();
+                document.removeEventListener("click", handler);
+              }
+            });
+          } else {
+            dropdown.remove();
+          }
         } else {
-          // Niet ingelogd: ga naar loginpagina bij click
-          loginIconImg.src = "../../images/loginicon$.png";
-          loginIconContainer.onclick = (e) => {
-            e.preventDefault();
-            window.location.href = "../../web/log/login.html";
-          };
+          // nog niet ingelogd → loginpagina
+          window.location.href = "../../web/log/login.html";
         }
       });
     </script>
 
-    <!-- <script>
-    // Logo hover swap
-    const logo = document.getElementById("mainLogo");
-    if (logo) {
-      logo.addEventListener("mouseenter", () => {
-        logo.src = "images/logohover.png";
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const firebaseConfig = {
+          apiKey: "AIzaSyARxFI9HyJxrINfzDazhxFHKSrGLX8KoBk",
+          authDomain: "kova-6052a.firebaseapp.com",
+          projectId: "kova-6052a",
+          storageBucket: "kova-6052a.firebasestorage.app",
+          messagingSenderId: "873689812978",
+          appId: "1:873689812978:web:e0581f3df823e51239656b",
+          measurementId: "G-VM5224Z3K6",
+        };
+
+        // Initialize Firebase **eens**
+        firebase.initializeApp(firebaseConfig);
+
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const loginIcon = document.getElementById("loginIcon");
+        let currentUser = null;
+        auth.onAuthStateChanged(async (user) => {
+          currentUser = user;
+
+          // profielfoto tonen of fallback
+          loginIcon.src = user?.photoURL || "../../images/loginicon$.png";
+          loginIcon.style.borderRadius = user ? "50%" : "";
+          loginIcon.style.objectFit = user ? "cover" : "";
+
+          let username = "Gebruiker";
+
+          if (user) {
+            // eerst kijken of displayName bestaat
+            if (user.displayName) {
+              username = user.displayName;
+            } else if (user.email) {
+              // fallback: gebruik e-mail voor de naam
+              username = user.email.split("@")[0]; // voor @ eraf
+            } else {
+              // optioneel: haal uit Firestore document
+              try {
+                const doc = await db.collection("users").doc(user.uid).get();
+                if (doc.exists) username = doc.data().displayName || username;
+              } catch (err) {
+                console.warn("Geen username gevonden in Firestore:", err);
+              }
+            }
+          }
+
+          loginIcon.title = username;
+
+          // dropdown click
+          loginIcon.onclick = (e) => {
+            e.stopPropagation();
+            if (!currentUser)
+              return (window.location.href = "../../web/log/login.html");
+
+            let dropdown = document.getElementById("userDropdown");
+            if (!dropdown) {
+              dropdown = document.createElement("div");
+              dropdown.id = "userDropdown";
+              dropdown.style.cssText =
+                "position:absolute;top:60px;right:20px;background:transparent;color:white;padding:10px;border-radius:6px;text-align:center;z-index:100;";
+
+              dropdown.innerHTML = `
+        <div style="margin-bottom:6px;">
+          <div><strong>${username}</strong></div>
+        </div>
+        <button id="logoutBtn">Log out</button>
+      `;
+
+              document.body.appendChild(dropdown);
+              document.getElementById("logoutBtn").onclick = () =>
+                auth.signOut().then(() => location.reload());
+
+              document.addEventListener("click", function handler(ev) {
+                if (!dropdown.contains(ev.target) && ev.target !== loginIcon) {
+                  dropdown.remove();
+                  document.removeEventListener("click", handler);
+                }
+              });
+            } else dropdown.remove();
+          };
+        });
       });
-      logo.addEventListener("mouseleave", () => {
-        logo.src = "images/testje.png";
-      });
-    }
-  </script> -->
+    </script>
   </body>
 </html>
