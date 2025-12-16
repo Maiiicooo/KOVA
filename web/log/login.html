@@ -109,7 +109,7 @@
         if (isLogin) {
           auth
             .signInWithEmailAndPassword(email, password)
-            .then(() => (window.location.href = "spots.html"))
+            .then(() => (window.location.href = "../../app/pages/index.html"))
             .catch((err) => (errorMsg.innerText = err.message));
         } else {
           if (!displayName) {
@@ -133,7 +133,7 @@
             }
 
             await userCred.user.updateProfile({ displayName, photoURL });
-            window.location.href = "spots.html";
+            window.location.href = "../../app/pages/index.html";
           } catch (err) {
             errorMsg.innerText = err.message;
           }

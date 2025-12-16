@@ -295,7 +295,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script>
       const auth = firebase.auth();
-
       const loginIconContainer = document.querySelector(".navbar-right a");
       const loginIconImg = document.getElementById("loginIcon");
 
@@ -308,7 +307,6 @@
 
           loginIconContainer.onclick = (e) => {
             e.preventDefault();
-            // dropdown maken
             let dropdown = document.getElementById("userDropdown");
             if (!dropdown) {
               dropdown = document.createElement("div");
@@ -323,23 +321,25 @@
               dropdown.style.textAlign = "center";
               dropdown.style.zIndex = "100";
               dropdown.innerHTML = `
-            <div><strong>${user.displayName || "Gebruiker"}</strong></div>
-            <button id="logoutBtn">Log out</button>
-          `;
+          <div><strong>${user.displayName || "Gebruiker"}</strong></div>
+          <button id="logoutBtn">Log out</button>
+        `;
               loginIconContainer.parentElement.appendChild(dropdown);
 
               document.getElementById("logoutBtn").onclick = () => {
                 auth.signOut().then(() => location.reload());
               };
             } else {
-              // toggle dropdown
               dropdown.remove();
             }
           };
         } else {
-          // niet ingelogd
+          // Niet ingelogd: ga naar loginpagina bij click
           loginIconImg.src = "../../images/loginicon$.png";
-          loginIconContainer.href = "../../web/log/login.html";
+          loginIconContainer.onclick = (e) => {
+            e.preventDefault();
+            window.location.href = "../../web/log/login.html";
+          };
         }
       });
     </script>
