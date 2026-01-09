@@ -62,7 +62,8 @@
     }
 
     .navbar-logo {
-      width: 140px;
+      width: 65px;
+      height: 65px;
     }
 
     #time-info {
@@ -112,7 +113,7 @@
       position: fixed;
       top: 200px;
       left: 10px;
-      font-size: 16px;
+      font-size: 10px;
       font-weight: 700;
       color: white;
       text-shadow: 0 0 8px black;
@@ -138,14 +139,14 @@
   <div class="navbar">
     <div class="navbar-left">
       <div class="logo-time">
-        <img src="images/testje.png" class="navbar-logo" id="mainLogo" alt="Logo">
+        <img src="../../images/appicon-removebg-preview.png" class="navbar-logo" id="mainLogo" alt="Logo">
         <div id="time-info"><span id="time-text">Laden…</span></div>
       </div>
       <div class="navbar-items">
         <a href="#" id="fourHButton">▶︎</a>
         <a href="#" id="ctButton">◼</a>
-        <a href="index.html" id="backButton">NV</a>
-        <a href="about.html" id="aboutButton">ABOUT</a>
+        <a href="../pages/index.html" id="backButton">NV</a>
+        <a href="../pages/about.html" id="aboutButton">ABOUT</a>
       </div>
     </div>
   </div>
@@ -244,10 +245,10 @@
     map.on('mousemove', e => updatePointerValue(e.lngLat));
     map.on('mouseout', () => document.getElementById('pointer-data').innerText = '');
 
-    // Logo hover
-    const logo = document.getElementById('mainLogo');
-    logo.addEventListener('mouseenter', () => logo.src = 'images/logohover.png');
-    logo.addEventListener('mouseleave', () => logo.src = 'images/testje.png');
+    // // Logo hover
+    // const logo = document.getElementById('mainLogo');
+    // logo.addEventListener('mouseenter', () => logo.src = 'images/logohover.png');
+    // logo.addEventListener('mouseleave', () => logo.src = 'images/testje.png');
 
   </script>
 </body>

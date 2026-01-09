@@ -61,7 +61,9 @@
     }
 
     .navbar-logo {
-      width: 140px;
+      width: 65px;
+        height: 65px;
+        cursor: pointer;
     }
 
     #time-info {
@@ -155,15 +157,15 @@
   <div class="navbar">
     <div class="navbar-left">
       <div class="logo-time">
-        <img src="images/testje.png" class="navbar-logo" id="mainLogo" alt="Logo">
+        <img src="../../images/appicon-removebg-preview.png" class="navbar-logo" id="mainLogo" alt="Logo">
         <div id="time-info"><span id="time-text">Laden…</span></div>
       </div>
       <div class="navbar-items">
         <a href="#" id="fourHButton">▶︎</a>
         <a href="#" id="ctButton">◼</a>
-        <a href="index.html" id="backButton">NV</a>
-        <a href="radar+wind.html" id="sfButton">SF</a>
-        <a href="about.html" id="aboutButton">ABOUT</a>
+        <a href="../pages/index.html" id="backButton">NV</a>
+        <a href="../pages/wind.html" id="sfButton">SF</a>
+        <a href="../pages/about.html" id="aboutButton">ABOUT</a>
       </div>
     </div>
   </div>
@@ -197,7 +199,7 @@
     // GEOLOCATIE
     if (navigator.geolocation) {
       const userMarkerEl = document.createElement("img");
-      userMarkerEl.src = "images/playericon.png";
+      userMarkerEl.src = "../../images/playericon.png";
       userMarkerEl.style.width = "28px";
       userMarkerEl.style.height = "28px";
       userMarkerEl.style.transform = "translate(-50%, -50%)";
@@ -206,7 +208,7 @@
 
       const userPopupHTML = `
           <div style="width:150px; text-align:center; font-family:sans-serif;">
-            <img src="images/playeravatar.png" style="width:100%; height:auto; border-radius:6px; margin-bottom:6px;">
+            <img src="../../images/playeravatar.png" style="width:100%; height:auto; border-radius:6px; margin-bottom:6px;">
             <strong>This is you</strong><br>
           </div>
         `;
@@ -302,12 +304,12 @@
       if (isForecasting) startLive();
     });
 
-    // Logo hover-effect
-    const logo = document.getElementById('mainLogo');
-    if (logo) {
-      logo.addEventListener('mouseenter', () => logo.src = 'images/logohover.png');
-      logo.addEventListener('mouseleave', () => logo.src = 'images/testje.png');
-    }
+    // // Logo hover-effect
+    // const logo = document.getElementById('mainLogo');
+    // if (logo) {
+    //   logo.addEventListener('mouseenter', () => logo.src = 'images/logohover.png');
+    //   logo.addEventListener('mouseleave', () => logo.src = 'images/testje.png');
+    // }
 
     // Toon windsnelheid bij muispositie
     function updatePointerValue(lngLat) {
