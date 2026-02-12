@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KOVA - codex</title>
+    <link rel="manifest" href="../../manifest.json" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <link rel="apple-touch-icon" href="../../images/appicon.JPG" />
+
+    <style>
+      :root {
+        --bg: transparent;
+        --fg: #fff;
+        --muted: rgba(255, 255, 255, 0.6);
+        --line: rgba(255, 255, 255, 0.12);
+        --accent: #8b7108;
+        --card: rgba(0, 0, 0, 0.55);
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+          sans-serif;
+        background: #161515;
+        color: var(--fg);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* NAVBAR ------------------------------------------------------ */
+      nav {
+        width: 100%;
+        padding: 22px 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-sizing: border-box;
+        position: fixed;
+        top: 0;
+        background: var(--bg);
+        z-index: 20;
+      }
+
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .nav-left img {
+        height: 50px;
+        width: auto;
+      }
+
+      .beta {
+        padding: 2px;
+        font-size: 0.85rem;
+        background-color: var(--accent);
+        color: white;
+        letter-spacing: 0.5px;
+      }
+
+      .nav-right a {
+        margin-left: 32px;
+        text-decoration: none;
+        color: var(--fg);
+        font-size: 0.95rem;
+        opacity: 0.8;
+        transition: opacity 0.25s, color 0.25s;
+      }
+
+      .nav-right a:hover {
+        opacity: 1;
+        color: var(--accent);
+      }
+
+      .navbar-seperator {
+        margin-left: 20px;
+      }
+
+      /* PAGE -------------------------------------------------------- */
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 120px 34px 60px;
+      }
+
+      .hero {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 22px;
+      }
+
+      .title {
+        font-size: clamp(26px, 3vw, 40px);
+        letter-spacing: 0.3px;
+      }
+
+      .sub {
+        color: var(--muted);
+        line-height: 1.55;
+        max-width: 75ch;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 18px;
+        backdrop-filter: blur(8px);
+      }
+
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 16px;
+        letter-spacing: 0.4px;
+      }
+
+      .card p,
+      .card li {
+        margin: 0 0 10px;
+        color: var(--muted);
+        line-height: 1.55;
+        font-size: 14px;
+      }
+
+      .card ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .legend {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .legend-item {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 10px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: rgba(0, 0, 0, 0.35);
+      }
+
+      .swatch {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        margin-top: 2px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+
+      .legend-item b {
+        color: #fff;
+        font-weight: 600;
+      }
+
+      .note {
+        margin-top: 12px;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(139, 113, 8, 0.35);
+        background: rgba(139, 113, 8, 0.08);
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .img {
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        overflow: hidden;
+        background: #0e0e0e;
+        margin-top: 10px;
+      }
+
+      .img img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 600px) {
+        nav {
+          padding: 16px 18px;
+        }
+        .nav-left img {
+          height: 40px;
+        }
+        .beta {
+          font-size: 0.7rem;
+          padding: 2px 5px;
+        }
+        .nav-right a {
+          margin-left: 0;
+          font-size: 0.85rem;
+        }
+        .navbar-seperator {
+          margin-left: 0;
+          opacity: 0.5;
+        }
+        .wrap {
+          padding: 110px 18px 50px;
+        }
+        .legend {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav>
+      <div class="nav-left">
+        <a href="../../index.html">
+          <img src="../../images/kogaskeer.png" alt="Kova logo small" />
+        </a>
+        <div class="beta">
+          <a href="../../app/pages/tutorial.html" style="color: white">codex!</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <a href="../../app/pages/index.html">nv</a>
+        <span class="navbar-seperator">//</span>
+        <a href="../../web/Contribute/contributespot.html">add</a>
+        <span class="navbar-seperator">//</span>
+        <a href="../../web/pages/about.html">about</a>
+      </div>
+    </nav>
+
+    <main class="wrap">
+      <section class="hero">
+        <div class="title">Codex</div>
+        <div class="sub">
+          Quick guide for the <b style="color: #8b7108;">radar view</b> and the
+          <b style="color: #8b7108;">map view</b>.
+        </div>
+      </section>
+
+      <section class="grid">
+        <!-- RADAR -->
+        <div class="card">
+          <h2>Radar view</h2>
+          <p>
+            The radar layer shows precipitation intensity.
+            <b>Stronger color = heavier rain.</b>
+          </p>
+
+          <div class="legend">
+            <div class="legend-item">
+              <span class="swatch" style="background:#3bb6ff"></span>
+              <div>
+                <b>Blue</b><br />
+                Light rain
+              </div>
+            </div>
+
+            <div class="legend-item">
+              <span class="swatch" style="background:#19d36a"></span>
+              <div>
+                <b>Green</b><br />
+                Moderate rain
+              </div>
+            </div>
+
+            <div class="legend-item">
+              <span class="swatch" style="background:#ffd84a"></span>
+              <div>
+                <b>Yellow</b><br />
+                Heavy showers
+              </div>
+            </div>
+
+            <div class="legend-item">
+              <span class="swatch" style="background:#ff9f43"></span>
+              <div>
+                <b>Orange</b><br />
+                Storm
+              </div>
+            </div>
+          </div>
+
+          <div class="note">
+            Radar is an estimate (reflection-based). Wind and timing can shift
+            rain. Use it as awareness, not as a guarantee.
+          </div>
+
+          <!-- Optional image (only if you have one). Keep or delete. -->
+          <!-- Put your radar screenshot here if you want: -->
+          <div class="img"><img src="../../images/radar.png" alt="Radar example"></div>
+        </div>
+
+        <!-- MAP -->
+        <div class="card">
+          <h2>Map view (spots)</h2>
+          <p>
+            The map shows community spots as markers. Your player icon shows
+            your location (if you allow it).
+          </p>
+
+          <ul>
+            <li><b>Click a spot</b> → opens the spot popup (photo + info)</li>
+            <li><b>Click the player icon</b> → opens your player popup</li>
+            <li><b>Click empty map</b> → shows coordinates (with copy button)</li>
+          </ul>
+
+          <div class="note">
+            Tip: use the coordinate popup to quickly copy lat/lng when you want
+            to submit a new spot.
+          </div>
+        </div>
+        </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
