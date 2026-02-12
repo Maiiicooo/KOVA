@@ -10,22 +10,81 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <link rel="apple-touch-icon" href="../../images/appicon.JPG" />
     <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <link
       href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css"
       rel="stylesheet"
     />
 
     <style>
+      :root {
+        --bg: transparent;
+        --fg: #fff;
+        --muted: rgba(255, 255, 255, 0.6);
+        --line: rgba(255, 255, 255, 0.12);
+        --accent: #8b7108;
+      }
+
       body {
         margin: 0;
         padding: 0;
-        font-family: sans-serif;
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+          sans-serif;
+        background: #161515;
+        color: var(--fg);
+        height: 100vh;
+        overflow: hidden;
       }
-      .marker-clickable {
-        cursor: pointer !important;
+
+      nav {
+        width: 100%;
+        padding: 22px 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-sizing: border-box;
+        position: fixed;
+        top: 0;
+        background: var(--bg);
+        z-index: 20;
       }
+
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .nav-left img {
+        height: 50px;
+        width: auto;
+      }
+
+      .beta {
+        padding: 2px;
+        font-size: 0.85rem;
+        background-color: var(--accent);
+        color: white;
+        letter-spacing: 0.5px;
+      }
+
+      .nav-right a {
+        margin-left: 32px;
+        text-decoration: none;
+        color: var(--fg);
+        font-size: 0.95rem;
+        opacity: 0.8;
+        transition: opacity 0.25s, color 0.25s;
+      }
+
+      .nav-right a:hover {
+        opacity: 1;
+        color: var(--accent);
+      }
+
+      .navbar-seperator {
+        margin-left: 20px;
+      }
+
       #map {
         position: absolute;
         top: 0;
@@ -33,72 +92,8 @@
         width: 100%;
         z-index: 0;
       }
-      .navbar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 60px;
-        display: flex;
-        align-items: flex-start;
-        padding: 0 20px;
-        background-color: rgba(0, 0, 0, 0);
-        z-index: 10;
-      }
-      .navbar-left {
-        display: flex;
-        align-items: flex-start;
-        gap: 30px;
-      }
-      .navbar-right {
-        position: absolute;
-        top: 10px;
-        right: 20px;
-        z-index: 20;
-      }
-      #loginIcon {
-        width: 40px;
-        height: 40px;
-        cursor: pointer;
-      }
-      .logo-time {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        margin-top: 10px;
-      }
-      .navbar-logo {
-        width: 70px;
-        height: auto;
-      }
-      #time-info {
-        margin-top: 4px;
-        font-size: 10px;
-        color: white;
-        line-height: 1.2;
-      }
-      .navbar-items {
-        display: flex;
-        gap: 20px;
-        align-items: center;
-      }
-      .navbar-items a {
-        color: white;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 16px;
-        line-height: 60px;
-        cursor: pointer;
-        transition: color 0.3s ease;
-      }
-      .navbar-items a:hover {
-        color: #8b7108;
-      }
-      .maplibregl-popup-content {
-        background-color: #000 !important;
-        color: white !important;
-        padding: 0 !important;
-      }
+
+      .maplibregl-control-container,
       .maplibregl-ctrl-bottom-left,
       .maplibregl-ctrl-logo,
       .maplibregl-ctrl-attrib,
@@ -107,52 +102,83 @@
         visibility: hidden !important;
         opacity: 0 !important;
       }
+
       .spot-marker {
         width: 20px;
         height: 20px;
-        background-color: #8b7108;
+        background-color: var(--accent);
         border: 2px solid black;
         border-radius: 50%;
         box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
         cursor: pointer;
         transform: translate(-50%, -50%);
       }
+
+      .maplibregl-popup-content {
+        background-color: #000 !important;
+        color: white !important;
+        padding: 0 !important;
+      }
+
       .maplibregl-popup-close-button {
         color: red !important;
         background: transparent !important;
         font-size: 18px;
       }
+
+      @media (max-width: 600px) {
+        nav {
+          padding: 16px 18px;
+        }
+        .nav-left img {
+          height: 40px;
+        }
+        .beta {
+          font-size: 0.7rem;
+          padding: 2px 5px;
+        }
+        .nav-right a {
+          margin-left: 0;
+          font-size: 0.85rem;
+        }
+        .navbar-seperator {
+          margin-left: 0;
+          opacity: 0.5;
+        }
+      }
     </style>
   </head>
 
   <body>
-    <div class="navbar">
-      <div class="navbar-left">
-        <div class="logo-time">
-          <img
-            src="../../images/appicon-removebg-preview.png"
-            alt="Logo"
-            class="navbar-logo"
-            id="mainLogo"
-          />
-          <div id="time-info"><span id="time-text">Laden…</span></div>
-        </div>
-        <div class="navbar-items">
-          <a href="radar.html" id="wxButton">WX</a>
-          <a href="radar+wind.html" id="sfButton">SF</a>
-          <a href="about.html" id="aboutButton">ABOUT</a>
-        </div>
-        <div class="navbar-right">
-          <img src="../../images/loginicon$.png" alt="Login" id="loginIcon" />
+    <nav>
+      <div class="nav-left">
+        <a href="../../index.html">
+          <img src="../../images/kogaskeer.png" alt="Kova logo small" />
+        </a>
+        <div class="beta">
+          <a href="../../admin/login.html" style="color: white"
+            >now in alpha!</a
+          >
         </div>
       </div>
-    </div>
+      <div class="nav-right">
+        <a href="radar.html">wx</a>
+        <span class="navbar-seperator">//</span>
+        <a href="../../web/Contribute/contributespot.html">add</a>
+        <span class="navbar-seperator">//</span>
+        <a href="about.html">about</a>
+      </div>
+    </nav>
 
     <div id="map"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         maptilersdk.config.apiKey = "7TBqy4hTdFfQeIq7oXKj";
+
         const map = new maptilersdk.Map({
           container: "map",
           style:
@@ -177,50 +203,22 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // spots laden
-        async function loadSpots() {
-          try {
-            const snapshot = await db.collection("spots").get();
-            snapshot.forEach((doc) => {
-              const spot = doc.data();
-              const el = document.createElement("div");
-              el.className = "spot-marker";
-              const popupHTML = `
-                <div style="width:250px;text-align:center;font-family:sans-serif;">
-                  <img src="${
-                    spot.photoURL
-                  }" style="width:100%;height:auto;border-radius:6px;margin-bottom:6px;">
-                  <strong>${spot.name}</strong><br>${spot.description}<br>
-                  Lat: ${spot.lat.toFixed(5)}, Lng: ${spot.lng.toFixed(5)}
-                </div>`;
-              const popup = new maptilersdk.Popup({ offset: 25 }).setHTML(
-                popupHTML
-              );
-              new maptilersdk.Marker({ element: el })
-                .setLngLat([spot.lng, spot.lat])
-                .setPopup(popup)
-                .addTo(map);
-            });
-          } catch (err) {
-            console.error("Error loading spots:", err);
-          }
-        }
-        loadSpots();
-
-        // geolocatie
+        // --- USER MARKER ---
         if (navigator.geolocation) {
           const userMarkerEl = document.createElement("img");
           userMarkerEl.src = "../../images/playericon.png";
           userMarkerEl.style.width = "28px";
           userMarkerEl.style.height = "28px";
           userMarkerEl.style.transform = "translate(-50%,-50%)";
-          userMarkerEl.classList.add("marker-clickable");
+          userMarkerEl.classList.add("player-marker"); // ✅ belangrijk
+
           const userPopupHTML = `<div style="width:150px;text-align:center;font-family:sans-serif;">
             <img src="../../images/playeravatar.png" style="width:100%;height:auto;border-radius:6px;margin-bottom:6px;">
             <strong>This is you</strong><br></div>`;
           const userPopup = new maptilersdk.Popup({ offset: 25 }).setHTML(
             userPopupHTML
           );
+
           const userMarker = new maptilersdk.Marker({ element: userMarkerEl })
             .setLngLat([0, 0])
             .setPopup(userPopup)
@@ -235,164 +233,90 @@
             { enableHighAccuracy: true }
           );
         }
-      });
 
-      // live tijd
-      function updateTime() {
-        const now = new Date();
-        const timeText = document.getElementById("time-text");
-        if (timeText) {
-          timeText.innerText = now.toLocaleString("nl-BE", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          });
-        }
-      }
-      setInterval(updateTime, 1000);
-      updateTime();
-    </script>
+        // --- SPOTS ---
+        async function loadSpots() {
+          try {
+            const snapshot = await db.collection("spots").get();
+            snapshot.forEach((doc) => {
+              const spot = doc.data();
+              const el = document.createElement("div");
+              el.className = "spot-marker"; // ✅ belangrijk (blijft)
 
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script>
-      const auth = firebase.auth();
-      const loginIcon = document.getElementById("loginIcon");
-      let currentUser = null;
+              const popupHTML = `
+                <div style="width:250px;text-align:center;font-family:sans-serif;">
+                  <img src="${
+                    spot.photoURL
+                  }" style="width:100%;height:auto;border-radius:6px;margin-bottom:6px;">
+                  <strong>${spot.name}</strong><br>${spot.description}<br>
+                  Lat: ${spot.lat.toFixed(5)}, Lng: ${spot.lng.toFixed(5)}
+                </div>`;
+              const popup = new maptilersdk.Popup({ offset: 25 }).setHTML(
+                popupHTML
+              );
 
-      // auth state listener
-      auth.onAuthStateChanged((user) => {
-        currentUser = user;
-        loginIcon.src = user?.photoURL || "../../images/loginicon$.png";
-        loginIcon.style.borderRadius = user ? "50%" : "";
-        loginIcon.style.objectFit = user ? "cover" : "";
-      });
-
-      // login knop click
-      loginIcon.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (currentUser) {
-          // dropdown toggle
-          let dropdown = document.getElementById("userDropdown");
-          if (!dropdown) {
-            dropdown = document.createElement("div");
-            dropdown.id = "userDropdown";
-            dropdown.style.cssText =
-              "position:absolute;top:60px;right:20px;background:#222;color:white;padding:10px;border-radius:6px;text-align:center;z-index:100;";
-            dropdown.innerHTML = `
-              <div><strong>${
-                currentUser.displayName || "Gebruiker"
-              }</strong></div>
-              <button id="logoutBtn">Log out</button>
-            `;
-            document.body.appendChild(dropdown);
-            document.getElementById("logoutBtn").onclick = () => {
-              auth.signOut().then(() => location.reload());
-            };
-            document.addEventListener("click", function handler(ev) {
-              if (!dropdown.contains(ev.target) && ev.target !== loginIcon) {
-                dropdown.remove();
-                document.removeEventListener("click", handler);
-              }
+              new maptilersdk.Marker({ element: el })
+                .setLngLat([spot.lng, spot.lat])
+                .setPopup(popup)
+                .addTo(map);
             });
-          } else {
-            dropdown.remove();
+          } catch (err) {
+            console.error(err);
           }
-        } else {
-          // nog niet ingelogd → loginpagina
-          window.location.href = "../../web/log/login.html";
         }
-      });
-    </script>
+        loadSpots();
 
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const firebaseConfig = {
-          apiKey: "AIzaSyARxFI9HyJxrINfzDazhxFHKSrGLX8KoBk",
-          authDomain: "kova-6052a.firebaseapp.com",
-          projectId: "kova-6052a",
-          storageBucket: "kova-6052a.firebasestorage.app",
-          messagingSenderId: "873689812978",
-          appId: "1:873689812978:web:e0581f3df823e51239656b",
-          measurementId: "G-VM5224Z3K6",
-        };
-
-        // Initialize Firebase **eens**
-        firebase.initializeApp(firebaseConfig);
-
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        const loginIcon = document.getElementById("loginIcon");
-        let currentUser = null;
-        auth.onAuthStateChanged(async (user) => {
-          currentUser = user;
-
-          // profielfoto tonen of fallback
-          loginIcon.src = user?.photoURL || "../../images/loginicon$.png";
-          loginIcon.style.borderRadius = user ? "50%" : "";
-          loginIcon.style.objectFit = user ? "cover" : "";
-
-          let username = "Gebruiker";
-
-          if (user) {
-            // eerst kijken of displayName bestaat
-            if (user.displayName) {
-              username = user.displayName;
-            } else if (user.email) {
-              // fallback: gebruik e-mail voor de naam
-              username = user.email.split("@")[0]; // voor @ eraf
-            } else {
-              // optioneel: haal uit Firestore document
-              try {
-                const doc = await db.collection("users").doc(user.uid).get();
-                if (doc.exists) username = doc.data().displayName || username;
-              } catch (err) {
-                console.warn("Geen username gevonden in Firestore:", err);
-              }
-            }
+        // --- MAP CLICK COORDS (alleen op lege map) ---
+        map.on("click", (event) => {
+          const t = event.originalEvent && event.originalEvent.target;
+          if (t && (t.closest(".spot-marker") || t.closest(".player-marker"))) {
+            return; // ✅ klik was op spot/player => géén coords popup
           }
 
-          loginIcon.title = username;
+          const { lng, lat } = event.lngLat;
 
-          // dropdown click
-          loginIcon.onclick = (e) => {
-            e.stopPropagation();
-            if (!currentUser)
-              return (window.location.href = "../../web/log/login.html");
+          const popupHTML = `
+            <div style="
+              text-align:center; 
+              font-family: Inter, system-ui, -apple-system, sans-serif;
+              background: #1e1e1e;
+              padding: 10px 15px;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+              color: white;
+              min-width: 140px;
+            ">
+              <strong style="display:block; margin-bottom:6px;">Coordinates</strong>
+              <span style="display:block; margin-bottom:8px;">Lat: ${lat.toFixed(
+                5
+              )}<br>Lng: ${lng.toFixed(5)}</span>
+              <button id="copyCoords" style="
+                padding:6px 12px;
+                background:#8b7108;
+                color:white;
+                border:none;
+                cursor:pointer;
+                font-weight:500;
+              ">Copy</button>
+            </div>
+          `;
 
-            let dropdown = document.getElementById("userDropdown");
-            if (!dropdown) {
-              dropdown = document.createElement("div");
-              dropdown.id = "userDropdown";
-              dropdown.style.cssText =
-                "position:absolute;top:60px;right:20px;background:transparent;color:white;padding:10px;border-radius:6px;text-align:center;z-index:100;";
+          new maptilersdk.Popup({ offset: 25 })
+            .setLngLat([lng, lat])
+            .setHTML(popupHTML)
+            .addTo(map);
 
-              dropdown.innerHTML = `
-        <div style="margin-bottom:6px;">
-          <div><strong>${username}</strong></div>
-        </div>
-        <button id="logoutBtn">Log out</button>
-      `;
-
-              document.body.appendChild(dropdown);
-              document.getElementById("logoutBtn").onclick = () =>
-                auth.signOut().then(() => location.reload());
-
-              document.addEventListener("click", function handler(ev) {
-                if (!dropdown.contains(ev.target) && ev.target !== loginIcon) {
-                  dropdown.remove();
-                  document.removeEventListener("click", handler);
-                }
+          setTimeout(() => {
+            const btn = document.getElementById("copyCoords");
+            if (btn) {
+              btn.addEventListener("click", () => {
+                navigator.clipboard.writeText(
+                  `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+                );
+                btn.innerText = "Copied!";
+                setTimeout(() => (btn.innerText = "Copy"), 1000);
               });
-            } else dropdown.remove();
-          };
+            }
+          }, 100);
         });
       });
     </script>
