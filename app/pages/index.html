@@ -210,7 +210,7 @@
           userMarkerEl.style.width = "28px";
           userMarkerEl.style.height = "28px";
           userMarkerEl.style.transform = "translate(-50%,-50%)";
-          userMarkerEl.classList.add("player-marker"); // ✅ belangrijk
+          userMarkerEl.classList.add("player-marker");
 
           const userPopupHTML = `<div style="width:150px;text-align:center;font-family:sans-serif;">
             <img src="../../images/playeravatar.png" style="width:100%;height:auto;border-radius:6px;margin-bottom:6px;">
@@ -241,7 +241,7 @@
             snapshot.forEach((doc) => {
               const spot = doc.data();
               const el = document.createElement("div");
-              el.className = "spot-marker"; // ✅ belangrijk (blijft)
+              el.className = "spot-marker"; 
 
               const popupHTML = `
                 <div style="width:250px;text-align:center;font-family:sans-serif;">
@@ -270,7 +270,7 @@
         map.on("click", (event) => {
           const t = event.originalEvent && event.originalEvent.target;
           if (t && (t.closest(".spot-marker") || t.closest(".player-marker"))) {
-            return; // ✅ klik was op spot/player => géén coords popup
+            return;
           }
 
           const { lng, lat } = event.lngLat;
