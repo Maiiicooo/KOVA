@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -27,11 +27,16 @@
       body {
         margin: 0;
         padding: 0;
-        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
           sans-serif;
         background: #161515;
         color: var(--fg);
-        height: 100vh;
+        height: 100dvh;
         overflow: hidden;
       }
 
@@ -73,7 +78,9 @@
         color: var(--fg);
         font-size: 0.95rem;
         opacity: 0.8;
-        transition: opacity 0.25s, color 0.25s;
+        transition:
+          opacity 0.25s,
+          color 0.25s;
       }
 
       .nav-right a:hover {
@@ -126,6 +133,24 @@
         font-size: 18px;
       }
 
+      /* FOOTER (zelfde als je landing page) */
+      .join-page {
+        color: var(--fg);
+        position: absolute;
+        bottom: 0%;
+        right: 0%;
+        padding-bottom: 17px;
+        padding-right: 15px;
+        z-index: 30;
+      }
+
+      .kova-corp {
+        position: absolute;
+        bottom: 0%;
+        padding-left: 15px;
+        z-index: 30;
+      }
+
       @media (max-width: 600px) {
         nav {
           padding: 16px 18px;
@@ -169,6 +194,11 @@
         <a href="about.html">about</a>
       </div>
     </nav>
+
+    <footer>
+      <p class="kova-corp">kova corp © 2026</p>
+      <a class="join-page" href="web/Contribute/contribute.html">Contribute</a>
+    </footer>
 
     <div id="map"></div>
 
@@ -216,7 +246,7 @@
             <img src="../../images/playeravatar.png" style="width:100%;height:auto;border-radius:6px;margin-bottom:6px;">
             <strong>This is you</strong><br></div>`;
           const userPopup = new maptilersdk.Popup({ offset: 25 }).setHTML(
-            userPopupHTML
+            userPopupHTML,
           );
 
           const userMarker = new maptilersdk.Marker({ element: userMarkerEl })
@@ -230,7 +260,7 @@
               map.setCenter([pos.coords.longitude, pos.coords.latitude]);
             },
             (err) => console.warn("Locatie fout:", err.message),
-            { enableHighAccuracy: true }
+            { enableHighAccuracy: true },
           );
         }
 
@@ -241,7 +271,7 @@
             snapshot.forEach((doc) => {
               const spot = doc.data();
               const el = document.createElement("div");
-              el.className = "spot-marker"; 
+              el.className = "spot-marker";
 
               const popupHTML = `
                 <div style="width:250px;text-align:center;font-family:sans-serif;">
@@ -252,7 +282,7 @@
                   Lat: ${spot.lat.toFixed(5)}, Lng: ${spot.lng.toFixed(5)}
                 </div>`;
               const popup = new maptilersdk.Popup({ offset: 25 }).setHTML(
-                popupHTML
+                popupHTML,
               );
 
               new maptilersdk.Marker({ element: el })
@@ -287,7 +317,7 @@
             ">
               <strong style="display:block; margin-bottom:6px;">Coordinates</strong>
               <span style="display:block; margin-bottom:8px;">Lat: ${lat.toFixed(
-                5
+                5,
               )}<br>Lng: ${lng.toFixed(5)}</span>
               <button id="copyCoords" style="
                 padding:6px 12px;
@@ -310,7 +340,7 @@
             if (btn) {
               btn.addEventListener("click", () => {
                 navigator.clipboard.writeText(
-                  `${lat.toFixed(5)}, ${lng.toFixed(5)}`
+                  `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
                 );
                 btn.innerText = "Copied!";
                 setTimeout(() => (btn.innerText = "Copy"), 1000);
