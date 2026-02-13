@@ -22,6 +22,11 @@
         --muted: rgba(255, 255, 255, 0.6);
         --line: rgba(255, 255, 255, 0.12);
         --accent: #8b7108;
+
+        --panel: rgba(10, 10, 10, 0.92);
+        --panel2: rgba(18, 18, 18, 0.92);
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+        --radius: 18px;
       }
 
       body {
@@ -121,19 +126,34 @@
         transform: translate(-50%, -50%);
       }
 
+      /* keep popup styling minimal */
       .maplibregl-popup-content {
-        background-color: #000 !important;
-        color: white !important;
+        background: transparent !important;
         padding: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .maplibregl-popup-tip {
+        display: none !important;
       }
 
       .maplibregl-popup-close-button {
-        color: red !important;
+        color: rgba(255, 255, 255, 0.7) !important;
         background: transparent !important;
         font-size: 18px;
+        padding: 10px 12px !important;
       }
 
       /* FOOTER (zelfde als je landing page) */
+      footer {
+        transition: opacity 0.18s ease, transform 0.18s ease;
+      }
+      footer.footer-hidden {
+        opacity: 0;
+        transform: translateY(8px);
+        pointer-events: none;
+      }
+
       .join-page {
         color: var(--fg);
         position: absolute;
@@ -149,6 +169,191 @@
         bottom: 0%;
         padding-left: 15px;
         z-index: 30;
+      }
+
+      /* ---------- KOVA SPOT SHEET (google maps style) ---------- */
+      .kova-popup {
+        width: min(520px, calc(100vw - 28px));
+        background: linear-gradient(180deg, var(--panel), rgba(0, 0, 0, 0.92));
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      .kova-popup .hero {
+        position: relative;
+        height: 240px;
+        background: #111;
+        overflow: hidden;
+      }
+
+      .kova-popup .hero img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        filter: saturate(1.05) contrast(1.05);
+        transform: scale(1.01);
+      }
+
+      .kova-popup .hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0) 0%,
+          rgba(0, 0, 0, 0.25) 55%,
+          rgba(0, 0, 0, 0.75) 100%
+        );
+        pointer-events: none;
+      }
+
+      .kova-popup .badge {
+        position: absolute;
+        left: 14px;
+        top: 14px;
+        padding: 7px 10px;
+        font-size: 0.78rem;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        background: rgba(0, 0, 0, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(8px);
+      }
+
+      .kova-popup .body {
+        padding: 16px 16px 14px 16px;
+        background: linear-gradient(
+          180deg,
+          rgba(18, 18, 18, 0.92),
+          rgba(0, 0, 0, 0.92)
+        );
+      }
+
+      .kova-popup .title {
+        font-size: 1.15rem;
+        font-weight: 650;
+        line-height: 1.2;
+        margin: 0 0 8px 0;
+        letter-spacing: 0.2px;
+      }
+
+      .kova-popup .desc {
+        margin: 0 0 10px 0;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 0.96rem;
+        line-height: 1.35;
+      }
+
+      .kova-popup .byline {
+        margin: 0 0 14px 0;
+        font-size: 0.86rem;
+        color: rgba(255, 255, 255, 0.65);
+        letter-spacing: 0.2px;
+      }
+      .kova-popup .byline b {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 650;
+      }
+
+      .kova-btn {
+        appearance: none;
+        width: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.06);
+        color: white;
+        padding: 12px 14px;
+        border-radius: 14px;
+        cursor: pointer;
+        font-weight: 650;
+        letter-spacing: 0.2px;
+        transition: transform 0.12s ease, background 0.2s ease, border-color 0.2s ease;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+
+      .kova-btn:hover {
+        background: rgba(255, 255, 255, 0.085);
+        border-color: rgba(255, 255, 255, 0.18);
+        transform: translateY(-1px);
+      }
+
+      .kova-btn.primary {
+        background: rgba(139, 113, 8, 0.95);
+        border-color: rgba(139, 113, 8, 0.95);
+        color: #fff;
+      }
+
+      .kova-btn.primary:hover {
+        background: rgba(139, 113, 8, 1);
+      }
+
+      .kova-btn .sub {
+        display: block;
+        font-weight: 500;
+        font-size: 0.78rem;
+        opacity: 0.9;
+        margin-top: 2px;
+      }
+
+      .kova-fallback {
+        height: 240px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(
+            circle at 30% 20%,
+            rgba(139, 113, 8, 0.25),
+            transparent 55%
+          ),
+          radial-gradient(
+            circle at 70% 80%,
+            rgba(255, 255, 255, 0.08),
+            transparent 50%
+          ),
+          #0b0b0b;
+        color: rgba(255, 255, 255, 0.85);
+        font-weight: 600;
+        letter-spacing: 0.2px;
+      }
+
+      /* MOBILE: bottom sheet style for readability + less buggy taps */
+      @media (max-width: 700px) {
+        .maplibregl-popup {
+          position: fixed !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          top: auto !important;
+          transform: none !important;
+          margin: 0 !important;
+          z-index: 9999 !important;
+          pointer-events: none;
+        }
+
+        .maplibregl-popup-content {
+          width: 100vw !important;
+          pointer-events: auto;
+          padding: 0 10px 10px 10px !important;
+          box-sizing: border-box;
+        }
+
+        .kova-popup {
+          width: 100% !important;
+          border-radius: 22px 22px 0 0;
+          border-left: 0;
+          border-right: 0;
+          border-bottom: 0;
+        }
+
+        .kova-popup .hero {
+          height: 210px;
+        }
       }
 
       @media (max-width: 600px) {
@@ -181,9 +386,7 @@
           <img src="../../images/kogaskeer.png" alt="Kova logo small" />
         </a>
         <div class="beta">
-          <a href="../../app/pages/tutorial.html" style="color: white"
-            >codex!</a
-          >
+          <a href="../../app/pages/tutorial.html" style="color: white">codex!</a>
         </div>
       </div>
       <div class="nav-right">
@@ -195,7 +398,7 @@
       </div>
     </nav>
 
-    <footer>
+    <footer id="kovaFooter">
       <p class="kova-corp">kova corp © 2026</p>
       <a class="join-page" href="../../web/Contribute/contribute.html">Contribute</a>
     </footer>
@@ -233,6 +436,47 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        const footerEl = document.getElementById("kovaFooter");
+        const showFooter = () => footerEl && footerEl.classList.remove("footer-hidden");
+        const hideFooter = () => footerEl && footerEl.classList.add("footer-hidden");
+
+        // --- helpers ---
+        function escapeHTML(str) {
+          return String(str ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+        }
+
+        function openNavigation(lat, lng) {
+          const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent);
+          const isAndroid = /Android/.test(navigator.userAgent);
+
+          const label = "KOVA Spot";
+          const q = `${lat},${lng}`;
+
+          if (isAndroid) {
+            window.location.href = `geo:${q}?q=${q}(${encodeURIComponent(label)})`;
+            return;
+          }
+
+          if (isApple) {
+            window.location.href = `https://maps.apple.com/?daddr=${encodeURIComponent(
+              q,
+            )}&dirflg=d`;
+            return;
+          }
+
+          window.open(
+            `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+              q,
+            )}`,
+            "_blank",
+          );
+        }
+
         // --- USER MARKER ---
         if (navigator.geolocation) {
           const userMarkerEl = document.createElement("img");
@@ -264,6 +508,30 @@
           );
         }
 
+        // Keep only ONE open popup -> less buggy
+        let activePopup = null;
+
+        function closeActivePopup() {
+          if (activePopup) {
+            activePopup.remove();
+            activePopup = null;
+          }
+          showFooter();
+        }
+
+        // Close sheet when clicking empty map
+        map.on("click", (event) => {
+          const t = event.originalEvent && event.originalEvent.target;
+          if (t && (t.closest(".spot-marker") || t.closest(".player-marker"))) {
+            return;
+          }
+          closeActivePopup();
+        });
+
+        // Close sheet on drag/zoom like Google Maps vibes
+        map.on("dragstart", closeActivePopup);
+        map.on("zoomstart", closeActivePopup);
+
         // --- SPOTS ---
         async function loadSpots() {
           try {
@@ -273,81 +541,103 @@
               const el = document.createElement("div");
               el.className = "spot-marker";
 
-              const popupHTML = `
-                <div style="width:250px;text-align:center;font-family:sans-serif;">
-                  <img src="${
-                    spot.photoURL
-                  }" style="width:100%;height:auto;border-radius:6px;margin-bottom:6px;">
-                  <strong>${spot.name}</strong><br>${spot.description}<br>
-                  Lat: ${spot.lat.toFixed(5)}, Lng: ${spot.lng.toFixed(5)}
-                </div>`;
-              const popup = new maptilersdk.Popup({ offset: 25 }).setHTML(
-                popupHTML,
-              );
+              const name = escapeHTML(spot.name);
+              const desc = escapeHTML(spot.description);
 
-              new maptilersdk.Marker({ element: el })
+              // new field: addedBy (string)
+              const addedByRaw = spot.addedBy || spot.added_by || spot.author || "";
+              const addedBy = escapeHTML(addedByRaw || "unknown");
+
+              const photoURL = spot.photoURL ? String(spot.photoURL) : "";
+
+              const hero = photoURL
+                ? `<div class="hero">
+                    <div class="badge">spot</div>
+                    <img src="${photoURL}" alt="${name}" loading="lazy" />
+                  </div>`
+                : `<div class="hero">
+                    <div class="badge">spot</div>
+                    <div class="kova-fallback">NO IMAGE</div>
+                  </div>`;
+
+              const popupHTML = `
+                <div class="kova-popup">
+                  ${hero}
+                  <div class="body">
+                    <h3 class="title">${name}</h3>
+                    <p class="desc">${desc || "No description yet."}</p>
+                    <p class="byline">added by <b>${addedBy}</b></p>
+                    <button class="kova-btn primary" data-nav="1" data-lat="${spot.lat}" data-lng="${spot.lng}">
+                      Route
+                      <span class="sub">open GPS</span>
+                    </button>
+                  </div>
+                </div>`;
+
+              const popup = new maptilersdk.Popup({
+                offset: 18,
+                maxWidth: "560px",
+                closeButton: true,
+                closeOnClick: false,
+              }).setHTML(popupHTML);
+
+              const marker = new maptilersdk.Marker({ element: el })
                 .setLngLat([spot.lng, spot.lat])
-                .setPopup(popup)
                 .addTo(map);
+
+              function openSpot() {
+                closeActivePopup();
+                hideFooter();
+
+                map.easeTo({
+                  center: [spot.lng, spot.lat],
+                  zoom: Math.max(map.getZoom(), 12),
+                  duration: 520,
+                });
+
+                marker.setPopup(popup);
+                popup.setLngLat([spot.lng, spot.lat]).addTo(map);
+                activePopup = popup;
+
+                // when user closes with X -> footer back
+                popup.once("close", () => {
+                  activePopup = null;
+                  showFooter();
+                });
+
+                // attach button handler safely (no duplicates)
+                const root = popup.getElement();
+                if (!root) return;
+                const btn = root.querySelector("[data-nav='1']");
+                if (btn && !btn.dataset.bound) {
+                  btn.dataset.bound = "1";
+                  btn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const lat = Number(btn.getAttribute("data-lat"));
+                    const lng = Number(btn.getAttribute("data-lng"));
+                    openNavigation(lat, lng);
+                  });
+                }
+              }
+
+              el.addEventListener("click", (e) => {
+                e.stopPropagation();
+                openSpot();
+              });
+
+              el.setAttribute("role", "button");
+              el.setAttribute("tabindex", "0");
+              el.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") openSpot();
+              });
             });
           } catch (err) {
             console.error(err);
           }
         }
+
         loadSpots();
-
-        // --- MAP CLICK COORDS (alleen op lege map) ---
-        map.on("click", (event) => {
-          const t = event.originalEvent && event.originalEvent.target;
-          if (t && (t.closest(".spot-marker") || t.closest(".player-marker"))) {
-            return;
-          }
-
-          const { lng, lat } = event.lngLat;
-
-          const popupHTML = `
-            <div style="
-              text-align:center; 
-              font-family: Inter, system-ui, -apple-system, sans-serif;
-              background: #1e1e1e;
-              padding: 10px 15px;
-              box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-              color: white;
-              min-width: 140px;
-            ">
-              <strong style="display:block; margin-bottom:6px;">Coordinates</strong>
-              <span style="display:block; margin-bottom:8px;">Lat: ${lat.toFixed(
-                5,
-              )}<br>Lng: ${lng.toFixed(5)}</span>
-              <button id="copyCoords" style="
-                padding:6px 12px;
-                background:#8b7108;
-                color:white;
-                border:none;
-                cursor:pointer;
-                font-weight:500;
-              ">Copy</button>
-            </div>
-          `;
-
-          new maptilersdk.Popup({ offset: 25 })
-            .setLngLat([lng, lat])
-            .setHTML(popupHTML)
-            .addTo(map);
-
-          setTimeout(() => {
-            const btn = document.getElementById("copyCoords");
-            if (btn) {
-              btn.addEventListener("click", () => {
-                navigator.clipboard.writeText(
-                  `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
-                );
-                btn.innerText = "Copied!";
-                setTimeout(() => (btn.innerText = "Copy"), 1000);
-              });
-            }
-          }, 100);
-        });
       });
     </script>
   </body>

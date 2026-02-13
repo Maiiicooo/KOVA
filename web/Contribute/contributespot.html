@@ -88,6 +88,20 @@
         box-sizing: border-box;
       }
 
+      /* NEW: input styling for added-by */
+      .kova-input {
+        padding: 14px;
+        background: #222;
+        border: none;
+        color: #fff;
+        font-size: 16px;
+        outline: none;
+      }
+
+      .kova-input::placeholder {
+        color: rgba(255, 255, 255, 0.45);
+      }
+
       @media (max-width: 600px) {
         nav {
           padding: 16px 18px;
@@ -159,18 +173,21 @@
           id="spotForm"
           style="display: flex; flex-direction: column; gap: 22px"
         >
+          <!-- NEW: Added by -->
+          <input
+            type="text"
+            id="addedBy"
+            placeholder="Added by (your name)"
+            required
+            class="kova-input"
+          />
+
           <input
             type="text"
             id="spotName"
             placeholder="Spot name"
             required
-            style="
-              padding: 14px;
-              background: #222;
-              border: none;
-              color: #fff;
-              font-size: 16px;
-            "
+            class="kova-input"
           />
 
           <textarea
@@ -184,13 +201,15 @@
               color: #fff;
               font-size: 16px;
               resize: none;
+              outline: none;
             "
           ></textarea>
+
           <strong style="color: #8b7108">How to get the cordinates?</strong>
 
           <p style="color: var(--muted); font-size: 14px; margin-bottom: 1px">
-            <strong style="color: #8b7108">In KOVA map:</strong> press the location 
-             -> copy the cordinates -> paste them here.
+            <strong style="color: #8b7108">In KOVA map:</strong> press the location
+            -> copy the cordinates -> paste them here.
           </p>
 
           <p style="color: var(--muted); font-size: 14px; margin-bottom: 1px">
@@ -203,13 +222,7 @@
             id="coords"
             placeholder="Paste coordinates here (lat,lng)"
             required
-            style="
-              padding: 14px;
-              background: #222;
-              border: none;
-              color: #fff;
-              font-size: 16px;
-            "
+            class="kova-input"
           />
 
           <label style="font-size: 15px; color: var(--muted)">
@@ -275,17 +288,37 @@
       const form = document.getElementById("spotForm");
       const statusMsg = document.getElementById("statusMsg");
 
+      // NEW: cache contributor name (nice UX)
+      const addedByInput = document.getElementById("addedBy");
+      const savedName = localStorage.getItem("kova_addedBy");
+      if (savedName) addedByInput.value = savedName;
+
+      function safeName(str) {
+        // keep it clean + not insanely long
+        return String(str || "")
+          .trim()
+          .replace(/\s+/g, " ")
+          .slice(0, 40);
+      }
+
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         statusMsg.textContent = "Uploading…";
 
+        const addedBy = safeName(addedByInput.value);
         const name = spotName.value.trim();
         const desc = spotDesc.value.trim();
         const coordsInput = document.getElementById("coords").value.trim();
         const file = document.getElementById("spotPhoto").files[0];
 
+        if (!addedBy) {
+          statusMsg.textContent = "Please add your name.";
+          return;
+        }
+
         let lat = null,
           lng = null;
+
         if (coordsInput.includes(",")) {
           const parts = coordsInput.split(",");
           lat = parseFloat(parts[0].trim());
@@ -295,9 +328,17 @@
           return;
         }
 
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+          statusMsg.textContent = "Invalid coordinates values.";
+          return;
+        }
+
         let photoURL = null;
 
         try {
+          // save name for next time
+          localStorage.setItem("kova_addedBy", addedBy);
+
           if (file) {
             const fileRef = ref(storage, `spots/${Date.now()}_${file.name}`);
             await uploadBytes(fileRef, file);
@@ -310,12 +351,17 @@
             lat,
             lng,
             photoURL,
+            addedBy, // NEW FIELD
             status: "pending",
             timestamp: serverTimestamp(),
           });
 
           statusMsg.textContent = "Spot submitted! Thanks!";
           form.reset();
+
+          // keep their name filled after reset
+          const keep = localStorage.getItem("kova_addedBy");
+          if (keep) addedByInput.value = keep;
         } catch (err) {
           console.error(err);
           statusMsg.textContent = "Something went wrong.";
