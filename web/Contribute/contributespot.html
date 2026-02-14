@@ -88,7 +88,6 @@
         box-sizing: border-box;
       }
 
-      /* NEW: input styling for added-by */
       .kova-input {
         padding: 14px;
         background: #222;
@@ -157,10 +156,7 @@
     <div class="page-container">
       <section class="contribute">
         <h1 style="font-size: 32px; margin-bottom: 25px; opacity: 0.9">
-          <img
-            src="../../images/peu.gif"
-            style="max-height: 30px; width: auto"
-          />
+          <img src="../../images/peu.gif" style="max-height: 30px; width: auto" />
           Contribute a spot
         </h1>
 
@@ -169,11 +165,7 @@
           will appear on the map.
         </p>
 
-        <form
-          id="spotForm"
-          style="display: flex; flex-direction: column; gap: 22px"
-        >
-          <!-- NEW: Added by -->
+        <form id="spotForm" style="display: flex; flex-direction: column; gap: 22px">
           <input
             type="text"
             id="addedBy"
@@ -227,11 +219,17 @@
 
           <label style="font-size: 15px; color: var(--muted)">
             Spot photo <strong style="color: #8b7108">(recommended)</strong>
+            <span style="display:block; font-size:12px; margin-top:6px; opacity:.8;">
+              Tip: on mobile you can take a photo instantly
+            </span>
           </label>
+
+          <!-- UPDATED: capture makes phone offer camera / take photo -->
           <input
             type="file"
             id="spotPhoto"
             accept="image/*"
+            capture="environment"
             style="padding: 10px 0; color: var(--muted)"
           />
 
@@ -288,13 +286,23 @@
       const form = document.getElementById("spotForm");
       const statusMsg = document.getElementById("statusMsg");
 
-      // NEW: cache contributor name (nice UX)
       const addedByInput = document.getElementById("addedBy");
+      const coordsEl = document.getElementById("coords");
+
+      // supports: contributespot.html?coords=lat,lng
+      (function autofillCoordsFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const fromUrl = params.get("coords");
+        if (!fromUrl) return;
+
+        if (coordsEl) coordsEl.value = fromUrl;
+        window.history.replaceState({}, document.title, window.location.pathname);
+      })();
+
       const savedName = localStorage.getItem("kova_addedBy");
       if (savedName) addedByInput.value = savedName;
 
       function safeName(str) {
-        // keep it clean + not insanely long
         return String(str || "")
           .trim()
           .replace(/\s+/g, " ")
@@ -308,7 +316,7 @@
         const addedBy = safeName(addedByInput.value);
         const name = spotName.value.trim();
         const desc = spotDesc.value.trim();
-        const coordsInput = document.getElementById("coords").value.trim();
+        const coordsInput = coordsEl.value.trim();
         const file = document.getElementById("spotPhoto").files[0];
 
         if (!addedBy) {
@@ -316,9 +324,7 @@
           return;
         }
 
-        let lat = null,
-          lng = null;
-
+        let lat = null, lng = null;
         if (coordsInput.includes(",")) {
           const parts = coordsInput.split(",");
           lat = parseFloat(parts[0].trim());
@@ -336,7 +342,6 @@
         let photoURL = null;
 
         try {
-          // save name for next time
           localStorage.setItem("kova_addedBy", addedBy);
 
           if (file) {
@@ -351,7 +356,7 @@
             lat,
             lng,
             photoURL,
-            addedBy, // NEW FIELD
+            addedBy,
             status: "pending",
             timestamp: serverTimestamp(),
           });
@@ -359,7 +364,6 @@
           statusMsg.textContent = "Spot submitted! Thanks!";
           form.reset();
 
-          // keep their name filled after reset
           const keep = localStorage.getItem("kova_addedBy");
           if (keep) addedByInput.value = keep;
         } catch (err) {
