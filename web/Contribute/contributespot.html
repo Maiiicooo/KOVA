@@ -95,10 +95,37 @@
         color: #fff;
         font-size: 16px;
         outline: none;
+        box-sizing: border-box;
       }
 
       .kova-input::placeholder {
         color: rgba(255, 255, 255, 0.45);
+      }
+
+      .kova-input.invalid {
+        outline: 2px solid rgba(255, 0, 0, 0.55);
+      }
+      .field-error {
+        display: none;
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 13px;
+        margin-top: -12px;
+      }
+      .field-error.show {
+        display: block;
+        color: #ffb4b4;
+      }
+      .hint-ok {
+        color: rgba(255, 255, 255, 0.55);
+        font-size: 13px;
+        margin-top: -12px;
+      }
+
+      /* NEW: photo label */
+      .photo-picked {
+        color: rgba(255, 255, 255, 0.55);
+        font-size: 13px;
+        margin-top: -10px;
       }
 
       @media (max-width: 600px) {
@@ -194,6 +221,7 @@
               font-size: 16px;
               resize: none;
               outline: none;
+              box-sizing: border-box;
             "
           ></textarea>
 
@@ -215,25 +243,32 @@
             placeholder="Paste coordinates here (lat,lng)"
             required
             class="kova-input"
+            inputmode="decimal"
+            autocomplete="off"
+            spellcheck="false"
           />
+
+          <div id="coordsHint" class="hint-ok">Example: 51.2194, 4.4025</div>
+          <div id="coordsError" class="field-error">Please enter valid coordinates.</div>
 
           <label style="font-size: 15px; color: var(--muted)">
             Spot photo <strong style="color: #8b7108">(recommended)</strong>
             <span style="display:block; font-size:12px; margin-top:6px; opacity:.8;">
-              Tip: on mobile you can take a photo instantly
+              Tip: you can take a photo or pick one from your gallery
             </span>
           </label>
 
-          <!-- UPDATED: capture makes phone offer camera / take photo -->
+          <!-- FIX: removed capture so mobile offers Camera OR Gallery -->
           <input
             type="file"
             id="spotPhoto"
             accept="image/*"
-            capture="environment"
             style="padding: 10px 0; color: var(--muted)"
           />
+          <div id="photoStatus" class="photo-picked"></div>
 
           <button
+            id="submitBtn"
             type="submit"
             style="
               padding: 14px;
@@ -288,6 +323,12 @@
 
       const addedByInput = document.getElementById("addedBy");
       const coordsEl = document.getElementById("coords");
+      const coordsHint = document.getElementById("coordsHint");
+      const coordsError = document.getElementById("coordsError");
+      const submitBtn = document.getElementById("submitBtn");
+
+      const photoInput = document.getElementById("spotPhoto");
+      const photoStatus = document.getElementById("photoStatus");
 
       // supports: contributespot.html?coords=lat,lng
       (function autofillCoordsFromUrl() {
@@ -309,14 +350,66 @@
           .slice(0, 40);
       }
 
+      function parseCoordinates(input) {
+        if (!input) return null;
+        let s = String(input).trim().replace(";", ",");
+        const matches = s.match(/-?\d+(?:\.\d+)?/g);
+        if (!matches || matches.length < 2) return null;
+
+        const lat = Number(matches[0]);
+        const lng = Number(matches[1]);
+
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+        if (lat < -90 || lat > 90) return null;
+        if (lng < -180 || lng > 180) return null;
+
+        return { lat, lng };
+      }
+
+      function setCoordsValidUI(isValid, parsed) {
+        if (isValid) {
+          coordsEl.classList.remove("invalid");
+          coordsError.classList.remove("show");
+          submitBtn.disabled = false;
+          coordsHint.textContent = `Looks good: ${parsed.lat.toFixed(6)}, ${parsed.lng.toFixed(6)}`;
+        } else {
+          coordsEl.classList.add("invalid");
+          coordsError.classList.add("show");
+          submitBtn.disabled = true;
+          coordsHint.textContent = "Example: 51.2194, 4.4025";
+        }
+      }
+
+      function validateCoordsLive() {
+        const parsed = parseCoordinates(coordsEl.value);
+        setCoordsValidUI(!!parsed, parsed || { lat: 0, lng: 0 });
+      }
+
+      coordsEl.addEventListener("input", validateCoordsLive);
+      coordsEl.addEventListener("blur", validateCoordsLive);
+      validateCoordsLive();
+
+      // NEW: show chosen photo name (camera or gallery)
+      photoInput.addEventListener("change", () => {
+        const file = photoInput.files && photoInput.files[0];
+        photoStatus.textContent = file ? `Selected: ${file.name}` : "";
+      });
+
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
+
+        const parsed = parseCoordinates(coordsEl.value);
+        if (!parsed) {
+          setCoordsValidUI(false);
+          statusMsg.textContent = "Please enter valid coordinates.";
+          return;
+        }
+
         statusMsg.textContent = "Uploading…";
 
         const addedBy = safeName(addedByInput.value);
         const name = spotName.value.trim();
         const desc = spotDesc.value.trim();
-        const coordsInput = coordsEl.value.trim();
         const file = document.getElementById("spotPhoto").files[0];
 
         if (!addedBy) {
@@ -324,21 +417,7 @@
           return;
         }
 
-        let lat = null, lng = null;
-        if (coordsInput.includes(",")) {
-          const parts = coordsInput.split(",");
-          lat = parseFloat(parts[0].trim());
-          lng = parseFloat(parts[1].trim());
-        } else {
-          statusMsg.textContent = "Invalid coordinates format.";
-          return;
-        }
-
-        if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-          statusMsg.textContent = "Invalid coordinates values.";
-          return;
-        }
-
+        const { lat, lng } = parsed;
         let photoURL = null;
 
         try {
@@ -366,6 +445,9 @@
 
           const keep = localStorage.getItem("kova_addedBy");
           if (keep) addedByInput.value = keep;
+
+          photoStatus.textContent = "";
+          validateCoordsLive();
         } catch (err) {
           console.error(err);
           statusMsg.textContent = "Something went wrong.";
