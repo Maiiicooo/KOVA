@@ -119,7 +119,31 @@
         transform: translate(-50%, -50%);
       }
 
-      /* keep popup styling minimal */
+      /* NEW: pinpoint marker for "where you clicked" */
+      .pinpoint {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        border: 3px solid var(--accent);
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.55);
+        transform: translate(-50%, -50%);
+        position: relative;
+        pointer-events: none; /* can't block clicks */
+      }
+      .pinpoint::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        background: #111;
+        opacity: 0.9;
+      }
+
       .maplibregl-popup-content {
         background: transparent !important;
         padding: 0 !important;
@@ -137,7 +161,6 @@
         padding: 10px 12px !important;
       }
 
-      /* FOOTER */
       footer {
         transition: opacity 0.18s ease, transform 0.18s ease;
       }
@@ -164,7 +187,6 @@
         z-index: 30;
       }
 
-      /* ---------- KOVA SPOT SHEET (google maps style) ---------- */
       .kova-popup {
         width: min(520px, calc(100vw - 28px));
         background: linear-gradient(180deg, var(--panel), rgba(0, 0, 0, 0.92));
@@ -223,7 +245,7 @@
         background: linear-gradient(
           180deg,
           rgba(18, 18, 18, 0.92),
-          rgba(0,  0,  0,  0.92)
+          rgba(0, 0, 0, 0.92)
         );
       }
 
@@ -316,7 +338,6 @@
         letter-spacing: 0.2px;
       }
 
-      /* MOBILE bottom sheet */
       @media (max-width: 700px) {
         .maplibregl-popup {
           position: fixed !important;
@@ -350,7 +371,6 @@
         }
       }
 
-      /* --- coords popup styling --- */
       .coord-popup {
         background: #1e1e1e;
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -481,18 +501,18 @@
         const hideFooter = () =>
           footerEl && footerEl.classList.add("footer-hidden");
 
-        // Keep only ONE open popup -> less buggy
         let activePopup = null;
         let activeCoordPopup = null;
 
-        // one single truth for footer visibility
+        // NEW: marker that shows "where user clicked"
+        let clickPin = null;
+
         function updateFooterVisibility() {
           const somethingOpen = !!activePopup || !!activeCoordPopup;
           if (somethingOpen) hideFooter();
           else showFooter();
         }
 
-        // --- helpers ---
         function escapeHTML(str) {
           return String(str ?? "")
             .replace(/&/g, "&amp;")
@@ -511,23 +531,23 @@
 
           if (isAndroid) {
             window.location.href = `geo:${q}?q=${q}(${encodeURIComponent(
-              label,
+              label
             )})`;
             return;
           }
 
           if (isApple) {
             window.location.href = `https://maps.apple.com/?daddr=${encodeURIComponent(
-              q,
+              q
             )}&dirflg=d`;
             return;
           }
 
           window.open(
             `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-              q,
+              q
             )}`,
-            "_blank",
+            "_blank"
           );
         }
 
@@ -538,12 +558,11 @@
           } catch (e) {}
 
           const url = `../../web/Contribute/contributespot.html?coords=${encodeURIComponent(
-            coordStr,
+            coordStr
           )}`;
           window.location.href = url;
         }
 
-        // --- USER MARKER ---
         if (navigator.geolocation) {
           const userMarkerEl = document.createElement("img");
           userMarkerEl.src = "../../images/playericon.png";
@@ -556,7 +575,7 @@
             <img src="../../images/playeravatar.png" style="width:100%;height:auto;border-radius:6px;margin-bottom:6px;">
             <strong>This is you</strong><br></div>`;
           const userPopup = new maptilersdk.Popup({ offset: 25 }).setHTML(
-            userPopupHTML,
+            userPopupHTML
           );
 
           const userMarker = new maptilersdk.Marker({ element: userMarkerEl })
@@ -570,8 +589,27 @@
               map.setCenter([pos.coords.longitude, pos.coords.latitude]);
             },
             (err) => console.warn("Locatie fout:", err.message),
-            { enableHighAccuracy: true },
+            { enableHighAccuracy: true }
           );
+        }
+
+        function removeClickPin() {
+          if (clickPin) {
+            clickPin.remove();
+            clickPin = null;
+          }
+        }
+
+        function placeClickPin(lng, lat) {
+          if (!clickPin) {
+            const pinEl = document.createElement("div");
+            pinEl.className = "pinpoint";
+            clickPin = new maptilersdk.Marker({ element: pinEl })
+              .setLngLat([lng, lat])
+              .addTo(map);
+          } else {
+            clickPin.setLngLat([lng, lat]);
+          }
         }
 
         function closeCoordPopup() {
@@ -580,13 +618,13 @@
             activeCoordPopup = null;
             updateFooterVisibility();
           }
+          // also hide the pin when closing that UI
+          removeClickPin();
         }
 
-        // --- NEW: smart center so popup is never cut off on desktop ---
         function easeToSpotWithPopupSpace(lng, lat) {
           const isMobile = window.matchMedia("(max-width: 700px)").matches;
 
-          // On mobile your popup is fixed bottom sheet; keep normal center
           if (isMobile) {
             map.easeTo({
               center: [lng, lat],
@@ -596,124 +634,180 @@
             return;
           }
 
-          // Desktop: push the map center a bit UP so the anchored popup fits
           const canvas = map.getCanvas();
           const h = canvas ? canvas.clientHeight : window.innerHeight;
-
-          // pixels to move the marker UP on screen (tweakable)
           const liftPx = Math.round(Math.min(220, h * 0.22));
 
           map.easeTo({
             center: [lng, lat],
             zoom: Math.max(map.getZoom(), 12),
             duration: 520,
-            offset: [0, -liftPx], // negative Y -> move map up, marker appears higher
+            offset: [0, -liftPx],
           });
         }
-        // -------------------------------------------------------------
 
-        // --- SPOTS ---
-        async function loadSpots() {
-          try {
-            const snapshot = await db.collection("spots").get();
-            snapshot.forEach((doc) => {
-              const spot = doc.data();
-              const el = document.createElement("div");
-              el.className = "spot-marker";
+        // --- Firestore live + marker cache ---
+        const markersById = new Map();
 
-              const name = escapeHTML(spot.name);
-              const desc = escapeHTML(spot.description);
-
-              const addedByRaw =
-                spot.addedBy || spot.added_by || spot.author || "";
-              const addedBy = escapeHTML(addedByRaw || "unknown");
-
-              const photoURL = spot.photoURL ? String(spot.photoURL) : "";
-
-              const hero = photoURL
-                ? `<div class="hero">
-                    <div class="badge">spot</div>
-                    <img src="${photoURL}" alt="${name}" loading="lazy" />
-                  </div>`
-                : `<div class="hero">
-                    <div class="badge">spot</div>
-                    <div class="kova-fallback">NO IMAGE</div>
-                  </div>`;
-
-              const popupHTML = `
-                <div class="kova-popup">
-                  ${hero}
-                  <div class="body">
-                    <h3 class="title">${name}</h3>
-                    <p class="desc">${desc || "No description yet."}</p>
-                    <p class="byline">added by <b>${addedBy}</b></p>
-                    <button class="kova-btn primary" data-nav="1" data-lat="${spot.lat}" data-lng="${spot.lng}">
-                      Route
-                      <span class="sub">open GPS</span>
-                    </button>
-                  </div>
-                </div>`;
-
-              const popup = new maptilersdk.Popup({
-                offset: 18,
-                maxWidth: "560px",
-                closeButton: true,
-                closeOnClick: false,
-              }).setHTML(popupHTML);
-
-              new maptilersdk.Marker({ element: el })
-                .setLngLat([spot.lng, spot.lat])
-                .addTo(map);
-
-              function openSpot() {
-                closeCoordPopup();
-                if (activePopup) activePopup.remove();
-
-                // IMPORTANT: open popup first (so it exists), then ease with offset
-                popup.setLngLat([spot.lng, spot.lat]).addTo(map);
-                activePopup = popup;
-                updateFooterVisibility();
-
-                easeToSpotWithPopupSpace(spot.lng, spot.lat);
-
-                popup.once("close", () => {
-                  activePopup = null;
-                  updateFooterVisibility();
-                });
-
-                const root = popup.getElement();
-                if (!root) return;
-                const btn = root.querySelector("[data-nav='1']");
-                if (btn && !btn.dataset.bound) {
-                  btn.dataset.bound = "1";
-                  btn.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const lat = Number(btn.getAttribute("data-lat"));
-                    const lng = Number(btn.getAttribute("data-lng"));
-                    openNavigation(lat, lng);
-                  });
-                }
-              }
-
-              el.addEventListener("click", (e) => {
-                e.stopPropagation();
-                openSpot();
-              });
-
-              el.setAttribute("role", "button");
-              el.setAttribute("tabindex", "0");
-              el.addEventListener("keydown", (e) => {
-                if (e.key === "Enter" || e.key === " ") openSpot();
-              });
-            });
-          } catch (err) {
-            console.error(err);
-          }
+        function safeHttpsURL(url) {
+          const s = String(url || "");
+          return s.startsWith("https://") ? s : "";
         }
-        loadSpots();
 
-        // --- MAP CLICK COORDS (alleen op lege map) ---
+        function makeSpotPopupHTML(spot) {
+          const name = escapeHTML(spot.name);
+          const desc = escapeHTML(spot.description);
+
+          const addedByRaw = spot.addedBy || spot.added_by || spot.author || "";
+          const addedBy = escapeHTML(addedByRaw || "unknown");
+
+          const photoURL = safeHttpsURL(spot.photoURL);
+
+          const hero = photoURL
+            ? `<div class="hero">
+                <div class="badge">spot</div>
+                <img src="${photoURL}" alt="${name}" loading="lazy" decoding="async" fetchpriority="low" />
+              </div>`
+            : `<div class="hero">
+                <div class="badge">spot</div>
+                <div class="kova-fallback">NO IMAGE</div>
+              </div>`;
+
+          return `
+            <div class="kova-popup">
+              ${hero}
+              <div class="body">
+                <h3 class="title">${name}</h3>
+                <p class="desc">${desc || "No description yet."}</p>
+                <p class="byline">added by <b>${addedBy}</b></p>
+                <button class="kova-btn primary" data-action="nav" data-lat="${spot.lat}" data-lng="${spot.lng}">
+                  Route
+                  <span class="sub">open GPS</span>
+                </button>
+              </div>
+            </div>`;
+        }
+
+        function removeSpotMarker(id) {
+          const item = markersById.get(id);
+          if (!item) return;
+
+          item.marker.remove();
+
+          if (activePopup === item.popup) {
+            activePopup.remove();
+            activePopup = null;
+            updateFooterVisibility();
+          }
+
+          markersById.delete(id);
+        }
+
+        function addSpotMarker(id, spot) {
+          const el = document.createElement("div");
+          el.className = "spot-marker";
+          el.setAttribute("role", "button");
+          el.setAttribute("tabindex", "0");
+
+          const popup = new maptilersdk.Popup({
+            offset: 18,
+            maxWidth: "560px",
+            closeButton: true,
+            closeOnClick: false,
+          }).setHTML(makeSpotPopupHTML(spot));
+
+          const marker = new maptilersdk.Marker({ element: el })
+            .setLngLat([spot.lng, spot.lat])
+            .addTo(map);
+
+          function openSpot() {
+            // if user clicks a spot, hide the "add pin" + coord popup
+            removeClickPin();
+            closeCoordPopup();
+
+            if (activePopup) activePopup.remove();
+
+            popup.setLngLat([spot.lng, spot.lat]).addTo(map);
+            activePopup = popup;
+            updateFooterVisibility();
+
+            easeToSpotWithPopupSpace(spot.lng, spot.lat);
+
+            popup.once("close", () => {
+              activePopup = null;
+              updateFooterVisibility();
+            });
+          }
+
+          el.addEventListener("click", (e) => {
+            e.stopPropagation();
+            openSpot();
+          });
+
+          el.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") openSpot();
+          });
+
+          markersById.set(id, { marker, popup });
+        }
+
+        // --- Event delegation (route + coords actions) ---
+        document.addEventListener("click", async (e) => {
+          const navBtn = e.target.closest("[data-action='nav']");
+          if (navBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const lat = Number(navBtn.getAttribute("data-lat"));
+            const lng = Number(navBtn.getAttribute("data-lng"));
+            openNavigation(lat, lng);
+            return;
+          }
+
+          const copyBtn = e.target.closest("[data-action='copy-coords']");
+          if (copyBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const coords = String(copyBtn.getAttribute("data-coords") || "");
+            try {
+              await navigator.clipboard.writeText(coords);
+              copyBtn.innerText = "Copied!";
+              setTimeout(() => (copyBtn.innerText = "Copy"), 900);
+            } catch (err) {}
+            return;
+          }
+
+          const addBtn = e.target.closest("[data-action='add-spot']");
+          if (addBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const lat = Number(addBtn.getAttribute("data-lat"));
+            const lng = Number(addBtn.getAttribute("data-lng"));
+            await goAddSpot(lat, lng);
+            return;
+          }
+        });
+
+        // --- Firestore live listener ---
+        db.collection("spots").onSnapshot(
+          (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+              const id = change.doc.id;
+              const spot = change.doc.data();
+
+              if (change.type === "added") {
+                if (!markersById.has(id)) addSpotMarker(id, spot);
+              } else if (change.type === "removed") {
+                removeSpotMarker(id);
+              } else if (change.type === "modified") {
+                removeSpotMarker(id);
+                addSpotMarker(id, spot);
+              }
+            });
+          },
+          (err) => console.error(err)
+        );
+
+        // --- MAP CLICK COORDS ---
         map.on("click", (event) => {
           const t = event.originalEvent && event.originalEvent.target;
           if (t && (t.closest(".spot-marker") || t.closest(".player-marker"))) {
@@ -725,20 +819,27 @@
             activePopup = null;
           }
 
-          closeCoordPopup();
+          // close old coord popup but keep pin handling below
+          if (activeCoordPopup) {
+            activeCoordPopup.remove();
+            activeCoordPopup = null;
+          }
 
           const { lng, lat } = event.lngLat;
           const coordStr = `${lat.toFixed(5)},${lng.toFixed(5)}`;
+
+          // NEW: show pin at clicked location
+          placeClickPin(lng, lat);
 
           const popupHTML = `
             <div class="coord-popup">
               <strong>Coordinates</strong>
               <span class="coords">Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(
-            5,
+            5
           )}</span>
               <div class="btn-row">
-                <button id="copyCoords">Copy</button>
-                <button class="primary" id="addSpotBtn">Add spot</button>
+                <button data-action="copy-coords" data-coords="${coordStr}">Copy</button>
+                <button class="primary" data-action="add-spot" data-lat="${lat}" data-lng="${lng}">Add spot</button>
               </div>
             </div>
           `;
@@ -757,31 +858,11 @@
 
           activeCoordPopup.once("close", () => {
             activeCoordPopup = null;
+            removeClickPin(); // NEW: hide pin if user closes popup
             updateFooterVisibility();
           });
-
-          setTimeout(() => {
-            const copyBtn = document.getElementById("copyCoords");
-            if (copyBtn) {
-              copyBtn.addEventListener("click", async () => {
-                try {
-                  await navigator.clipboard.writeText(coordStr);
-                  copyBtn.innerText = "Copied!";
-                  setTimeout(() => (copyBtn.innerText = "Copy"), 900);
-                } catch (e) {}
-              });
-            }
-
-            const addBtn = document.getElementById("addSpotBtn");
-            if (addBtn) {
-              addBtn.addEventListener("click", async () => {
-                await goAddSpot(lat, lng);
-              });
-            }
-          }, 60);
         });
 
-        // Close popups on drag/zoom like maps vibes
         function closeAll() {
           if (activePopup) {
             activePopup.remove();
@@ -791,6 +872,7 @@
             activeCoordPopup.remove();
             activeCoordPopup = null;
           }
+          removeClickPin(); // NEW
           updateFooterVisibility();
         }
 
