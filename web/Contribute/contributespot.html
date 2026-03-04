@@ -105,6 +105,7 @@
       .kova-input.invalid {
         outline: 2px solid rgba(255, 0, 0, 0.55);
       }
+
       .field-error {
         display: none;
         color: rgba(255, 255, 255, 0.75);
@@ -115,17 +116,78 @@
         display: block;
         color: #ffb4b4;
       }
+
       .hint-ok {
         color: rgba(255, 255, 255, 0.55);
         font-size: 13px;
         margin-top: -12px;
       }
 
-      /* NEW: photo label */
       .photo-picked {
         color: rgba(255, 255, 255, 0.55);
         font-size: 13px;
         margin-top: -10px;
+      }
+
+      /* NEW: modal popup */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        z-index: 9999;
+      }
+      .modal-overlay.show {
+        display: flex;
+      }
+      .modal {
+        width: 100%;
+        max-width: 520px;
+        background: #1c1b1b;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+      }
+      .modal h2 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        letter-spacing: 0.2px;
+      }
+      .modal p {
+        margin: 0 0 14px 0;
+        color: var(--muted);
+        line-height: 1.6;
+        font-size: 14px;
+      }
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 6px;
+      }
+      .btn {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--fg);
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .btn.primary {
+        background: #fff;
+        color: #000;
+        border: none;
+      }
+
+      /* NEW: submit disabled style */
+      #submitBtn[disabled] {
+        opacity: 0.55;
+        cursor: not-allowed;
       }
 
       @media (max-width: 600px) {
@@ -165,7 +227,10 @@
     <nav>
       <div class="nav-left">
         <a href="../../index.html">
-          <img src="../../images/logo26-removebg-preview.png" alt="Kova logo small" />
+          <img
+            src="../../images/logo26-removebg-preview.png"
+            alt="Kova logo small"
+          />
         </a>
         <div class="beta">
           <a href="#" style="color: white">now in alpha!</a>
@@ -183,7 +248,10 @@
     <div class="page-container">
       <section class="contribute">
         <h1 style="font-size: 32px; margin-bottom: 25px; opacity: 0.9">
-          <img src="../../images/peu.gif" style="max-height: 30px; width: auto" />
+          <img
+            src="../../images/peu.gif"
+            style="max-height: 30px; width: auto"
+          />
           Contribute a spot
         </h1>
 
@@ -192,7 +260,10 @@
           will appear on the map.
         </p>
 
-        <form id="spotForm" style="display: flex; flex-direction: column; gap: 22px">
+        <form
+          id="spotForm"
+          style="display: flex; flex-direction: column; gap: 22px"
+        >
           <input
             type="text"
             id="addedBy"
@@ -228,13 +299,13 @@
           <strong style="color: #8b7108">How to get the cordinates?</strong>
 
           <p style="color: var(--muted); font-size: 14px; margin-bottom: 1px">
-            <strong style="color: #8b7108">In KOVA map:</strong> press the location
-            -> copy the cordinates -> paste them here.
+            <strong style="color: #8b7108">In KOVA map:</strong> press the
+            location -> copy the cordinates -> paste them here.
           </p>
 
           <p style="color: var(--muted); font-size: 14px; margin-bottom: 1px">
-            <strong style="color: #8b7108">With Google maps:</strong> open Google Maps,
-            tap & hold the spot -> copy the coordinates -> paste them here.
+            <strong style="color: #8b7108">With Google maps:</strong> open Google
+            Maps, tap & hold the spot -> copy the coordinates -> paste them here.
           </p>
 
           <input
@@ -249,16 +320,19 @@
           />
 
           <div id="coordsHint" class="hint-ok">Example: 51.2194, 4.4025</div>
-          <div id="coordsError" class="field-error">Please enter valid coordinates.</div>
+          <div id="coordsError" class="field-error">
+            Please enter valid coordinates.
+          </div>
 
           <label style="font-size: 15px; color: var(--muted)">
             Spot photo <strong style="color: #8b7108">(recommended)</strong>
-            <span style="display:block; font-size:12px; margin-top:6px; opacity:.8;">
+            <span
+              style="display: block; font-size: 12px; margin-top: 6px; opacity: 0.8"
+            >
               Tip: you can take a photo or pick one from your gallery
             </span>
           </label>
 
-          <!-- FIX: removed capture so mobile offers Camera OR Gallery -->
           <input
             type="file"
             id="spotPhoto"
@@ -287,6 +361,19 @@
 
         <p id="statusMsg" style="margin-top: 20px; color: var(--muted)"></p>
       </section>
+    </div>
+
+    <!-- NEW: success modal -->
+    <div id="successOverlay" class="modal-overlay" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+        <h2 id="successTitle">Spot submitted </h2>
+        <p id="successText">
+          Thanks! Your spot was added to the review queue and will show up on the map once validated.
+        </p>
+        <div class="modal-actions">
+          <button id="closeModalBtn" class="btn">Close</button>
+        </div>
+      </div>
     </div>
 
     <script type="module">
@@ -322,6 +409,9 @@
       const statusMsg = document.getElementById("statusMsg");
 
       const addedByInput = document.getElementById("addedBy");
+      const spotNameInput = document.getElementById("spotName");
+      const spotDescInput = document.getElementById("spotDesc");
+
       const coordsEl = document.getElementById("coords");
       const coordsHint = document.getElementById("coordsHint");
       const coordsError = document.getElementById("coordsError");
@@ -329,6 +419,13 @@
 
       const photoInput = document.getElementById("spotPhoto");
       const photoStatus = document.getElementById("photoStatus");
+
+      // modal elements
+      const successOverlay = document.getElementById("successOverlay");
+      const closeModalBtn = document.getElementById("closeModalBtn");
+      const successText = document.getElementById("successText");
+
+      let isSubmitting = false;
 
       // supports: contributespot.html?coords=lat,lng
       (function autofillCoordsFromUrl() {
@@ -370,24 +467,41 @@
         if (isValid) {
           coordsEl.classList.remove("invalid");
           coordsError.classList.remove("show");
-          submitBtn.disabled = false;
           coordsHint.textContent = `Looks good: ${parsed.lat.toFixed(6)}, ${parsed.lng.toFixed(6)}`;
         } else {
           coordsEl.classList.add("invalid");
           coordsError.classList.add("show");
-          submitBtn.disabled = true;
           coordsHint.textContent = "Example: 51.2194, 4.4025";
         }
       }
 
+      function setSubmittingUI(submitting) {
+        isSubmitting = submitting;
+        submitBtn.disabled = submitting; // lock button during upload/addDoc
+        submitBtn.textContent = submitting ? "Submitting…" : "Submit spot";
+      }
+
       function validateCoordsLive() {
         const parsed = parseCoordinates(coordsEl.value);
+
+        // only lock submit if coords invalid AND user actually typed something
+        // + keep it simple: if empty => don't scream red immediately, just disable submit
+        const hasValue = coordsEl.value.trim().length > 0;
+        if (!hasValue) {
+          coordsEl.classList.remove("invalid");
+          coordsError.classList.remove("show");
+          coordsHint.textContent = "Example: 51.2194, 4.4025";
+          // disable submit until coords present
+          submitBtn.disabled = true || isSubmitting;
+          return;
+        }
+
         setCoordsValidUI(!!parsed, parsed || { lat: 0, lng: 0 });
+        submitBtn.disabled = !parsed || isSubmitting;
       }
 
       coordsEl.addEventListener("input", validateCoordsLive);
       coordsEl.addEventListener("blur", validateCoordsLive);
-      validateCoordsLive();
 
       // NEW: show chosen photo name (camera or gallery)
       photoInput.addEventListener("change", () => {
@@ -395,27 +509,57 @@
         photoStatus.textContent = file ? `Selected: ${file.name}` : "";
       });
 
+      function openSuccessModal({ name, lat, lng }) {
+        const n = (name || "").trim();
+        successText.textContent =
+          `Thanks! "${n || "Your spot"}" was added to the review queue.\n` +
+          `Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}\n` +
+          `It will appear on the map once validated.`;
+        successOverlay.classList.add("show");
+        successOverlay.setAttribute("aria-hidden", "false");
+      }
+
+      function closeSuccessModal() {
+        successOverlay.classList.remove("show");
+        successOverlay.setAttribute("aria-hidden", "true");
+      }
+
+      closeModalBtn.addEventListener("click", closeSuccessModal);
+      successOverlay.addEventListener("click", (e) => {
+        if (e.target === successOverlay) closeSuccessModal();
+      });
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeSuccessModal();
+      });
+
+      // initial state: disable submit until coords are present and valid
+      submitBtn.disabled = true;
+      validateCoordsLive();
+
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        if (isSubmitting) return; // extra safety
 
         const parsed = parseCoordinates(coordsEl.value);
         if (!parsed) {
-          setCoordsValidUI(false);
+          setCoordsValidUI(false, { lat: 0, lng: 0 });
           statusMsg.textContent = "Please enter valid coordinates.";
+          submitBtn.disabled = true;
           return;
         }
 
-        statusMsg.textContent = "Uploading…";
-
         const addedBy = safeName(addedByInput.value);
-        const name = spotName.value.trim();
-        const desc = spotDesc.value.trim();
-        const file = document.getElementById("spotPhoto").files[0];
+        const name = spotNameInput.value.trim();
+        const desc = spotDescInput.value.trim();
+        const file = photoInput.files && photoInput.files[0];
 
         if (!addedBy) {
           statusMsg.textContent = "Please add your name.";
           return;
         }
+
+        setSubmittingUI(true);
+        statusMsg.textContent = "Uploading…";
 
         const { lat, lng } = parsed;
         let photoURL = null;
@@ -424,7 +568,8 @@
           localStorage.setItem("kova_addedBy", addedBy);
 
           if (file) {
-            const fileRef = ref(storage, `spots/${Date.now()}_${file.name}`);
+            const safeFileName = file.name.replace(/[^\w.\-]+/g, "_");
+            const fileRef = ref(storage, `spots/${Date.now()}_${safeFileName}`);
             await uploadBytes(fileRef, file);
             photoURL = await getDownloadURL(fileRef);
           }
@@ -440,17 +585,23 @@
             timestamp: serverTimestamp(),
           });
 
-          statusMsg.textContent = "Spot submitted! Thanks!";
+          // reset + keep name
           form.reset();
-
           const keep = localStorage.getItem("kova_addedBy");
           if (keep) addedByInput.value = keep;
-
           photoStatus.textContent = "";
+
+          statusMsg.textContent = ""; // modal is the feedback now
+          openSuccessModal({ name, lat, lng });
+
+          // re-validate (will disable submit again until new coords)
           validateCoordsLive();
         } catch (err) {
           console.error(err);
-          statusMsg.textContent = "Something went wrong.";
+          statusMsg.textContent = "Something went wrong. Please try again.";
+        } finally {
+          setSubmittingUI(false);
+          validateCoordsLive(); // re-enable only if coords valid (usually empty => disabled)
         }
       });
     </script>
