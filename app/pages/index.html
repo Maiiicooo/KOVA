@@ -16,7 +16,6 @@
       rel="stylesheet"
     />
 
-    <!-- GeoFire Common (geohash bounds helpers) -->
     <script src="https://cdn.jsdelivr.net/npm/geofire-common@6.0.0/dist/geofire-common/geofire-common.min.js"></script>
 
     <style>
@@ -26,7 +25,6 @@
         --muted: rgba(255, 255, 255, 0.6);
         --line: rgba(255, 255, 255, 0.12);
         --accent: #8b7108;
-
         --panel: rgba(10, 10, 10, 0.92);
         --panel2: rgba(18, 18, 18, 0.92);
         --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
@@ -112,7 +110,6 @@
         opacity: 0 !important;
       }
 
-      /* Pinpoint marker for "where you clicked" */
       .pinpoint {
         width: 18px;
         height: 18px;
@@ -124,6 +121,7 @@
         position: relative;
         pointer-events: none;
       }
+
       .pinpoint::after {
         content: "";
         position: absolute;
@@ -137,15 +135,16 @@
         opacity: 0.9;
       }
 
-      /* popup styling */
       .maplibregl-popup-content {
         background: transparent !important;
         padding: 0 !important;
         box-shadow: none !important;
       }
+
       .maplibregl-popup-tip {
         display: none !important;
       }
+
       .maplibregl-popup-close-button {
         color: rgba(255, 255, 255, 0.7) !important;
         background: transparent !important;
@@ -156,6 +155,7 @@
       footer {
         transition: opacity 0.18s ease, transform 0.18s ease;
       }
+
       footer.footer-hidden {
         opacity: 0;
         transform: translateY(8px);
@@ -179,7 +179,6 @@
         z-index: 30;
       }
 
-      /* ---------- KOVA SPOT SHEET ---------- */
       .kova-popup {
         width: min(520px, calc(100vw - 28px));
         background: linear-gradient(180deg, var(--panel), rgba(0, 0, 0, 0.92));
@@ -263,6 +262,7 @@
         color: rgba(255, 255, 255, 0.65);
         letter-spacing: 0.2px;
       }
+
       .kova-popup .byline b {
         color: rgba(255, 255, 255, 0.9);
         font-weight: 650;
@@ -331,9 +331,9 @@
         letter-spacing: 0.2px;
       }
 
-      /* MOBILE bottom sheet */
+      /* enkel de spot popup wordt mobile bottom sheet */
       @media (max-width: 700px) {
-        .maplibregl-popup {
+        .spot-sheet-popup.maplibregl-popup {
           position: fixed !important;
           left: 0 !important;
           right: 0 !important;
@@ -345,7 +345,7 @@
           pointer-events: none;
         }
 
-        .maplibregl-popup-content {
+        .spot-sheet-popup .maplibregl-popup-content {
           width: 100vw !important;
           pointer-events: auto;
           padding: 0 10px 10px 10px !important;
@@ -365,7 +365,6 @@
         }
       }
 
-      /* --- coords popup styling --- */
       .coord-popup {
         background: #1e1e1e;
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -376,10 +375,12 @@
         min-width: 180px;
         font-family: Inter, system-ui, -apple-system, sans-serif;
       }
+
       .coord-popup strong {
         display: block;
         margin-bottom: 6px;
       }
+
       .coord-popup .coords {
         display: block;
         margin-bottom: 10px;
@@ -387,11 +388,13 @@
         font-size: 0.92rem;
         line-height: 1.25;
       }
+
       .coord-popup .btn-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
       }
+
       .coord-popup button {
         padding: 9px 10px;
         background: rgba(255, 255, 255, 0.08);
@@ -403,26 +406,59 @@
         -webkit-tap-highlight-color: transparent;
         touch-action: manipulation;
       }
+
       .coord-popup button.primary {
         background: #8b7108;
         border-color: #8b7108;
+      }
+
+      .user-popup-card {
+        width: 180px;
+        text-align: center;
+        font-family: Inter, system-ui, -apple-system, sans-serif;
+        background: linear-gradient(180deg, var(--panel), rgba(0, 0, 0, 0.92));
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      .user-popup-card img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .user-popup-card .body {
+        padding: 12px;
+        color: white;
+        font-size: 0.92rem;
+      }
+
+      .player-marker {
+        cursor: pointer;
+        pointer-events: auto;
       }
 
       @media (max-width: 600px) {
         nav {
           padding: 16px 18px;
         }
+
         .nav-left img {
           height: 40px;
         }
+
         .beta {
           font-size: 0.7rem;
           padding: 2px 5px;
         }
+
         .nav-right a {
           margin-left: 0;
           font-size: 0.85rem;
         }
+
         .navbar-seperator {
           margin-left: 0;
           opacity: 0.5;
@@ -452,9 +488,9 @@
 
     <footer id="kovaFooter">
       <p class="kova-corp">kova corp © 2026</p>
-      <a class="join-page" href="../../web/Contribute/contribute.html"
-        >Contribute</a
-      >
+      <a class="join-page" href="../../web/Contribute/contribute.html">
+        Contribute
+      </a>
     </footer>
 
     <div id="map"></div>
@@ -476,6 +512,15 @@
           navigationControl: false,
           projectionControl: false,
           geolocateControl: false,
+          doubleClickZoom: false,
+        });
+
+        if (map.doubleClickZoom) {
+          map.doubleClickZoom.disable();
+        }
+
+        map.on("dblclick", (e) => {
+          e.preventDefault();
         });
 
         const firebaseConfig = {
@@ -487,6 +532,7 @@
           appId: "1:873689812978:web:e0581f3df823e51239656b",
           measurementId: "G-VM5224Z3K6",
         };
+
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -498,12 +544,19 @@
 
         let activePopup = null;
         let activeCoordPopup = null;
-
-        // marker that shows "where user clicked"
         let clickPin = null;
+        let userMarker = null;
+        let userPopup = null;
+        let userMarkerEl = null;
+
+        const SOURCE_ID = "spots";
+        const LAYER_CLUSTERS = "spots-clusters";
+        const LAYER_CLUSTER_COUNT = "spots-cluster-count";
+        const LAYER_POINTS = "spots-points";
 
         function updateFooterVisibility() {
-          const somethingOpen = !!activePopup || !!activeCoordPopup;
+          const somethingOpen =
+            !!activePopup || !!activeCoordPopup || !!(userPopup && userPopup.isOpen());
           if (somethingOpen) hideFooter();
           else showFooter();
         }
@@ -525,19 +578,21 @@
         function openNavigation(lat, lng) {
           const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent);
           const isAndroid = /Android/.test(navigator.userAgent);
-          const label = "KOVA Spot";
           const q = `${lat},${lng}`;
+          const label = "KOVA Spot";
 
           if (isAndroid) {
             window.location.href = `geo:${q}?q=${q}(${encodeURIComponent(label)})`;
             return;
           }
+
           if (isApple) {
             window.location.href = `https://maps.apple.com/?daddr=${encodeURIComponent(
               q
             )}&dirflg=d`;
             return;
           }
+
           window.open(
             `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
               q
@@ -551,6 +606,7 @@
           try {
             await navigator.clipboard.writeText(coordStr);
           } catch (e) {}
+
           const url = `../../web/Contribute/contributespot.html?coords=${encodeURIComponent(
             coordStr
           )}`;
@@ -585,9 +641,32 @@
           removeClickPin();
         }
 
-        // smart center so popup is never cut off on desktop
+        function closeUserPopup() {
+          if (userPopup && userPopup.isOpen()) {
+            userPopup.remove();
+          }
+          updateFooterVisibility();
+        }
+
+        function closeAll() {
+          if (activePopup) {
+            activePopup.remove();
+            activePopup = null;
+          }
+
+          if (activeCoordPopup) {
+            activeCoordPopup.remove();
+            activeCoordPopup = null;
+          }
+
+          closeUserPopup();
+          removeClickPin();
+          updateFooterVisibility();
+        }
+
         function easeToSpotWithPopupSpace(lng, lat) {
           const isMobile = window.matchMedia("(max-width: 700px)").matches;
+
           if (isMobile) {
             map.easeTo({
               center: [lng, lat],
@@ -612,7 +691,8 @@
         function makeSpotPopupHTML(props) {
           const name = escapeHTML(props.name);
           const desc = escapeHTML(props.description);
-          const addedByRaw = props.addedBy || props.added_by || props.author || "";
+          const addedByRaw =
+            props.addedBy || props.added_by || props.author || "";
           const addedBy = escapeHTML(addedByRaw || "unknown");
           const photoURL = safeHttpsURL(props.photoURL);
 
@@ -638,16 +718,9 @@
                   <span class="sub">open GPS</span>
                 </button>
               </div>
-            </div>`;
+            </div>
+          `;
         }
-
-        // -----------------------------------------
-        // 1) Map source + clustering (no DOM markers)
-        // -----------------------------------------
-        const SOURCE_ID = "spots";
-        const LAYER_CLUSTERS = "spots-clusters";
-        const LAYER_CLUSTER_COUNT = "spots-cluster-count";
-        const LAYER_POINTS = "spots-points";
 
         function emptyGeoJSON() {
           return { type: "FeatureCollection", features: [] };
@@ -656,12 +729,12 @@
         function setSpotsGeoJSON(features) {
           const src = map.getSource(SOURCE_ID);
           if (!src) return;
-          src.setData({ type: "FeatureCollection", features });
+          src.setData({
+            type: "FeatureCollection",
+            features,
+          });
         }
 
-        // -----------------------------------------
-        // 2) Viewport-based loading (geohash queries)
-        // -----------------------------------------
         let lastFetchToken = 0;
         let fetchTimer = null;
 
@@ -669,17 +742,18 @@
           return (x * Math.PI) / 180;
         }
 
-        // distance in meters between two lat/lng
         function haversineMeters(aLat, aLng, bLat, bLng) {
           const R = 6371000;
           const dLat = toRad(bLat - aLat);
           const dLng = toRad(bLng - aLng);
+
           const s1 =
             Math.sin(dLat / 2) * Math.sin(dLat / 2) +
             Math.cos(toRad(aLat)) *
               Math.cos(toRad(bLat)) *
               Math.sin(dLng / 2) *
               Math.sin(dLng / 2);
+
           const c = 2 * Math.atan2(Math.sqrt(s1), Math.sqrt(1 - s1));
           return R * c;
         }
@@ -690,8 +764,8 @@
           const b = map.getBounds();
           const sw = b.getSouthWest();
           const ne = b.getNorthEast();
-
           const center = map.getCenter();
+
           const radiusM = haversineMeters(
             center.lat,
             center.lng,
@@ -699,12 +773,11 @@
             ne.lng
           );
 
-          // If geofire-common exists -> good scalable geo queries
           const canGeoHash =
             window.geofire &&
             typeof window.geofire.geohashQueryBounds === "function";
 
-          let docsById = new Map();
+          const docsById = new Map();
 
           try {
             if (canGeoHash) {
@@ -713,7 +786,6 @@
                 radiusM
               );
 
-              // Run multiple small queries, dedupe by doc.id
               await Promise.all(
                 bounds.map(async (bound) => {
                   const q = db
@@ -729,7 +801,6 @@
                 })
               );
             } else {
-              // Fallback (less exact): lat range query, then filter lng client-side
               const q = db
                 .collection("spots")
                 .where("lat", ">=", sw.lat)
@@ -738,7 +809,12 @@
               const snap = await q.get();
               snap.forEach((doc) => {
                 const d = doc.data();
-                if (d && typeof d.lng === "number" && d.lng >= sw.lng && d.lng <= ne.lng) {
+                if (
+                  d &&
+                  typeof d.lng === "number" &&
+                  d.lng >= sw.lng &&
+                  d.lng <= ne.lng
+                ) {
                   docsById.set(doc.id, d);
                 }
               });
@@ -748,26 +824,27 @@
             return;
           }
 
-          // If a newer fetch started, ignore this result
           if (token !== lastFetchToken) return;
 
-          // Build GeoJSON features and hard-filter by real bounds (always safe)
           const features = [];
+
           docsById.forEach((spot, id) => {
             if (
               !spot ||
               typeof spot.lat !== "number" ||
               typeof spot.lng !== "number"
-            )
+            ) {
               return;
+            }
 
             if (
               spot.lat < sw.lat ||
               spot.lat > ne.lat ||
               spot.lng < sw.lng ||
               spot.lng > ne.lng
-            )
+            ) {
               return;
+            }
 
             features.push({
               type: "Feature",
@@ -797,28 +874,124 @@
           fetchTimer = setTimeout(fetchSpotsForCurrentView, 140);
         }
 
-        // -----------------------------------------
-        // User marker (unchanged)
-        // -----------------------------------------
+        async function zoomToClusterSpots(clusterId, fallbackCoords) {
+          const src = map.getSource(SOURCE_ID);
+          if (!src) return;
+
+          try {
+            const leaves = await src.getClusterLeaves(Number(clusterId), 100, 0);
+
+            if (Array.isArray(leaves) && leaves.length > 1) {
+              const bounds = new maptilersdk.LngLatBounds();
+
+              leaves.forEach((leaf) => {
+                const coords = leaf?.geometry?.coordinates;
+                if (
+                  Array.isArray(coords) &&
+                  typeof coords[0] === "number" &&
+                  typeof coords[1] === "number"
+                ) {
+                  bounds.extend(coords);
+                }
+              });
+
+              if (!bounds.isEmpty()) {
+                map.fitBounds(bounds, {
+                  padding: { top: 90, bottom: 90, left: 90, right: 90 },
+                  maxZoom: 15,
+                  duration: 650,
+                });
+                return;
+              }
+            }
+
+            if (Array.isArray(leaves) && leaves.length === 1) {
+              const onlyCoords = leaves[0]?.geometry?.coordinates;
+              if (Array.isArray(onlyCoords)) {
+                map.easeTo({
+                  center: onlyCoords,
+                  zoom: Math.max(map.getZoom(), 14),
+                  duration: 520,
+                });
+                return;
+              }
+            }
+
+            const zoom = await src.getClusterExpansionZoom(Number(clusterId));
+            map.easeTo({
+              center: fallbackCoords,
+              zoom,
+              duration: 520,
+            });
+          } catch (err) {
+            console.error("Cluster zoom error:", err);
+
+            try {
+              const zoom = await src.getClusterExpansionZoom(Number(clusterId));
+              map.easeTo({
+                center: fallbackCoords,
+                zoom,
+                duration: 520,
+              });
+            } catch (fallbackErr) {
+              console.error("Cluster fallback zoom error:", fallbackErr);
+            }
+          }
+        }
+
         if (navigator.geolocation) {
-          const userMarkerEl = document.createElement("img");
+          userMarkerEl = document.createElement("img");
           userMarkerEl.src = "../../images/playericon.png";
           userMarkerEl.style.width = "28px";
           userMarkerEl.style.height = "28px";
-          userMarkerEl.style.transform = "translate(-50%,-50%)";
           userMarkerEl.classList.add("player-marker");
 
-          const userPopupHTML = `<div style="width:150px;text-align:center;font-family:sans-serif;">
-            <img src="../../images/playeravatar.png" style="width:100%;height:auto;border-radius:6px;margin-bottom:6px;">
-            <strong>This is you</strong><br></div>`;
-          const userPopup = new maptilersdk.Popup({ offset: 25 }).setHTML(
-            userPopupHTML
-          );
+          const userPopupHTML = `
+            <div class="user-popup-card">
+              <img src="../../images/playeravatar.png" alt="Player avatar">
+              <div class="body">
+                <strong>This is you</strong>
+              </div>
+            </div>
+          `;
 
-          const userMarker = new maptilersdk.Marker({ element: userMarkerEl })
+          userPopup = new maptilersdk.Popup({
+            offset: 25,
+            closeButton: true,
+            closeOnClick: false,
+            className: "user-map-popup",
+            maxWidth: "200px",
+          }).setHTML(userPopupHTML);
+
+          userMarker = new maptilersdk.Marker({
+            element: userMarkerEl,
+            anchor: "center",
+          })
             .setLngLat([0, 0])
             .setPopup(userPopup)
             .addTo(map);
+
+          userMarkerEl.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            closeCoordPopup();
+
+            if (activePopup) {
+              activePopup.remove();
+              activePopup = null;
+            }
+
+            if (userPopup.isOpen()) {
+              userPopup.remove();
+            } else {
+              userMarker.togglePopup();
+            }
+
+            updateFooterVisibility();
+          });
+
+          userPopup.on("open", updateFooterVisibility);
+          userPopup.on("close", updateFooterVisibility);
 
           navigator.geolocation.getCurrentPosition(
             (pos) => {
@@ -831,9 +1004,6 @@
           );
         }
 
-        // -----------------------------------------
-        // Global click handler for popup buttons
-        // -----------------------------------------
         document.addEventListener("click", async (e) => {
           const navBtn = e.target.closest("[data-action='nav']");
           if (navBtn) {
@@ -853,7 +1023,9 @@
             try {
               await navigator.clipboard.writeText(coords);
               copyBtn.innerText = "Copied!";
-              setTimeout(() => (copyBtn.innerText = "Copy"), 900);
+              setTimeout(() => {
+                copyBtn.innerText = "Copy";
+              }, 900);
             } catch (err) {}
             return;
           }
@@ -865,13 +1037,9 @@
             const lat = Number(addBtn.getAttribute("data-lat"));
             const lng = Number(addBtn.getAttribute("data-lng"));
             await goAddSpot(lat, lng);
-            return;
           }
         });
 
-        // -----------------------------------------
-        // Map load: add source + cluster layers
-        // -----------------------------------------
         map.on("load", () => {
           map.addSource(SOURCE_ID, {
             type: "geojson",
@@ -881,7 +1049,6 @@
             clusterRadius: 55,
           });
 
-          // clusters (circles)
           map.addLayer({
             id: LAYER_CLUSTERS,
             type: "circle",
@@ -891,19 +1058,11 @@
               "circle-color": "rgba(139, 113, 8, 0.95)",
               "circle-stroke-color": "rgba(0,0,0,0.85)",
               "circle-stroke-width": 2,
-              "circle-radius": [
-                "step",
-                ["get", "point_count"],
-                18,
-                25, 22,
-                75, 26,
-                200, 32
-              ],
-              "circle-opacity": 0.95
+              "circle-radius": ["step", ["get", "point_count"], 18, 25, 22, 75, 26, 200, 32],
+              "circle-opacity": 0.95,
             },
           });
 
-          // cluster count (text)
           map.addLayer({
             id: LAYER_CLUSTER_COUNT,
             type: "symbol",
@@ -919,7 +1078,6 @@
             },
           });
 
-          // single points (circles)
           map.addLayer({
             id: LAYER_POINTS,
             type: "circle",
@@ -933,54 +1091,55 @@
             },
           });
 
-          // mouse pointer
           map.on("mouseenter", LAYER_POINTS, () => {
             map.getCanvas().style.cursor = "pointer";
           });
+
           map.on("mouseleave", LAYER_POINTS, () => {
             map.getCanvas().style.cursor = "";
           });
+
           map.on("mouseenter", LAYER_CLUSTERS, () => {
             map.getCanvas().style.cursor = "pointer";
           });
+
           map.on("mouseleave", LAYER_CLUSTERS, () => {
             map.getCanvas().style.cursor = "";
           });
 
-          // click cluster -> zoom in
-          map.on("click", LAYER_CLUSTERS, (e) => {
-            const features = map.queryRenderedFeatures(e.point, {
-              layers: [LAYER_CLUSTERS],
-            });
-            const clusterId = features?.[0]?.properties?.cluster_id;
-            if (clusterId == null) return;
+          map.on("click", LAYER_CLUSTERS, async (e) => {
+            const feature = e.features?.[0];
+            if (!feature) return;
 
-            const src = map.getSource(SOURCE_ID);
-            src.getClusterExpansionZoom(clusterId, (err, zoom) => {
-              if (err) return;
-              const coords = features[0].geometry.coordinates;
-              map.easeTo({
-                center: coords,
-                zoom: zoom,
-                duration: 520,
-              });
-            });
+            const clusterId = Number(feature.properties?.cluster_id);
+            if (!Number.isFinite(clusterId)) return;
+
+            closeCoordPopup();
+            closeUserPopup();
+
+            if (activePopup) {
+              activePopup.remove();
+              activePopup = null;
+            }
+
+            const coords = feature.geometry.coordinates;
+            await zoomToClusterSpots(clusterId, coords);
           });
 
-          // click point -> open your popup
           map.on("click", LAYER_POINTS, (e) => {
-            const f = e.features && e.features[0];
+            const f = e.features?.[0];
             if (!f) return;
 
-            // close coord UI + pin
             closeCoordPopup();
+            closeUserPopup();
 
-            if (activePopup) activePopup.remove();
+            if (activePopup) {
+              activePopup.remove();
+            }
 
             const coords = f.geometry.coordinates;
-            const props = f.properties || {};
+            const props = { ...(f.properties || {}) };
 
-            // properties come as strings sometimes -> force numbers
             props.lat = Number(props.lat);
             props.lng = Number(props.lng);
 
@@ -989,6 +1148,7 @@
               maxWidth: "560px",
               closeButton: true,
               closeOnClick: false,
+              className: "spot-sheet-popup",
             })
               .setLngLat(coords)
               .setHTML(makeSpotPopupHTML(props))
@@ -1005,32 +1165,39 @@
             });
           });
 
-          // initial load
           fetchSpotsForCurrentView();
         });
 
-        // -----------------------------------------
-        // map move -> reload visible spots
-        // -----------------------------------------
         map.on("moveend", scheduleFetch);
         map.on("zoomend", scheduleFetch);
+        map.on("dragstart", closeAll);
 
-        // -----------------------------------------
-        // Map click -> coord popup + pin (only if not clicking spot/cluster)
-        // -----------------------------------------
         map.on("click", (event) => {
-          // if click hits a spot layer, ignore (handled above)
+          const target = event.originalEvent?.target;
+
+          if (
+            target &&
+            (target.closest(".player-marker") ||
+              target.closest(".user-popup-card") ||
+              target.closest(".user-map-popup") ||
+              target.closest(".maplibregl-popup"))
+          ) {
+            return;
+          }
+
           const hits = map.queryRenderedFeatures(event.point, {
             layers: [LAYER_CLUSTERS, LAYER_POINTS],
           });
+
           if (hits && hits.length) return;
+
+          closeUserPopup();
 
           if (activePopup) {
             activePopup.remove();
             activePopup = null;
           }
 
-          // close old coord popup but keep pin handling below
           if (activeCoordPopup) {
             activeCoordPopup.remove();
             activeCoordPopup = null;
@@ -1044,9 +1211,7 @@
           const popupHTML = `
             <div class="coord-popup">
               <strong>Coordinates</strong>
-              <span class="coords">Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(
-            5
-          )}</span>
+              <span class="coords">Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(5)}</span>
               <div class="btn-row">
                 <button data-action="copy-coords" data-coords="${coordStr}">Copy</button>
                 <button class="primary" data-action="add-spot" data-lat="${lat}" data-lng="${lng}">Add spot</button>
@@ -1059,6 +1224,7 @@
             closeButton: true,
             closeOnClick: false,
             maxWidth: "280px",
+            className: "coord-map-popup",
           })
             .setLngLat([lng, lat])
             .setHTML(popupHTML)
@@ -1072,22 +1238,6 @@
             updateFooterVisibility();
           });
         });
-
-        // Close popups on drag/zoom
-        function closeAll() {
-          if (activePopup) {
-            activePopup.remove();
-            activePopup = null;
-          }
-          if (activeCoordPopup) {
-            activeCoordPopup.remove();
-            activeCoordPopup = null;
-          }
-          removeClickPin();
-          updateFooterVisibility();
-        }
-
-        map.on("dragstart", closeAll);
 
         updateFooterVisibility();
       });
