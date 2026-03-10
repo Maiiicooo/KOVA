@@ -331,7 +331,6 @@
         letter-spacing: 0.2px;
       }
 
-      /* enkel de spot popup wordt mobile bottom sheet */
       @media (max-width: 700px) {
         .spot-sheet-popup.maplibregl-popup {
           position: fixed !important;
@@ -393,6 +392,10 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
+      }
+
+      .coord-popup .btn-row.single {
+        grid-template-columns: 1fr;
       }
 
       .coord-popup button {
@@ -553,6 +556,9 @@
         const LAYER_CLUSTERS = "spots-clusters";
         const LAYER_CLUSTER_COUNT = "spots-cluster-count";
         const LAYER_POINTS = "spots-points";
+
+        const SEARCH_RADIUS_KM = 10;
+        let lastSearchCenter = null;
 
         function updateFooterVisibility() {
           const somethingOpen =
@@ -722,6 +728,20 @@
           `;
         }
 
+        function makeNoSpotsPopupHTML(lat, lng, radiusKm) {
+  return `
+    <div class="coord-popup">
+      <strong>No spots found</strong>
+      <span class="coords">Nothing here yet in this ${radiusKm} km radius.<br>Be the first to mark this spot.</span>
+      <div class="btn-row single">
+        <button class="primary" data-action="add-spot" data-lat="${lat}" data-lng="${lng}">
+          Add spot
+        </button>
+      </div>
+    </div>
+  `;
+}
+
         function emptyGeoJSON() {
           return { type: "FeatureCollection", features: [] };
         }
@@ -734,9 +754,6 @@
             features,
           });
         }
-
-        let lastFetchToken = 0;
-        let fetchTimer = null;
 
         function toRad(x) {
           return (x * Math.PI) / 180;
@@ -758,31 +775,53 @@
           return R * c;
         }
 
-        async function fetchSpotsForCurrentView() {
-          const token = ++lastFetchToken;
+        function getBoundsForRadius(lat, lng, radiusKm) {
+          const latDelta = radiusKm / 111;
+          const lngDelta = radiusKm / (111 * Math.cos((lat * Math.PI) / 180));
 
-          const b = map.getBounds();
-          const sw = b.getSouthWest();
-          const ne = b.getNorthEast();
-          const center = map.getCenter();
+          return {
+            minLat: lat - latDelta,
+            maxLat: lat + latDelta,
+            minLng: lng - lngDelta,
+            maxLng: lng + lngDelta,
+          };
+        }
 
-          const radiusM = haversineMeters(
-            center.lat,
-            center.lng,
-            ne.lat,
-            ne.lng
-          );
+        function showNoSpotsPopup(lat, lng, radiusKm) {
+          closeCoordPopup();
+          placeClickPin(lng, lat);
 
+          activeCoordPopup = new maptilersdk.Popup({
+            offset: 18,
+            closeButton: true,
+            closeOnClick: false,
+            maxWidth: "280px",
+            className: "coord-map-popup",
+          })
+            .setLngLat([lng, lat])
+            .setHTML(makeNoSpotsPopupHTML(lat, lng, radiusKm))
+            .addTo(map);
+
+          updateFooterVisibility();
+
+          activeCoordPopup.once("close", () => {
+            activeCoordPopup = null;
+            removeClickPin();
+            updateFooterVisibility();
+          });
+        }
+
+        async function fetchSpotsInRadius(centerLat, centerLng, radiusKm = SEARCH_RADIUS_KM) {
+          const radiusM = radiusKm * 1000;
+          const docsById = new Map();
           const canGeoHash =
             window.geofire &&
             typeof window.geofire.geohashQueryBounds === "function";
 
-          const docsById = new Map();
-
           try {
             if (canGeoHash) {
               const bounds = window.geofire.geohashQueryBounds(
-                [center.lat, center.lng],
+                [centerLat, centerLng],
                 radiusM
               );
 
@@ -801,10 +840,11 @@
                 })
               );
             } else {
+              const box = getBoundsForRadius(centerLat, centerLng, radiusKm);
               const q = db
                 .collection("spots")
-                .where("lat", ">=", sw.lat)
-                .where("lat", "<=", ne.lat);
+                .where("lat", ">=", box.minLat)
+                .where("lat", "<=", box.maxLat);
 
               const snap = await q.get();
               snap.forEach((doc) => {
@@ -812,19 +852,17 @@
                 if (
                   d &&
                   typeof d.lng === "number" &&
-                  d.lng >= sw.lng &&
-                  d.lng <= ne.lng
+                  d.lng >= box.minLng &&
+                  d.lng <= box.maxLng
                 ) {
                   docsById.set(doc.id, d);
                 }
               });
             }
           } catch (err) {
-            console.error("Spot fetch error:", err);
+            console.error("Radius fetch error:", err);
             return;
           }
-
-          if (token !== lastFetchToken) return;
 
           const features = [];
 
@@ -837,14 +875,14 @@
               return;
             }
 
-            if (
-              spot.lat < sw.lat ||
-              spot.lat > ne.lat ||
-              spot.lng < sw.lng ||
-              spot.lng > ne.lng
-            ) {
-              return;
-            }
+            const distance = haversineMeters(
+              centerLat,
+              centerLng,
+              spot.lat,
+              spot.lng
+            );
+
+            if (distance > radiusM) return;
 
             features.push({
               type: "Feature",
@@ -867,11 +905,20 @@
           });
 
           setSpotsGeoJSON(features);
-        }
+          lastSearchCenter = { lat: centerLat, lng: centerLng, radiusKm };
 
-        function scheduleFetch() {
-          if (fetchTimer) clearTimeout(fetchTimer);
-          fetchTimer = setTimeout(fetchSpotsForCurrentView, 140);
+          if (features.length === 0) {
+            showNoSpotsPopup(centerLat, centerLng, radiusKm);
+            return;
+          }
+
+          closeCoordPopup();
+
+          map.easeTo({
+            center: [centerLng, centerLat],
+            zoom: Math.max(map.getZoom(), 11),
+            duration: 500,
+          });
         }
 
         async function zoomToClusterSpots(clusterId, fallbackCoords) {
@@ -997,7 +1044,6 @@
             (pos) => {
               userMarker.setLngLat([pos.coords.longitude, pos.coords.latitude]);
               map.setCenter([pos.coords.longitude, pos.coords.latitude]);
-              scheduleFetch();
             },
             (err) => console.warn("Locatie fout:", err.message),
             { enableHighAccuracy: true }
@@ -1015,21 +1061,6 @@
             return;
           }
 
-          const copyBtn = e.target.closest("[data-action='copy-coords']");
-          if (copyBtn) {
-            e.preventDefault();
-            e.stopPropagation();
-            const coords = String(copyBtn.getAttribute("data-coords") || "");
-            try {
-              await navigator.clipboard.writeText(coords);
-              copyBtn.innerText = "Copied!";
-              setTimeout(() => {
-                copyBtn.innerText = "Copy";
-              }, 900);
-            } catch (err) {}
-            return;
-          }
-
           const addBtn = e.target.closest("[data-action='add-spot']");
           if (addBtn) {
             e.preventDefault();
@@ -1037,6 +1068,20 @@
             const lat = Number(addBtn.getAttribute("data-lat"));
             const lng = Number(addBtn.getAttribute("data-lng"));
             await goAddSpot(lat, lng);
+            return;
+          }
+
+          const showBtn = e.target.closest("[data-action='show-spots']");
+          if (showBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const lat = Number(showBtn.getAttribute("data-lat"));
+            const lng = Number(showBtn.getAttribute("data-lng"));
+            const radiusKm = Number(showBtn.getAttribute("data-radius")) || SEARCH_RADIUS_KM;
+
+            await fetchSpotsInRadius(lat, lng, radiusKm);
+            return;
           }
         });
 
@@ -1164,12 +1209,8 @@
               updateFooterVisibility();
             });
           });
-
-          fetchSpotsForCurrentView();
         });
 
-        map.on("moveend", scheduleFetch);
-        map.on("zoomend", scheduleFetch);
         map.on("dragstart", closeAll);
 
         map.on("click", (event) => {
@@ -1204,7 +1245,6 @@
           }
 
           const { lng, lat } = event.lngLat;
-          const coordStr = `${lat.toFixed(5)},${lng.toFixed(5)}`;
 
           placeClickPin(lng, lat);
 
@@ -1213,8 +1253,12 @@
               <strong>Coordinates</strong>
               <span class="coords">Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(5)}</span>
               <div class="btn-row">
-                <button data-action="copy-coords" data-coords="${coordStr}">Copy</button>
-                <button class="primary" data-action="add-spot" data-lat="${lat}" data-lng="${lng}">Add spot</button>
+                <button data-action="show-spots" data-lat="${lat}" data-lng="${lng}" data-radius="${SEARCH_RADIUS_KM}">
+                  Show spots
+                </button>
+                <button class="primary" data-action="add-spot" data-lat="${lat}" data-lng="${lng}">
+                  Add spot
+                </button>
               </div>
             </div>
           `;
