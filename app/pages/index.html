@@ -34,7 +34,12 @@
       body {
         margin: 0;
         padding: 0;
-        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
           sans-serif;
         background: #161515;
         color: var(--fg);
@@ -80,7 +85,9 @@
         color: var(--fg);
         font-size: 0.95rem;
         opacity: 0.8;
-        transition: opacity 0.25s, color 0.25s;
+        transition:
+          opacity 0.25s,
+          color 0.25s;
       }
 
       .nav-right a:hover {
@@ -153,7 +160,9 @@
       }
 
       footer {
-        transition: opacity 0.18s ease, transform 0.18s ease;
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease;
       }
 
       footer.footer-hidden {
@@ -279,7 +288,9 @@
         cursor: pointer;
         font-weight: 650;
         letter-spacing: 0.2px;
-        transition: transform 0.12s ease, background 0.2s ease,
+        transition:
+          transform 0.12s ease,
+          background 0.2s ease,
           border-color 0.2s ease;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
@@ -315,7 +326,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: radial-gradient(
+        background:
+          radial-gradient(
             circle at 30% 20%,
             rgba(139, 113, 8, 0.25),
             transparent 55%
@@ -372,7 +384,11 @@
         padding: 10px 12px;
         color: white;
         min-width: 180px;
-        font-family: Inter, system-ui, -apple-system, sans-serif;
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          sans-serif;
       }
 
       .coord-popup strong {
@@ -418,7 +434,11 @@
       .user-popup-card {
         width: 180px;
         text-align: center;
-        font-family: Inter, system-ui, -apple-system, sans-serif;
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          sans-serif;
         background: linear-gradient(180deg, var(--panel), rgba(0, 0, 0, 0.92));
         border: 1px solid rgba(255, 255, 255, 0.09);
         border-radius: 16px;
@@ -477,7 +497,9 @@
           <img src="../../images/kogaskeer.png" alt="Kova logo small" />
         </a>
         <div class="beta">
-          <a href="../../app/pages/tutorial.html" style="color: white">codex!</a>
+          <a href="../../app/pages/tutorial.html" style="color: white"
+            >codex!</a
+          >
         </div>
       </div>
       <div class="nav-right">
@@ -505,12 +527,16 @@
       document.addEventListener("DOMContentLoaded", () => {
         maptilersdk.config.apiKey = "7TBqy4hTdFfQeIq7oXKj";
 
+        const DEFAULT_CENTER = [4.5, 50.85];
+        const DEFAULT_ZOOM = 7.5;
+        const USER_START_ZOOM = 13.5;
+
         const map = new maptilersdk.Map({
           container: "map",
           style:
             "https://api.maptiler.com/maps/dataviz-dark/style.json?key=7TBqy4hTdFfQeIq7oXKj",
-          center: [4.5, 50.85],
-          zoom: 7.5,
+          center: DEFAULT_CENTER,
+          zoom: DEFAULT_ZOOM,
           minZoom: 5,
           navigationControl: false,
           projectionControl: false,
@@ -551,6 +577,10 @@
         let userMarker = null;
         let userPopup = null;
         let userMarkerEl = null;
+        let userLat = null;
+        let userLng = null;
+        let mapLoaded = false;
+        let initialNearbyLoaded = false;
 
         const SOURCE_ID = "spots";
         const LAYER_CLUSTERS = "spots-clusters";
@@ -562,7 +592,9 @@
 
         function updateFooterVisibility() {
           const somethingOpen =
-            !!activePopup || !!activeCoordPopup || !!(userPopup && userPopup.isOpen());
+            !!activePopup ||
+            !!activeCoordPopup ||
+            !!(userPopup && userPopup.isOpen());
           if (somethingOpen) hideFooter();
           else showFooter();
         }
@@ -594,16 +626,16 @@
 
           if (isApple) {
             window.location.href = `https://maps.apple.com/?daddr=${encodeURIComponent(
-              q
+              q,
             )}&dirflg=d`;
             return;
           }
 
           window.open(
             `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-              q
+              q,
             )}`,
-            "_blank"
+            "_blank",
           );
         }
 
@@ -614,7 +646,7 @@
           } catch (e) {}
 
           const url = `../../web/Contribute/contributespot.html?coords=${encodeURIComponent(
-            coordStr
+            coordStr,
           )}`;
           window.location.href = url;
         }
@@ -729,18 +761,18 @@
         }
 
         function makeNoSpotsPopupHTML(lat, lng, radiusKm) {
-  return `
-    <div class="coord-popup">
-      <strong>No spots found</strong>
-      <span class="coords">Nothing here yet in this ${radiusKm} km radius.<br>Be the first to mark this spot.</span>
-      <div class="btn-row single">
-        <button class="primary" data-action="add-spot" data-lat="${lat}" data-lng="${lng}">
-          Add spot
-        </button>
-      </div>
-    </div>
-  `;
-}
+          return `
+            <div class="coord-popup">
+              <strong>No spots found</strong>
+              <span class="coords">Nothing here yet in this ${radiusKm} km radius.<br>Be the first to mark this spot.</span>
+              <div class="btn-row single">
+                <button class="primary" data-action="add-spot" data-lat="${lat}" data-lng="${lng}">
+                  Add spot
+                </button>
+              </div>
+            </div>
+          `;
+        }
 
         function emptyGeoJSON() {
           return { type: "FeatureCollection", features: [] };
@@ -811,7 +843,13 @@
           });
         }
 
-        async function fetchSpotsInRadius(centerLat, centerLng, radiusKm = SEARCH_RADIUS_KM) {
+        async function fetchSpotsInRadius(
+          centerLat,
+          centerLng,
+          radiusKm = SEARCH_RADIUS_KM,
+          options = {},
+        ) {
+          const { recenter = true, showEmptyPopup = true } = options;
           const radiusM = radiusKm * 1000;
           const docsById = new Map();
           const canGeoHash =
@@ -822,7 +860,7 @@
             if (canGeoHash) {
               const bounds = window.geofire.geohashQueryBounds(
                 [centerLat, centerLng],
-                radiusM
+                radiusM,
               );
 
               await Promise.all(
@@ -837,7 +875,7 @@
                   snap.forEach((doc) => {
                     docsById.set(doc.id, doc.data());
                   });
-                })
+                }),
               );
             } else {
               const box = getBoundsForRadius(centerLat, centerLng, radiusKm);
@@ -879,7 +917,7 @@
               centerLat,
               centerLng,
               spot.lat,
-              spot.lng
+              spot.lng,
             );
 
             if (distance > radiusM) return;
@@ -908,17 +946,21 @@
           lastSearchCenter = { lat: centerLat, lng: centerLng, radiusKm };
 
           if (features.length === 0) {
-            showNoSpotsPopup(centerLat, centerLng, radiusKm);
+            if (showEmptyPopup) {
+              showNoSpotsPopup(centerLat, centerLng, radiusKm);
+            }
             return;
           }
 
           closeCoordPopup();
 
-          map.easeTo({
-            center: [centerLng, centerLat],
-            zoom: Math.max(map.getZoom(), 11),
-            duration: 500,
-          });
+          if (recenter) {
+            map.easeTo({
+              center: [centerLng, centerLat],
+              zoom: Math.max(map.getZoom(), 11),
+              duration: 500,
+            });
+          }
         }
 
         async function zoomToClusterSpots(clusterId, fallbackCoords) {
@@ -926,7 +968,11 @@
           if (!src) return;
 
           try {
-            const leaves = await src.getClusterLeaves(Number(clusterId), 100, 0);
+            const leaves = await src.getClusterLeaves(
+              Number(clusterId),
+              100,
+              0,
+            );
 
             if (Array.isArray(leaves) && leaves.length > 1) {
               const bounds = new maptilersdk.LngLatBounds();
@@ -986,6 +1032,50 @@
           }
         }
 
+        async function maybeLoadInitialNearbySpots() {
+          if (
+            initialNearbyLoaded ||
+            !mapLoaded ||
+            typeof userLat !== "number" ||
+            typeof userLng !== "number"
+          ) {
+            return;
+          }
+
+          initialNearbyLoaded = true;
+
+          userMarker.setLngLat([userLng, userLat]);
+          map.jumpTo({
+            center: [userLng, userLat],
+            zoom: USER_START_ZOOM,
+          });
+
+          await fetchSpotsInRadius(userLat, userLng, SEARCH_RADIUS_KM, {
+            recenter: false,
+            showEmptyPopup: false,
+          });
+        }
+
+        async function refreshNearbyUserSpots() {
+          if (
+            typeof userLat !== "number" ||
+            typeof userLng !== "number" ||
+            !mapLoaded
+          ) {
+            return;
+          }
+
+          map.jumpTo({
+            center: [userLng, userLat],
+            zoom: USER_START_ZOOM,
+          });
+
+          await fetchSpotsInRadius(userLat, userLng, SEARCH_RADIUS_KM, {
+            recenter: false,
+            showEmptyPopup: false,
+          });
+        }
+
         if (navigator.geolocation) {
           userMarkerEl = document.createElement("img");
           userMarkerEl.src = "../../images/playericon.png";
@@ -1014,11 +1104,11 @@
             element: userMarkerEl,
             anchor: "center",
           })
-            .setLngLat([0, 0])
+            .setLngLat(DEFAULT_CENTER)
             .setPopup(userPopup)
             .addTo(map);
 
-          userMarkerEl.addEventListener("click", (ev) => {
+          userMarkerEl.addEventListener("click", async (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
             closeCoordPopup();
@@ -1034,6 +1124,7 @@
               userMarker.togglePopup();
             }
 
+            await refreshNearbyUserSpots();
             updateFooterVisibility();
           });
 
@@ -1041,12 +1132,19 @@
           userPopup.on("close", updateFooterVisibility);
 
           navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              userMarker.setLngLat([pos.coords.longitude, pos.coords.latitude]);
-              map.setCenter([pos.coords.longitude, pos.coords.latitude]);
+            async (pos) => {
+              userLng = pos.coords.longitude;
+              userLat = pos.coords.latitude;
+              await maybeLoadInitialNearbySpots();
             },
-            (err) => console.warn("Locatie fout:", err.message),
-            { enableHighAccuracy: true }
+            (err) => {
+              console.warn("Locatie fout:", err.message);
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 30000,
+            },
           );
         }
 
@@ -1078,14 +1176,17 @@
 
             const lat = Number(showBtn.getAttribute("data-lat"));
             const lng = Number(showBtn.getAttribute("data-lng"));
-            const radiusKm = Number(showBtn.getAttribute("data-radius")) || SEARCH_RADIUS_KM;
+            const radiusKm =
+              Number(showBtn.getAttribute("data-radius")) || SEARCH_RADIUS_KM;
 
             await fetchSpotsInRadius(lat, lng, radiusKm);
             return;
           }
         });
 
-        map.on("load", () => {
+        map.on("load", async () => {
+          mapLoaded = true;
+
           map.addSource(SOURCE_ID, {
             type: "geojson",
             data: emptyGeoJSON(),
@@ -1103,7 +1204,17 @@
               "circle-color": "rgba(139, 113, 8, 0.95)",
               "circle-stroke-color": "rgba(0,0,0,0.85)",
               "circle-stroke-width": 2,
-              "circle-radius": ["step", ["get", "point_count"], 18, 25, 22, 75, 26, 200, 32],
+              "circle-radius": [
+                "step",
+                ["get", "point_count"],
+                18,
+                25,
+                22,
+                75,
+                26,
+                200,
+                32,
+              ],
               "circle-opacity": 0.95,
             },
           });
@@ -1209,6 +1320,8 @@
               updateFooterVisibility();
             });
           });
+
+          await maybeLoadInitialNearbySpots();
         });
 
         map.on("dragstart", closeAll);
@@ -1251,7 +1364,9 @@
           const popupHTML = `
             <div class="coord-popup">
               <strong>Coordinates</strong>
-              <span class="coords">Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(5)}</span>
+              <span class="coords">Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(
+                5,
+              )}</span>
               <div class="btn-row">
                 <button data-action="show-spots" data-lat="${lat}" data-lng="${lng}" data-radius="${SEARCH_RADIUS_KM}">
                   Show spots
