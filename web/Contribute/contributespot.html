@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -17,7 +17,12 @@
         margin: 0;
         background: var(--bg);
         color: var(--fg);
-        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
           sans-serif;
         height: 100dvh;
         display: flex;
@@ -112,6 +117,7 @@
         font-size: 13px;
         margin-top: -12px;
       }
+
       .field-error.show {
         display: block;
         color: #ffb4b4;
@@ -129,7 +135,14 @@
         margin-top: -10px;
       }
 
-      /* NEW: modal popup */
+      .status-error {
+        color: #ffb4b4 !important;
+      }
+
+      .status-success {
+        color: #cfcfcf !important;
+      }
+
       .modal-overlay {
         position: fixed;
         inset: 0;
@@ -140,9 +153,11 @@
         padding: 20px;
         z-index: 9999;
       }
+
       .modal-overlay.show {
         display: flex;
       }
+
       .modal {
         width: 100%;
         max-width: 520px;
@@ -152,23 +167,28 @@
         padding: 18px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
       }
+
       .modal h2 {
         margin: 0 0 10px 0;
         font-size: 18px;
         letter-spacing: 0.2px;
       }
+
       .modal p {
         margin: 0 0 14px 0;
         color: var(--muted);
         line-height: 1.6;
         font-size: 14px;
+        white-space: pre-line;
       }
+
       .modal-actions {
         display: flex;
         gap: 10px;
         justify-content: flex-end;
         margin-top: 6px;
       }
+
       .btn {
         padding: 10px 12px;
         border-radius: 10px;
@@ -178,13 +198,13 @@
         cursor: pointer;
         font-weight: 600;
       }
+
       .btn.primary {
         background: #fff;
         color: #000;
         border: none;
       }
 
-      /* NEW: submit disabled style */
       #submitBtn[disabled] {
         opacity: 0.55;
         cursor: not-allowed;
@@ -304,8 +324,9 @@
           </p>
 
           <p style="color: var(--muted); font-size: 14px; margin-bottom: 1px">
-            <strong style="color: #8b7108">With Google maps:</strong> open Google
-            Maps, tap & hold the spot -> copy the coordinates -> paste them here.
+            <strong style="color: #8b7108">With Google maps:</strong> open
+            Google Maps, tap & hold the spot -> copy the coordinates -> paste
+            them here.
           </p>
 
           <input
@@ -327,7 +348,12 @@
           <label style="font-size: 15px; color: var(--muted)">
             Spot photo <strong style="color: #8b7108">(recommended)</strong>
             <span
-              style="display: block; font-size: 12px; margin-top: 6px; opacity: 0.8"
+              style="
+                display: block;
+                font-size: 12px;
+                margin-top: 6px;
+                opacity: 0.8;
+              "
             >
               Tip: you can take a photo or pick one from your gallery
             </span>
@@ -363,15 +389,37 @@
       </section>
     </div>
 
-    <!-- NEW: success modal -->
     <div id="successOverlay" class="modal-overlay" aria-hidden="true">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="successTitle">
-        <h2 id="successTitle">Spot submitted </h2>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="successTitle"
+      >
+        <h2 id="successTitle">Spot submitted</h2>
         <p id="successText">
-          Thanks! Your spot was added to the review queue and will show up on the map once validated.
+          Thanks! Your spot was added to the review queue and will show up on
+          the map once validated.
         </p>
         <div class="modal-actions">
           <button id="closeModalBtn" class="btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="duplicateOverlay" class="modal-overlay" aria-hidden="true">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="duplicateTitle"
+      >
+        <h2 id="duplicateTitle">Spot already exists nearby</h2>
+        <p id="duplicateText">
+          There is already a spot close to these coordinates.
+        </p>
+        <div class="modal-actions">
+          <button id="closeDuplicateBtn" class="btn primary">Got it</button>
         </div>
       </div>
     </div>
@@ -383,6 +431,9 @@
         collection,
         addDoc,
         serverTimestamp,
+        getDocs,
+        query,
+        where,
       } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
       import {
         getStorage,
@@ -400,6 +451,8 @@
         appId: "1:873689812978:web:e0581f3df823e51239656b",
         measurementId: "G-VM5224Z3K6",
       };
+
+      const DUPLICATE_BLOCK_RADIUS_M = 80;
 
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
@@ -420,21 +473,27 @@
       const photoInput = document.getElementById("spotPhoto");
       const photoStatus = document.getElementById("photoStatus");
 
-      // modal elements
       const successOverlay = document.getElementById("successOverlay");
       const closeModalBtn = document.getElementById("closeModalBtn");
       const successText = document.getElementById("successText");
 
+      const duplicateOverlay = document.getElementById("duplicateOverlay");
+      const duplicateText = document.getElementById("duplicateText");
+      const closeDuplicateBtn = document.getElementById("closeDuplicateBtn");
+
       let isSubmitting = false;
 
-      // supports: contributespot.html?coords=lat,lng
       (function autofillCoordsFromUrl() {
         const params = new URLSearchParams(window.location.search);
         const fromUrl = params.get("coords");
         if (!fromUrl) return;
 
         if (coordsEl) coordsEl.value = fromUrl;
-        window.history.replaceState({}, document.title, window.location.pathname);
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
       })();
 
       const savedName = localStorage.getItem("kova_addedBy");
@@ -463,6 +522,94 @@
         return { lat, lng };
       }
 
+      function toRad(x) {
+        return (x * Math.PI) / 180;
+      }
+
+      function haversineMeters(aLat, aLng, bLat, bLng) {
+        const R = 6371000;
+        const dLat = toRad(bLat - aLat);
+        const dLng = toRad(bLng - aLng);
+
+        const s1 =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(toRad(aLat)) *
+            Math.cos(toRad(bLat)) *
+            Math.sin(dLng / 2) *
+            Math.sin(dLng / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(s1), Math.sqrt(1 - s1));
+        return R * c;
+      }
+
+      function getBoundsForRadius(lat, lng, radiusMeters) {
+        const radiusKm = radiusMeters / 1000;
+        const safeCos = Math.max(Math.cos((lat * Math.PI) / 180), 0.01);
+        const latDelta = radiusKm / 111;
+        const lngDelta = radiusKm / (111 * safeCos);
+
+        return {
+          minLat: lat - latDelta,
+          maxLat: lat + latDelta,
+          minLng: lng - lngDelta,
+          maxLng: lng + lngDelta,
+        };
+      }
+
+      async function findNearbyDuplicate(
+        lat,
+        lng,
+        radiusMeters = DUPLICATE_BLOCK_RADIUS_M,
+      ) {
+        const bounds = getBoundsForRadius(lat, lng, radiusMeters);
+        const collectionsToCheck = ["spots", "pending_spots"];
+        let nearest = null;
+
+        for (const collectionName of collectionsToCheck) {
+          const q = query(
+            collection(db, collectionName),
+            where("lat", ">=", bounds.minLat),
+            where("lat", "<=", bounds.maxLat),
+          );
+
+          const snap = await getDocs(q);
+
+          snap.forEach((doc) => {
+            const data = doc.data();
+
+            if (
+              !data ||
+              typeof data.lat !== "number" ||
+              typeof data.lng !== "number"
+            ) {
+              return;
+            }
+
+            if (data.lng < bounds.minLng || data.lng > bounds.maxLng) {
+              return;
+            }
+
+            const distance = haversineMeters(lat, lng, data.lat, data.lng);
+
+            if (distance <= radiusMeters) {
+              if (!nearest || distance < nearest.distance) {
+                nearest = {
+                  id: doc.id,
+                  collectionName,
+                  distance,
+                  name: data.name || "",
+                  lat: data.lat,
+                  lng: data.lng,
+                  status: data.status || "",
+                };
+              }
+            }
+          });
+        }
+
+        return nearest;
+      }
+
       function setCoordsValidUI(isValid, parsed) {
         if (isValid) {
           coordsEl.classList.remove("invalid");
@@ -475,23 +622,29 @@
         }
       }
 
-      function setSubmittingUI(submitting) {
+      function setSubmittingUI(submitting, label = null) {
         isSubmitting = submitting;
-        submitBtn.disabled = submitting; // lock button during upload/addDoc
-        submitBtn.textContent = submitting ? "Submitting…" : "Submit spot";
+        submitBtn.disabled = submitting;
+        submitBtn.textContent =
+          label || (submitting ? "Submitting…" : "Submit spot");
+      }
+
+      function setStatus(message = "", type = "") {
+        statusMsg.textContent = message;
+        statusMsg.classList.remove("status-error", "status-success");
+
+        if (type === "error") statusMsg.classList.add("status-error");
+        if (type === "success") statusMsg.classList.add("status-success");
       }
 
       function validateCoordsLive() {
         const parsed = parseCoordinates(coordsEl.value);
-
-        // only lock submit if coords invalid AND user actually typed something
-        // + keep it simple: if empty => don't scream red immediately, just disable submit
         const hasValue = coordsEl.value.trim().length > 0;
+
         if (!hasValue) {
           coordsEl.classList.remove("invalid");
           coordsError.classList.remove("show");
           coordsHint.textContent = "Example: 51.2194, 4.4025";
-          // disable submit until coords present
           submitBtn.disabled = true || isSubmitting;
           return;
         }
@@ -503,7 +656,6 @@
       coordsEl.addEventListener("input", validateCoordsLive);
       coordsEl.addEventListener("blur", validateCoordsLive);
 
-      // NEW: show chosen photo name (camera or gallery)
       photoInput.addEventListener("change", () => {
         const file = photoInput.files && photoInput.files[0];
         photoStatus.textContent = file ? `Selected: ${file.name}` : "";
@@ -524,26 +676,56 @@
         successOverlay.setAttribute("aria-hidden", "true");
       }
 
+      function openDuplicateModal(duplicate) {
+        const distanceLabel =
+          duplicate.distance < 10
+            ? "< 10m"
+            : `${Math.round(duplicate.distance)}m`;
+
+        const existingName = duplicate.name || "Unnamed spot";
+        const queueText =
+          duplicate.collectionName === "pending_spots"
+            ? "This location is already in the review queue."
+            : "This location already exists on the map.";
+
+        duplicateText.textContent = `${queueText}\n\nNearest match: "${existingName}"\nDistance: ${distanceLabel}`;
+        duplicateOverlay.classList.add("show");
+        duplicateOverlay.setAttribute("aria-hidden", "false");
+      }
+
+      function closeDuplicateModal() {
+        duplicateOverlay.classList.remove("show");
+        duplicateOverlay.setAttribute("aria-hidden", "true");
+      }
+
       closeModalBtn.addEventListener("click", closeSuccessModal);
       successOverlay.addEventListener("click", (e) => {
         if (e.target === successOverlay) closeSuccessModal();
       });
-      window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeSuccessModal();
+
+      closeDuplicateBtn.addEventListener("click", closeDuplicateModal);
+      duplicateOverlay.addEventListener("click", (e) => {
+        if (e.target === duplicateOverlay) closeDuplicateModal();
       });
 
-      // initial state: disable submit until coords are present and valid
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeSuccessModal();
+          closeDuplicateModal();
+        }
+      });
+
       submitBtn.disabled = true;
       validateCoordsLive();
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        if (isSubmitting) return; // extra safety
+        if (isSubmitting) return;
 
         const parsed = parseCoordinates(coordsEl.value);
         if (!parsed) {
           setCoordsValidUI(false, { lat: 0, lng: 0 });
-          statusMsg.textContent = "Please enter valid coordinates.";
+          setStatus("Please enter valid coordinates.", "error");
           submitBtn.disabled = true;
           return;
         }
@@ -554,17 +736,39 @@
         const file = photoInput.files && photoInput.files[0];
 
         if (!addedBy) {
-          statusMsg.textContent = "Please add your name.";
+          setStatus("Please add your name.", "error");
           return;
         }
 
-        setSubmittingUI(true);
-        statusMsg.textContent = "Uploading…";
+        if (!name) {
+          setStatus("Please add a spot name.", "error");
+          return;
+        }
 
         const { lat, lng } = parsed;
         let photoURL = null;
 
         try {
+          setSubmittingUI(true, "Checking spot…");
+          setStatus("Checking if this spot already exists...", "");
+
+          const duplicate = await findNearbyDuplicate(
+            lat,
+            lng,
+            DUPLICATE_BLOCK_RADIUS_M,
+          );
+
+          if (duplicate) {
+            setSubmittingUI(false);
+            setStatus("", "");
+            openDuplicateModal(duplicate);
+            validateCoordsLive();
+            return;
+          }
+
+          setSubmittingUI(true, file ? "Uploading photo…" : "Submitting…");
+          setStatus(file ? "Uploading photo..." : "Submitting spot...", "");
+
           localStorage.setItem("kova_addedBy", addedBy);
 
           if (file) {
@@ -573,6 +777,9 @@
             await uploadBytes(fileRef, file);
             photoURL = await getDownloadURL(fileRef);
           }
+
+          setSubmittingUI(true, "Saving spot…");
+          setStatus("Saving spot to review queue...", "");
 
           await addDoc(collection(db, "pending_spots"), {
             name,
@@ -585,23 +792,22 @@
             timestamp: serverTimestamp(),
           });
 
-          // reset + keep name
           form.reset();
+
           const keep = localStorage.getItem("kova_addedBy");
           if (keep) addedByInput.value = keep;
-          photoStatus.textContent = "";
 
-          statusMsg.textContent = ""; // modal is the feedback now
+          photoStatus.textContent = "";
+          setStatus("", "");
           openSuccessModal({ name, lat, lng });
 
-          // re-validate (will disable submit again until new coords)
           validateCoordsLive();
         } catch (err) {
           console.error(err);
-          statusMsg.textContent = "Something went wrong. Please try again.";
+          setStatus("Something went wrong. Please try again.", "error");
         } finally {
           setSubmittingUI(false);
-          validateCoordsLive(); // re-enable only if coords valid (usually empty => disabled)
+          validateCoordsLive();
         }
       });
     </script>
