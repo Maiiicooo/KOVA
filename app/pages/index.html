@@ -25,10 +25,15 @@
         --muted: rgba(255, 255, 255, 0.6);
         --line: rgba(255, 255, 255, 0.12);
         --accent: #8b7108;
-        --panel: rgba(10, 10, 10, 0.92);
-        --panel2: rgba(18, 18, 18, 0.92);
+        --panel: rgba(10, 10, 10, 0.94);
         --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
         --radius: 18px;
+        --success: rgba(163, 214, 158, 0.95);
+        --danger: rgba(255, 160, 160, 0.95);
+      }
+
+      * {
+        box-sizing: border-box;
       }
 
       body {
@@ -58,45 +63,77 @@
         top: 0;
         background: var(--bg);
         z-index: 20;
+        pointer-events: none;
+      }
+
+      nav > * {
+        pointer-events: auto;
       }
 
       .nav-left {
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 0;
       }
 
       .nav-left img {
         height: 50px;
         width: auto;
+        display: block;
       }
 
       .beta {
-        padding: 2px;
+        padding: 2px 6px;
         font-size: 0.85rem;
         background-color: var(--accent);
         color: white;
         letter-spacing: 0.5px;
+        white-space: nowrap;
       }
 
-      .nav-right a {
-        margin-left: 32px;
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .nav-right a,
+      .nav-right button {
         text-decoration: none;
         color: var(--fg);
         font-size: 0.95rem;
+        font-weight: 400;
+        line-height: 1.2;
+        letter-spacing: 0;
         opacity: 0.8;
         transition:
           opacity 0.25s,
           color 0.25s;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+        font-family: inherit;
+        white-space: nowrap;
+        appearance: none;
+        -webkit-appearance: none;
       }
 
-      .nav-right a:hover {
+      .nav-right a:hover,
+      .nav-right button:hover {
         opacity: 1;
         color: var(--accent);
       }
 
       .navbar-seperator {
-        margin-left: 20px;
+        opacity: 0.5;
+        font-size: 0.95rem;
+        line-height: 1.2;
       }
 
       #map {
@@ -157,6 +194,7 @@
         background: transparent !important;
         font-size: 18px;
         padding: 10px 12px !important;
+        z-index: 40;
       }
 
       footer {
@@ -189,19 +227,34 @@
       }
 
       .kova-popup {
-        width: min(520px, calc(100vw - 28px));
+        width: min(600px, calc(100vw - 28px));
+        max-height: min(72vh, 760px);
         background: linear-gradient(180deg, var(--panel), rgba(0, 0, 0, 0.92));
         border: 1px solid rgba(255, 255, 255, 0.09);
         border-radius: var(--radius);
         overflow: hidden;
         box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
       }
 
       .kova-popup .hero {
         position: relative;
-        height: 240px;
+        height: clamp(190px, 24vw, 260px);
         background: #111;
         overflow: hidden;
+        flex-shrink: 0;
+      }
+
+      .kova-popup .body {
+        padding: 16px;
+        background: linear-gradient(
+          180deg,
+          rgba(18, 18, 18, 0.92),
+          rgba(0, 0, 0, 0.94)
+        );
+        overflow-y: auto;
+        overscroll-behavior: contain;
       }
 
       .kova-popup .hero img {
@@ -229,7 +282,7 @@
           180deg,
           rgba(0, 0, 0, 0) 0%,
           rgba(0, 0, 0, 0.25) 55%,
-          rgba(0, 0, 0, 0.75) 100%
+          rgba(0, 0, 0, 0.78) 100%
         );
         pointer-events: none;
         z-index: 2;
@@ -251,28 +304,21 @@
         z-index: 3;
       }
 
-      .kova-popup .body {
-        padding: 16px 16px 14px 16px;
-        background: linear-gradient(
-          180deg,
-          rgba(18, 18, 18, 0.92),
-          rgba(0, 0, 0, 0.92)
-        );
-      }
-
       .kova-popup .title {
-        font-size: 1.15rem;
+        font-size: clamp(1.06rem, 1.2vw, 1.25rem);
         font-weight: 650;
         line-height: 1.2;
         margin: 0 0 8px 0;
         letter-spacing: 0.2px;
+        word-break: break-word;
       }
 
       .kova-popup .desc {
         margin: 0 0 10px 0;
         color: rgba(255, 255, 255, 0.78);
         font-size: 0.96rem;
-        line-height: 1.35;
+        line-height: 1.5;
+        word-break: break-word;
       }
 
       .kova-popup .byline {
@@ -280,6 +326,7 @@
         font-size: 0.86rem;
         color: rgba(255, 255, 255, 0.65);
         letter-spacing: 0.2px;
+        word-break: break-word;
       }
 
       .kova-popup .byline b {
@@ -305,6 +352,7 @@
         user-select: none;
         -webkit-tap-highlight-color: transparent;
         touch-action: manipulation;
+        min-height: 46px;
       }
 
       .kova-btn:hover {
@@ -335,7 +383,6 @@
       .kova-loading {
         position: absolute;
         inset: 0;
-        height: 240px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -387,44 +434,6 @@
         }
       }
 
-      @media (max-width: 700px) {
-        .spot-sheet-popup.maplibregl-popup {
-          position: fixed !important;
-          left: 0 !important;
-          right: 0 !important;
-          bottom: 0 !important;
-          top: auto !important;
-          transform: none !important;
-          margin: 0 !important;
-          z-index: 9999 !important;
-          pointer-events: none;
-        }
-
-        .spot-sheet-popup .maplibregl-popup-content {
-          width: 100vw !important;
-          pointer-events: auto;
-          padding: 0 10px 10px 10px !important;
-          box-sizing: border-box;
-        }
-
-        .kova-popup {
-          width: 100% !important;
-          border-radius: 22px 22px 0 0;
-          border-left: 0;
-          border-right: 0;
-          border-bottom: 0;
-        }
-
-        .kova-popup .hero {
-          height: 210px;
-        }
-
-        .kova-loading,
-        .kova-fallback {
-          height: 210px;
-        }
-      }
-
       .coord-popup {
         background: #1e1e1e;
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -433,6 +442,7 @@
         padding: 10px 12px;
         color: white;
         min-width: 180px;
+        max-width: min(320px, calc(100vw - 32px));
         font-family:
           Inter,
           system-ui,
@@ -450,7 +460,8 @@
         margin-bottom: 10px;
         color: rgba(255, 255, 255, 0.82);
         font-size: 0.92rem;
-        line-height: 1.25;
+        line-height: 1.35;
+        word-break: break-word;
       }
 
       .coord-popup .btn-row {
@@ -464,7 +475,8 @@
       }
 
       .coord-popup button {
-        padding: 9px 10px;
+        padding: 10px 10px;
+        min-height: 42px;
         background: rgba(255, 255, 255, 0.08);
         color: white;
         border: 1px solid rgba(255, 255, 255, 0.14);
@@ -512,13 +524,174 @@
         pointer-events: auto;
       }
 
+      .spot-meta {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin: 14px 0 14px 0;
+      }
+
+      .spot-card-box {
+        background: rgba(255, 255, 255, 0.045);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 12px;
+        min-width: 0;
+      }
+
+      .spot-box-title {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        color: rgba(255, 255, 255, 0.58);
+        margin-bottom: 10px;
+      }
+
+      .rating-summary {
+        font-size: 0.96rem;
+        color: rgba(255, 255, 255, 0.94);
+        line-height: 1.45;
+        word-break: break-word;
+      }
+
+      .rating-summary small {
+        color: rgba(255, 255, 255, 0.62);
+        font-size: 0.82rem;
+        display: inline-block;
+        margin-left: 3px;
+      }
+
+      .stars-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+
+      .star-btn {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.28);
+        font-size: 1.65rem;
+        line-height: 1;
+        padding: 2px;
+        cursor: pointer;
+        transition:
+          transform 0.12s ease,
+          color 0.16s ease,
+          opacity 0.16s ease;
+        min-width: 32px;
+        min-height: 32px;
+      }
+
+      .star-btn.active {
+        color: #d7b84c;
+      }
+
+      .star-btn:hover {
+        transform: translateY(-1px);
+      }
+
+      .star-btn.disabled {
+        cursor: default;
+        opacity: 0.45;
+        pointer-events: none;
+      }
+
+      .rating-note {
+        margin-top: 8px;
+        font-size: 0.84rem;
+        color: rgba(255, 255, 255, 0.65);
+        line-height: 1.45;
+      }
+
+      .popup-status {
+        margin-top: 9px;
+        font-size: 0.84rem;
+        color: rgba(255, 255, 255, 0.72);
+        line-height: 1.4;
+        min-height: 18px;
+      }
+
+      .popup-status.success {
+        color: var(--success);
+      }
+
+      .popup-status.error {
+        color: var(--danger);
+      }
+
+      @media (min-width: 880px) {
+        .spot-meta {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .spot-sheet-popup.maplibregl-popup {
+          position: fixed !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          top: auto !important;
+          transform: none !important;
+          margin: 0 !important;
+          z-index: 9999 !important;
+          pointer-events: none;
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+
+        .spot-sheet-popup .maplibregl-popup-content {
+          width: 100vw !important;
+          max-width: 100vw !important;
+          pointer-events: auto;
+          padding: 0 8px 8px 8px !important;
+          box-sizing: border-box;
+        }
+
+        .spot-sheet-popup .maplibregl-popup-close-button {
+          top: 8px;
+          right: 8px;
+          font-size: 20px;
+        }
+
+        .kova-popup {
+          width: 100% !important;
+          max-height: min(88dvh, 900px);
+          border-radius: 22px 22px 0 0;
+          border-left: 0;
+          border-right: 0;
+          border-bottom: 0;
+        }
+
+        .kova-popup .hero {
+          height: 210px;
+        }
+
+        .kova-popup .body {
+          padding: 14px;
+        }
+
+        .stars-row {
+          gap: 6px;
+        }
+
+        .star-btn {
+          font-size: 1.55rem;
+        }
+      }
+
       @media (max-width: 600px) {
         nav {
-          padding: 16px 18px;
+          padding: 14px 14px;
+          align-items: flex-start;
+          gap: 12px;
         }
 
         .nav-left img {
-          height: 40px;
+          height: 38px;
         }
 
         .beta {
@@ -526,14 +699,48 @@
           padding: 2px 5px;
         }
 
-        .nav-right a {
-          margin-left: 0;
-          font-size: 0.85rem;
+        .nav-right {
+          gap: 8px;
+          row-gap: 4px;
+          max-width: 55%;
         }
 
+        .nav-right a,
+        .nav-right button,
         .navbar-seperator {
-          margin-left: 0;
-          opacity: 0.5;
+          font-size: 0.82rem;
+          line-height: 1.2;
+        }
+
+        .kova-popup .hero {
+          height: 190px;
+        }
+
+        .coord-popup {
+          min-width: 0;
+          width: min(280px, calc(100vw - 28px));
+        }
+
+        .coord-popup .btn-row {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 420px) {
+        .nav-right {
+          max-width: 58%;
+        }
+
+        .kova-popup .hero {
+          height: 176px;
+        }
+
+        .rating-summary {
+          font-size: 0.92rem;
+        }
+
+        .kova-btn {
+          font-size: 0.92rem;
         }
       }
     </style>
@@ -551,10 +758,9 @@
           >
         </div>
       </div>
+
       <div class="nav-right">
         <a href="radar.html">wx</a>
-        <span class="navbar-seperator">//</span>
-        <a href="../../web/Contribute/contributespot.html">add</a>
         <span class="navbar-seperator">//</span>
         <a href="about.html">about</a>
       </div>
@@ -582,6 +788,7 @@
 
         const SEARCH_RADIUS_KM = 10;
         const DUPLICATE_BLOCK_RADIUS_M = 80;
+        const LOCAL_RATINGS_KEY = "kova_spot_ratings_v1";
 
         const map = new maptilersdk.Map({
           container: "map",
@@ -596,9 +803,7 @@
           doubleClickZoom: false,
         });
 
-        if (map.doubleClickZoom) {
-          map.doubleClickZoom.disable();
-        }
+        if (map.doubleClickZoom) map.doubleClickZoom.disable();
 
         map.on("dblclick", (e) => {
           e.preventDefault();
@@ -618,10 +823,6 @@
         const db = firebase.firestore();
 
         const footerEl = document.getElementById("kovaFooter");
-        const showFooter = () =>
-          footerEl && footerEl.classList.remove("footer-hidden");
-        const hideFooter = () =>
-          footerEl && footerEl.classList.add("footer-hidden");
 
         let activePopup = null;
         let activeCoordPopup = null;
@@ -639,13 +840,47 @@
         const LAYER_CLUSTER_COUNT = "spots-cluster-count";
         const LAYER_POINTS = "spots-points";
 
-        let lastSearchCenter = null;
+        function getLocalRatings() {
+          try {
+            const raw = localStorage.getItem(LOCAL_RATINGS_KEY);
+            const parsed = raw ? JSON.parse(raw) : {};
+            return parsed && typeof parsed === "object" ? parsed : {};
+          } catch (e) {
+            return {};
+          }
+        }
+
+        function setLocalRatings(ratings) {
+          try {
+            localStorage.setItem(LOCAL_RATINGS_KEY, JSON.stringify(ratings));
+          } catch (e) {}
+        }
+
+        function getLocalRating(spotId) {
+          const ratings = getLocalRatings();
+          const value = Number(ratings[spotId]);
+          return Number.isInteger(value) && value >= 1 && value <= 5
+            ? value
+            : null;
+        }
+
+        function setLocalRating(spotId, value) {
+          const ratings = getLocalRatings();
+          ratings[spotId] = value;
+          setLocalRatings(ratings);
+        }
+
+        const showFooter = () =>
+          footerEl && footerEl.classList.remove("footer-hidden");
+        const hideFooter = () =>
+          footerEl && footerEl.classList.add("footer-hidden");
 
         function updateFooterVisibility() {
           const somethingOpen =
             !!activePopup ||
             !!activeCoordPopup ||
             !!(userPopup && userPopup.isOpen());
+
           if (somethingOpen) hideFooter();
           else showFooter();
         }
@@ -662,6 +897,13 @@
         function safeHttpsURL(url) {
           const s = String(url || "").trim();
           return s.startsWith("https://") ? s : "";
+        }
+
+        function setStatus(el, message = "", type = "") {
+          if (!el) return;
+          el.textContent = message;
+          el.classList.remove("success", "error");
+          if (type) el.classList.add(type);
         }
 
         function openNavigation(lat, lng) {
@@ -767,7 +1009,7 @@
 
           const canvas = map.getCanvas();
           const h = canvas ? canvas.clientHeight : window.innerHeight;
-          const liftPx = Math.round(Math.min(220, h * 0.22));
+          const liftPx = Math.round(Math.min(420, h * 0.34));
 
           map.easeTo({
             center: [lng, lat],
@@ -816,6 +1058,15 @@
           });
         }
 
+        function renderStars(avgRating) {
+          const rounded = Math.round(Number(avgRating) || 0);
+          let html = "";
+          for (let i = 1; i <= 5; i++) {
+            html += i <= rounded ? "★" : "☆";
+          }
+          return html;
+        }
+
         function makeSpotPopupHTML(props) {
           const name = escapeHTML(props.name);
           const desc = escapeHTML(props.description);
@@ -825,7 +1076,7 @@
           const photoURL = safeHttpsURL(props.photoURL);
 
           return `
-            <div class="kova-popup">
+            <div class="kova-popup" data-spot-id="${escapeHTML(props.id)}">
               <div class="hero" data-photo-url="${escapeHTML(photoURL)}">
                 <div class="badge">spot</div>
 
@@ -849,7 +1100,30 @@
                 <h3 class="title">${name}</h3>
                 <p class="desc">${desc || "No description yet."}</p>
                 <p class="byline">added by <b>${addedBy}</b></p>
-                <button class="kova-btn primary" data-action="nav" data-lat="${props.lat}" data-lng="${props.lng}">
+
+                <div class="spot-meta">
+                  <div class="spot-card-box">
+                    <div class="spot-box-title">Rating</div>
+                    <div class="rating-summary" data-rating-summary>
+                      ${renderStars(props.avgRating || 0)} ${Number(
+                        props.avgRating || 0,
+                      ).toFixed(1)}
+                      <small>(${Number(props.ratingCount || 0)} ratings)</small>
+                    </div>
+
+                    <div class="stars-row" data-stars-row></div>
+                    <div class="rating-note" data-rating-note></div>
+                    <div class="popup-status" data-rating-status></div>
+                  </div>
+                </div>
+
+                <button
+                  class="kova-btn primary"
+                  data-action="nav"
+                  data-lat="${props.lat}"
+                  data-lng="${props.lng}"
+                  style="margin-top: 14px"
+                >
                   Route
                   <span class="sub">open GPS</span>
                 </button>
@@ -872,11 +1146,14 @@
           `;
         }
 
-        function makeDuplicateSpotPopupHTML(lat, lng, nearestSpot, distanceMeters) {
+        function makeDuplicateSpotPopupHTML(
+          lat,
+          lng,
+          nearestSpot,
+          distanceMeters,
+        ) {
           const cleanDistance =
-            distanceMeters < 10
-              ? "< 10m"
-              : `${Math.round(distanceMeters)}m`;
+            distanceMeters < 10 ? "< 10m" : `${Math.round(distanceMeters)}m`;
 
           const spotName = escapeHTML(nearestSpot?.name || "existing spot");
 
@@ -943,7 +1220,182 @@
           };
         }
 
-        async function findNearbyExistingSpot(lat, lng, radiusM = DUPLICATE_BLOCK_RADIUS_M) {
+        function renderInteractiveStars(
+          starsRow,
+          selectedValue,
+          disabled = false,
+        ) {
+          if (!starsRow) return;
+          let html = "";
+
+          for (let i = 1; i <= 5; i++) {
+            html += `
+              <button
+                type="button"
+                class="star-btn ${i <= selectedValue ? "active" : ""} ${disabled ? "disabled" : ""}"
+                data-rate-value="${i}"
+                ${disabled ? "disabled" : ""}
+                aria-label="Rate ${i} star${i > 1 ? "s" : ""}"
+              >★</button>
+            `;
+          }
+
+          starsRow.innerHTML = html;
+        }
+
+        async function rateSpot(spotId, newRating) {
+          if (!Number.isInteger(newRating) || newRating < 1 || newRating > 5) {
+            throw new Error("Invalid rating.");
+          }
+
+          const previousRating = getLocalRating(spotId);
+          if (previousRating) {
+            throw new Error("This spot has already been rated on this device.");
+          }
+
+          const spotRef = db.collection("spots").doc(spotId);
+
+          await db.runTransaction(async (transaction) => {
+            const spotSnap = await transaction.get(spotRef);
+
+            if (!spotSnap.exists) {
+              throw new Error("Spot not found.");
+            }
+
+            const spotData = spotSnap.data() || {};
+            let ratingSum = Number(spotData.ratingSum || 0);
+            let ratingCount = Number(spotData.ratingCount || 0);
+
+            ratingSum += newRating;
+            ratingCount += 1;
+
+            if (ratingCount < 0) ratingCount = 0;
+            if (ratingSum < 0) ratingSum = 0;
+
+            const avgRating = ratingCount > 0 ? ratingSum / ratingCount : 0;
+
+            transaction.set(
+              spotRef,
+              {
+                ratingSum: Math.round(ratingSum),
+                ratingCount: Math.round(ratingCount),
+                avgRating: Number(avgRating.toFixed(2)),
+              },
+              { merge: true },
+            );
+          });
+
+          setLocalRating(spotId, newRating);
+        }
+
+        async function getSpotDocData(spotId) {
+          const snap = await db.collection("spots").doc(spotId).get();
+          return snap.exists ? snap.data() || {} : {};
+        }
+
+        async function hydratePopupData(popup, fallbackProps = {}) {
+          if (!popup) return;
+          const popupEl = popup.getElement();
+          if (!popupEl) return;
+
+          const card = popupEl.querySelector(".kova-popup[data-spot-id]");
+          if (!card) return;
+
+          const spotId = card.getAttribute("data-spot-id") || fallbackProps.id;
+          if (!spotId) return;
+
+          const ratingSummaryEl = popupEl.querySelector(
+            "[data-rating-summary]",
+          );
+          const starsRowEl = popupEl.querySelector("[data-stars-row]");
+          const ratingNoteEl = popupEl.querySelector("[data-rating-note]");
+          const ratingStatusEl = popupEl.querySelector("[data-rating-status]");
+
+          try {
+            const spotData = await getSpotDocData(spotId);
+            const localRating = getLocalRating(spotId);
+            const avgRating = Number(spotData.avgRating || 0);
+            const ratingCount = Number(spotData.ratingCount || 0);
+            const alreadyRated = localRating !== null;
+
+            if (ratingSummaryEl) {
+              ratingSummaryEl.innerHTML = `
+                ${renderStars(avgRating)} ${avgRating.toFixed(1)}
+                <small>(${ratingCount} ratings)</small>
+              `;
+            }
+
+            renderInteractiveStars(starsRowEl, localRating || 0, alreadyRated);
+
+            if (ratingNoteEl) {
+              ratingNoteEl.textContent = alreadyRated
+                ? `You already rated this spot on this device: ${localRating}/5`
+                : "Tap a star to rate this spot.";
+            }
+
+            setStatus(ratingStatusEl, "");
+          } catch (err) {
+            console.error("Popup hydrate error:", err);
+            setStatus(ratingStatusEl, "Could not load rating data.", "error");
+          }
+
+          if (starsRowEl && !starsRowEl.dataset.bound) {
+            starsRowEl.dataset.bound = "true";
+
+            starsRowEl.addEventListener("click", async (e) => {
+              const btn = e.target.closest("[data-rate-value]");
+              if (!btn) return;
+
+              const spotCard = popupEl.querySelector(
+                ".kova-popup[data-spot-id]",
+              );
+              const liveSpotId = spotCard?.getAttribute("data-spot-id");
+              const value = Number(btn.getAttribute("data-rate-value"));
+
+              if (!liveSpotId || !Number.isInteger(value)) return;
+
+              const ratingStatusElLocal = popupEl.querySelector(
+                "[data-rating-status]",
+              );
+              const ratingNoteElLocal =
+                popupEl.querySelector("[data-rating-note]");
+
+              if (getLocalRating(liveSpotId) !== null) {
+                setStatus(
+                  ratingStatusElLocal,
+                  "You already rated this spot on this device.",
+                  "error",
+                );
+                return;
+              }
+
+              try {
+                setStatus(ratingStatusElLocal, "Saving rating...");
+                await rateSpot(liveSpotId, value);
+                setStatus(ratingStatusElLocal, "Rating saved.", "success");
+
+                if (ratingNoteElLocal) {
+                  ratingNoteElLocal.textContent = `You already rated this spot on this device: ${value}/5`;
+                }
+
+                await hydratePopupData(popup, { id: liveSpotId });
+              } catch (err) {
+                console.error("Rating error:", err);
+                setStatus(
+                  ratingStatusElLocal,
+                  err?.message || "Could not save rating.",
+                  "error",
+                );
+              }
+            });
+          }
+        }
+
+        async function findNearbyExistingSpot(
+          lat,
+          lng,
+          radiusM = DUPLICATE_BLOCK_RADIUS_M,
+        ) {
           const docsById = new Map();
           const radiusKm = radiusM / 1000;
           const canGeoHash =
@@ -952,7 +1404,10 @@
 
           try {
             if (canGeoHash) {
-              const bounds = window.geofire.geohashQueryBounds([lat, lng], radiusM);
+              const bounds = window.geofire.geohashQueryBounds(
+                [lat, lng],
+                radiusM,
+              );
 
               await Promise.all(
                 bounds.map(async (bound) => {
@@ -1024,7 +1479,7 @@
             offset: 18,
             closeButton: true,
             closeOnClick: false,
-            maxWidth: "280px",
+            maxWidth: "320px",
             className: "coord-map-popup",
           })
             .setLngLat([lng, lat])
@@ -1048,7 +1503,7 @@
             offset: 18,
             closeButton: true,
             closeOnClick: false,
-            maxWidth: "300px",
+            maxWidth: "320px",
             className: "coord-map-popup",
           })
             .setLngLat([lng, lat])
@@ -1166,12 +1621,13 @@
                 photoURL: spot.photoURL || "",
                 lat: spot.lat,
                 lng: spot.lng,
+                avgRating: Number(spot.avgRating || 0),
+                ratingCount: Number(spot.ratingCount || 0),
               },
             });
           });
 
           setSpotsGeoJSON(features);
-          lastSearchCenter = { lat: centerLat, lng: centerLng, radiusKm };
 
           if (features.length === 0) {
             if (showEmptyPopup) {
@@ -1522,7 +1978,7 @@
             await zoomToClusterSpots(clusterId, coords);
           });
 
-          map.on("click", LAYER_POINTS, (e) => {
+          map.on("click", LAYER_POINTS, async (e) => {
             const f = e.features?.[0];
             if (!f) return;
 
@@ -1536,12 +1992,15 @@
             const coords = f.geometry.coordinates;
             const props = { ...(f.properties || {}) };
 
+            props.id = String(props.id || "");
             props.lat = Number(props.lat);
             props.lng = Number(props.lng);
+            props.avgRating = Number(props.avgRating || 0);
+            props.ratingCount = Number(props.ratingCount || 0);
 
             const popup = new maptilersdk.Popup({
               offset: 18,
-              maxWidth: "560px",
+              maxWidth: "620px",
               closeButton: true,
               closeOnClick: false,
               className: "spot-sheet-popup",
@@ -1555,6 +2014,8 @@
             updateFooterVisibility();
 
             easeToSpotWithPopupSpace(coords[0], coords[1]);
+
+            await hydratePopupData(popup, props);
 
             popup.once("close", () => {
               activePopup = null;
@@ -1634,7 +2095,7 @@
             offset: 18,
             closeButton: true,
             closeOnClick: false,
-            maxWidth: "280px",
+            maxWidth: "320px",
             className: "coord-map-popup",
           })
             .setLngLat([lng, lat])
