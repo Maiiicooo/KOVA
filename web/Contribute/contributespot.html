@@ -13,6 +13,10 @@
         --line: rgba(255, 255, 255, 0.12);
       }
 
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
         background: var(--bg);
@@ -28,7 +32,6 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        box-sizing: border-box;
       }
 
       nav {
@@ -40,29 +43,40 @@
         border-bottom: 1px solid var(--line);
         box-sizing: border-box;
         flex-shrink: 0;
+        gap: 16px;
       }
 
       .nav-left {
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 0;
       }
 
       .nav-left img {
         height: 35px;
         width: auto;
+        display: block;
       }
 
       .beta {
-        padding: 2px;
+        padding: 2px 6px;
         font-size: 0.85rem;
         background-color: #8b7108;
         color: white;
         letter-spacing: 0.5px;
+        white-space: nowrap;
+      }
+
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
       }
 
       .nav-right a {
-        margin-left: 32px;
         text-decoration: none;
         color: var(--fg);
         font-size: 0.95rem;
@@ -71,7 +85,7 @@
       }
 
       .navbar-seperator {
-        margin-left: 20px;
+        opacity: 0.5;
       }
 
       .nav-right a:hover {
@@ -90,7 +104,6 @@
         display: flex;
         justify-content: center;
         padding: 40px 20px;
-        box-sizing: border-box;
       }
 
       .kova-input {
@@ -133,6 +146,7 @@
         color: rgba(255, 255, 255, 0.55);
         font-size: 13px;
         margin-top: -10px;
+        word-break: break-word;
       }
 
       .status-error {
@@ -213,6 +227,7 @@
       @media (max-width: 600px) {
         nav {
           padding: 16px 18px;
+          align-items: flex-start;
         }
 
         .nav-left img {
@@ -225,19 +240,20 @@
         }
 
         .nav-right {
-          display: flex;
-          align-items: center;
           gap: 10px;
+          row-gap: 4px;
         }
 
         .nav-right a {
-          margin-left: 0;
           font-size: 0.85rem;
         }
 
         .navbar-seperator {
-          margin-left: 0;
           opacity: 0.5;
+        }
+
+        .page-container {
+          padding: 28px 16px;
         }
       }
     </style>
@@ -253,7 +269,9 @@
           />
         </a>
         <div class="beta">
-          <a href="#" style="color: white">now in alpha!</a>
+          <a href="#" style="color: white; text-decoration: none"
+            >now in alpha!</a
+          >
         </div>
       </div>
       <div class="nav-right">
@@ -316,15 +334,15 @@
             "
           ></textarea>
 
-          <strong style="color: #8b7108">How to get the cordinates?</strong>
+          <strong style="color: #8b7108">How to get the coordinates?</strong>
 
           <p style="color: var(--muted); font-size: 14px; margin-bottom: 1px">
             <strong style="color: #8b7108">In KOVA map:</strong> press the
-            location -> copy the cordinates -> paste them here.
+            location -> copy the coordinates -> paste them here.
           </p>
 
           <p style="color: var(--muted); font-size: 14px; margin-bottom: 1px">
-            <strong style="color: #8b7108">With Google maps:</strong> open
+            <strong style="color: #8b7108">With Google Maps:</strong> open
             Google Maps, tap & hold the spot -> copy the coordinates -> paste
             them here.
           </p>
@@ -488,7 +506,7 @@
         const fromUrl = params.get("coords");
         if (!fromUrl) return;
 
-        if (coordsEl) coordsEl.value = fromUrl;
+        coordsEl.value = fromUrl;
         window.history.replaceState(
           {},
           document.title,
@@ -600,7 +618,6 @@
                   name: data.name || "",
                   lat: data.lat,
                   lng: data.lng,
-                  status: data.status || "",
                 };
               }
             }
@@ -746,7 +763,7 @@
         }
 
         const { lat, lng } = parsed;
-        let photoURL = null;
+        let photoURL = "";
 
         try {
           setSubmittingUI(true, "Checking spot…");
@@ -783,7 +800,7 @@
 
           await addDoc(collection(db, "pending_spots"), {
             name,
-            description: desc,
+            description: desc || "",
             lat,
             lng,
             photoURL,
