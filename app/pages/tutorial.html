@@ -31,7 +31,6 @@
         overflow-x: hidden;
       }
 
-      /* NAVBAR ------------------------------------------------------ */
       nav {
         width: 100%;
         padding: 22px 34px;
@@ -82,7 +81,6 @@
         margin-left: 20px;
       }
 
-      /* PAGE -------------------------------------------------------- */
       .wrap {
         max-width: 1100px;
         margin: 0 auto;
@@ -111,6 +109,7 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 18px;
+        align-items: stretch;
       }
 
       .card {
@@ -119,6 +118,14 @@
         border-radius: 14px;
         padding: 18px;
         backdrop-filter: blur(8px);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .card-content {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
       }
 
       .card h2 {
@@ -183,17 +190,24 @@
 
       .img {
         width: 100%;
+        height: 260px;
         border-radius: 14px;
         border: 1px solid var(--line);
         overflow: hidden;
         background: #0e0e0e;
-        margin-top: 10px;
+        margin-top: 18px;
       }
 
       .img img {
         width: 100%;
-        height: auto;
+        height: 100%;
         display: block;
+        object-fit: cover;
+        object-position: center;
+      }
+
+      .push-to-image {
+        flex: 1;
       }
 
       @media (max-width: 900px) {
@@ -206,26 +220,36 @@
         nav {
           padding: 16px 18px;
         }
+
         .nav-left img {
           height: 40px;
         }
+
         .beta {
           font-size: 0.7rem;
           padding: 2px 5px;
         }
+
         .nav-right a {
           margin-left: 0;
           font-size: 0.85rem;
         }
+
         .navbar-seperator {
           margin-left: 0;
           opacity: 0.5;
         }
+
         .wrap {
           padding: 110px 18px 50px;
         }
+
         .legend {
           grid-template-columns: 1fr;
+        }
+
+        .img {
+          height: 220px;
         }
       }
     </style>
@@ -260,78 +284,86 @@
       </section>
 
       <section class="grid">
-        <!-- RADAR -->
         <div class="card">
-          <h2>Radar view</h2>
-          <p>
-            The radar layer shows precipitation intensity.
-            <b>Stronger color = heavier rain.</b>
-          </p>
+          <div class="card-content">
+            <h2>Radar view</h2>
+            <p>
+              The radar layer shows precipitation intensity.
+              <b>Stronger color = heavier rain.</b>
+            </p>
 
-          <div class="legend">
-            <div class="legend-item">
-              <span class="swatch" style="background:#3bb6ff"></span>
-              <div>
-                <b>Blue</b><br />
-                Light rain
+            <div class="legend">
+              <div class="legend-item">
+                <span class="swatch" style="background: #3bb6ff"></span>
+                <div>
+                  <b>Blue</b><br />
+                  Light rain
+                </div>
+              </div>
+
+              <div class="legend-item">
+                <span class="swatch" style="background: #19d36a"></span>
+                <div>
+                  <b>Green</b><br />
+                  Moderate rain
+                </div>
+              </div>
+
+              <div class="legend-item">
+                <span class="swatch" style="background: #ffd84a"></span>
+                <div>
+                  <b>Yellow</b><br />
+                  Heavy showers
+                </div>
+              </div>
+
+              <div class="legend-item">
+                <span class="swatch" style="background: #ff9f43"></span>
+                <div>
+                  <b>Orange</b><br />
+                  Storm
+                </div>
               </div>
             </div>
 
-            <div class="legend-item">
-              <span class="swatch" style="background:#19d36a"></span>
-              <div>
-                <b>Green</b><br />
-                Moderate rain
-              </div>
+            <div class="note">
+              Radar is an estimate (reflection-based). Wind and timing can shift
+              rain. Use it as awareness, not as a guarantee.
             </div>
 
-            <div class="legend-item">
-              <span class="swatch" style="background:#ffd84a"></span>
-              <div>
-                <b>Yellow</b><br />
-                Heavy showers
-              </div>
-            </div>
+            <div class="push-to-image"></div>
 
-            <div class="legend-item">
-              <span class="swatch" style="background:#ff9f43"></span>
-              <div>
-                <b>Orange</b><br />
-                Storm
-              </div>
+            <div class="img">
+              <img src="../../images/radarblack.jpeg" alt="Radar example" />
             </div>
           </div>
-
-          <div class="note">
-            Radar is an estimate (reflection-based). Wind and timing can shift
-            rain. Use it as awareness, not as a guarantee.
-          </div>
-
-          <!-- Optional image (only if you have one). Keep or delete. -->
-          <!-- Put your radar screenshot here if you want: -->
-          <div class="img"><img src="../../images/radarblack.jpeg" alt="Radar example"></div>
         </div>
 
-        <!-- MAP -->
         <div class="card">
-          <h2>Map view (spots)</h2>
-          <p>
-            The map shows community spots as markers. Your player icon shows
-            your location (if you allow it).
-          </p>
+          <div class="card-content">
+            <h2>Map view</h2>
+            <p>
+              The map lets you explore spots and interact with any point on the
+              map.
+            </p>
 
-          <ul>
-            <li><b>Click a spot</b> → opens the spot popup (photo + info)</li>
-            <li><b>Click the player icon</b> → opens your player popup</li>
-            <li><b>Click empty map</b> → shows coordinates (with copy button)</li>
-          </ul>
+            <ul>
+              <li><b style="color: #8b7108;" >Click a spot</b> → opens the spot popup with photo and info</li>
+              <li><b style="color: #8b7108;" >Click anywhere on the map</b> → loads spots in a 10 km radius around that point</li>
+              <li><b style="color: #8b7108;" >Use an empty point</b> → also opens the add spot popup at that exact location</li>
+            </ul>
 
-          <div class="note">
-            Tip: use the coordinate popup to quickly copy lat/lng when you want
-            to submit a new spot.
+            <div class="note">
+              Tip: every point on the map can act as a search center. Empty
+              points can also be used to start adding a new spot.
+            </div>
+
+            <div class="push-to-image"></div>
+
+            <div class="img">
+              <img src="../../images/spotscodex.PNG" alt="Map example" />
+            </div>
           </div>
-        </div>
-        </div>
         </div>
       </section>
     </main>
