@@ -155,28 +155,26 @@
       }
 
       .pinpoint {
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.9);
-        border: 3px solid var(--accent);
-        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.55);
+        width: auto;
+        height: auto;
         transform: translate(-50%, -50%);
-        position: relative;
         pointer-events: none;
+        color: rgba(139, 113, 8, 1);
+        font-family: "Open Sans", Inter, system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 22px;
+        line-height: 1;
+        user-select: none;
+        -webkit-user-select: none;
+        text-shadow: 0 10px 22px rgba(0, 0, 0, 0.55);
+      }
+
+      .pinpoint::before {
+        content: "X";
       }
 
       .pinpoint::after {
-        content: "";
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        background: #111;
-        opacity: 0.9;
+        display: none;
       }
 
       .maplibregl-popup-content {
@@ -750,17 +748,14 @@
     <nav>
       <div class="nav-left">
         <a href="../../index.html">
-          <img src="../../images/kogaskeer.png" alt="Kova logo small" />
+          <img src="../../images/kova_wit_x_png.png" alt="Kova logo small" />
         </a>
-        <div class="beta">
-          <a href="../../app/pages/tutorial.html" style="color: white"
-            >codex!</a
-          >
-        </div>
       </div>
 
       <div class="nav-right">
         <a href="radar.html">wx</a>
+        <span class="navbar-seperator">//</span>
+        <a href="tutorial.html">dx</a>
         <span class="navbar-seperator">//</span>
         <a href="about.html">about</a>
       </div>
@@ -784,7 +779,7 @@
 
         const DEFAULT_CENTER = [4.5, 50.85];
         const DEFAULT_ZOOM = 7.5;
-        const USER_START_ZOOM = 13.5;
+        const USER_START_ZOOM = 11;
 
         const SEARCH_RADIUS_KM = 10;
         const DUPLICATE_BLOCK_RADIUS_M = 80;
@@ -834,10 +829,11 @@
         let userLng = null;
         let mapLoaded = false;
         let initialNearbyLoaded = false;
+        let userMarkerAdded = false;
 
         const SOURCE_ID = "spots";
-        const LAYER_CLUSTERS = "spots-clusters";
-        const LAYER_CLUSTER_COUNT = "spots-cluster-count";
+        const LAYER_CLUSTERS_X = "spots-clusters-x";
+        const LAYER_CLUSTERS_COUNT = "spots-clusters-count";
         const LAYER_POINTS = "spots-points";
 
         function getLocalRatings() {
@@ -993,6 +989,23 @@
           closeUserPopup();
           removeClickPin();
           updateFooterVisibility();
+        }
+
+        function syncUserMarker() {
+          if (
+            !userMarker ||
+            typeof userLat !== "number" ||
+            typeof userLng !== "number"
+          ) {
+            return;
+          }
+
+          if (!userMarkerAdded) {
+            userMarker.setLngLat([userLng, userLat]).addTo(map);
+            userMarkerAdded = true;
+          } else {
+            userMarker.setLngLat([userLng, userLat]);
+          }
         }
 
         function easeToSpotWithPopupSpace(lng, lat) {
@@ -1727,8 +1740,8 @@
           }
 
           initialNearbyLoaded = true;
+          syncUserMarker();
 
-          userMarker.setLngLat([userLng, userLat]);
           map.jumpTo({
             center: [userLng, userLat],
             zoom: USER_START_ZOOM,
@@ -1749,6 +1762,8 @@
             return;
           }
 
+          syncUserMarker();
+
           map.jumpTo({
             center: [userLng, userLat],
             zoom: USER_START_ZOOM,
@@ -1758,6 +1773,27 @@
             recenter: false,
             showEmptyPopup: false,
           });
+        }
+
+        function requestUserLocation() {
+          if (!navigator.geolocation) return;
+
+          navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+              userLng = pos.coords.longitude;
+              userLat = pos.coords.latitude;
+              syncUserMarker();
+              await maybeLoadInitialNearbySpots();
+            },
+            (err) => {
+              console.warn("Locatie fout:", err.message);
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 15000,
+              maximumAge: 0,
+            },
+          );
         }
 
         if (navigator.geolocation) {
@@ -1787,10 +1823,7 @@
           userMarker = new maptilersdk.Marker({
             element: userMarkerEl,
             anchor: "center",
-          })
-            .setLngLat(DEFAULT_CENTER)
-            .setPopup(userPopup)
-            .addTo(map);
+          }).setPopup(userPopup);
 
           userMarkerEl.addEventListener("click", async (ev) => {
             ev.preventDefault();
@@ -1815,21 +1848,7 @@
           userPopup.on("open", updateFooterVisibility);
           userPopup.on("close", updateFooterVisibility);
 
-          navigator.geolocation.getCurrentPosition(
-            async (pos) => {
-              userLng = pos.coords.longitude;
-              userLat = pos.coords.latitude;
-              await maybeLoadInitialNearbySpots();
-            },
-            (err) => {
-              console.warn("Locatie fout:", err.message);
-            },
-            {
-              enableHighAccuracy: true,
-              timeout: 10000,
-              maximumAge: 30000,
-            },
-          );
+          requestUserLocation();
         }
 
         document.addEventListener("click", async (e) => {
@@ -1892,54 +1911,80 @@
           });
 
           map.addLayer({
-            id: LAYER_CLUSTERS,
-            type: "circle",
+            id: LAYER_CLUSTERS_X,
+            type: "symbol",
             source: SOURCE_ID,
             filter: ["has", "point_count"],
-            paint: {
-              "circle-color": "rgba(139, 113, 8, 0.95)",
-              "circle-stroke-color": "rgba(0,0,0,0.85)",
-              "circle-stroke-width": 2,
-              "circle-radius": [
+            layout: {
+              "text-field": "X",
+              "text-font": ["Open Sans Bold"],
+              "text-size": [
                 "step",
                 ["get", "point_count"],
-                18,
-                25,
                 22,
-                75,
+                10,
+                24,
+                25,
                 26,
+                75,
+                29,
                 200,
-                32,
+                33,
               ],
-              "circle-opacity": 0.95,
+              "text-offset": [0, 0],
+              "text-allow-overlap": true,
+              "text-ignore-placement": true,
+            },
+            paint: {
+              "text-color": "rgba(139, 113, 8, 1)",
             },
           });
 
           map.addLayer({
-            id: LAYER_CLUSTER_COUNT,
+            id: LAYER_CLUSTERS_COUNT,
             type: "symbol",
             source: SOURCE_ID,
             filter: ["has", "point_count"],
             layout: {
               "text-field": "{point_count_abbreviated}",
               "text-font": ["Open Sans Bold"],
-              "text-size": 12,
+              "text-size": [
+                "step",
+                ["get", "point_count"],
+                11,
+                10,
+                12,
+                25,
+                13,
+                75,
+                14,
+                200,
+                15,
+              ],
+              "text-offset": [0.72, 0.08],
+              "text-anchor": "left",
+              "text-allow-overlap": true,
+              "text-ignore-placement": true,
             },
             paint: {
-              "text-color": "#0b0b0b",
+              "text-color": "#ffffff",
             },
           });
 
           map.addLayer({
             id: LAYER_POINTS,
-            type: "circle",
+            type: "symbol",
             source: SOURCE_ID,
             filter: ["!", ["has", "point_count"]],
+            layout: {
+              "text-field": "X",
+              "text-font": ["Open Sans Bold"],
+              "text-size": 22,
+              "text-allow-overlap": true,
+              "text-ignore-placement": true,
+            },
             paint: {
-              "circle-color": "rgba(139, 113, 8, 1)",
-              "circle-stroke-color": "rgba(0,0,0,0.9)",
-              "circle-stroke-width": 2,
-              "circle-radius": 8,
+              "text-color": "rgba(139, 113, 8, 1)",
             },
           });
 
@@ -1951,15 +1996,42 @@
             map.getCanvas().style.cursor = "";
           });
 
-          map.on("mouseenter", LAYER_CLUSTERS, () => {
+          map.on("mouseenter", LAYER_CLUSTERS_X, () => {
             map.getCanvas().style.cursor = "pointer";
           });
 
-          map.on("mouseleave", LAYER_CLUSTERS, () => {
+          map.on("mouseleave", LAYER_CLUSTERS_X, () => {
             map.getCanvas().style.cursor = "";
           });
 
-          map.on("click", LAYER_CLUSTERS, async (e) => {
+          map.on("mouseenter", LAYER_CLUSTERS_COUNT, () => {
+            map.getCanvas().style.cursor = "pointer";
+          });
+
+          map.on("mouseleave", LAYER_CLUSTERS_COUNT, () => {
+            map.getCanvas().style.cursor = "";
+          });
+
+          map.on("click", LAYER_CLUSTERS_X, async (e) => {
+            const feature = e.features?.[0];
+            if (!feature) return;
+
+            const clusterId = Number(feature.properties?.cluster_id);
+            if (!Number.isFinite(clusterId)) return;
+
+            closeCoordPopup();
+            closeUserPopup();
+
+            if (activePopup) {
+              activePopup.remove();
+              activePopup = null;
+            }
+
+            const coords = feature.geometry.coordinates;
+            await zoomToClusterSpots(clusterId, coords);
+          });
+
+          map.on("click", LAYER_CLUSTERS_COUNT, async (e) => {
             const feature = e.features?.[0];
             if (!feature) return;
 
@@ -2024,6 +2096,7 @@
           });
 
           await maybeLoadInitialNearbySpots();
+          updateFooterVisibility();
         });
 
         map.on("dragstart", closeAll);
@@ -2042,7 +2115,7 @@
           }
 
           const hits = map.queryRenderedFeatures(event.point, {
-            layers: [LAYER_CLUSTERS, LAYER_POINTS],
+            layers: [LAYER_CLUSTERS_X, LAYER_CLUSTERS_COUNT, LAYER_POINTS],
           });
 
           if (hits && hits.length) return;
