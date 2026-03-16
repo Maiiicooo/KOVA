@@ -23,7 +23,6 @@
         font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
         background: var(--bg);
         color: var(--fg);
-        /* important: GEEN overflow:hidden zodat de pagina kan scrollen */
         overflow-x: hidden;
       }
 
@@ -33,12 +32,11 @@
         top: 0;
         left: 0;
         width: 100%;
-        padding: 18px 34px;
+        padding: 22px 34px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         background: transparent;
-        border-bottom: 1px solid var(--line);
         z-index: 1000;
       }
 
@@ -47,25 +45,75 @@
         align-items: center;
         gap: 12px;
       }
+
       .nav-left img {
         height: 35px;
         width: auto;
       }
+
       .beta {
-        padding: 2px;
+        width: 110px;
+        height: 22px;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        padding: 0 6px;
+      }
+
+      .beta a {
+        color: white;
+        text-decoration: none;
+        display: block;
+        width: 100%;
+        height: 100%;
+        line-height: 22px;
+      }
+
+      .beta-track {
+        display: inline-flex;
+        align-items: center;
+        gap: 32px;
+        white-space: nowrap;
+        animation: alphaScroll 8s linear infinite;
+      }
+
+      .beta-text {
         font-size: 0.85rem;
-        background: #8b7108;
         color: white;
         letter-spacing: 0.5px;
+        display: inline-block;
+      }
+
+      @keyframes alphaScroll {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(calc(-50% - 16px));
+        }
+      }
+
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 0;
       }
 
       .nav-right a {
-        margin-left: 2px;
+        margin-left: 32px;
         text-decoration: none;
         color: var(--fg);
-        opacity: 0.9;
+        opacity: 0.8;
         font-size: 0.95rem;
+        transition: opacity 0.25s;
       }
+
+      .nav-sep {
+        margin-left: 20px;
+        opacity: 0.8;
+      }
+
       .nav-right a:hover {
         color: #8b7108;
         opacity: 1;
@@ -76,12 +124,11 @@
         display: flex;
         flex-wrap: wrap;
         align-items: stretch;
-        /* geen fixed height: laat de container groeien zodat footer bereikbaar is */
       }
 
       .about-image {
         flex: 1 1 50%;
-        min-height: 100vh; /* zorgt dat de foto full viewport oogt */
+        min-height: 100vh;
         background-image: url("../../images/aboutpage.jpg");
         background-size: cover;
         background-position: center;
@@ -89,11 +136,10 @@
 
       .about-text {
         flex: 1 1 50%;
-        padding: 120px 60px 0px 60px; /* ruimte onder nav */
+        padding: 120px 60px 0px 60px;
         background: var(--bg);
       }
 
-      /* als navbar fixed is, maak voldoende top-padding op kleinere nav hoogte */
       @media (max-width: 900px) {
         .about-text {
           padding-top: 110px;
@@ -108,27 +154,50 @@
         .nav-right {
           font-size: 10px;
           padding-right: 10px;
+          display: flex;
+          align-items: center;
+          gap: 0;
+        }
+
+        .nav-right a {
+          margin-left: 0;
+          font-size: 0.85rem;
         }
 
         .nav-sep {
           padding-left: 3px;
           padding-right: 3px;
+          margin-left: 0;
+        }
+
+        .beta {
+          width: 90px;
+          height: 18px;
+          padding: 0 4px;
+        }
+
+        .beta a {
+          line-height: 18px;
+        }
+
+        .beta-text {
+          font-size: 0.7rem;
         }
 
         .split-container {
           display: flex;
           flex-direction: row;
-          min-height: auto; /* niet full viewport height */
+          min-height: auto;
         }
 
         .about-image {
           width: 50%;
-          height: auto; /* laat image natuurlijk groeien */
+          height: auto;
         }
 
         .about-text {
           width: 50%;
-          padding: 60px 15px 0 15px; /* top padding blijft voor navbar */
+          padding: 60px 15px 0 15px;
           font-size: 10px !important;
           line-height: 1.4;
           height: auto;
@@ -145,18 +214,18 @@
         }
 
         .about-text div {
-          display: none; /* verwijder extra spacer */
+          display: none;
         }
 
         footer {
           width: 100%;
-          margin-top: 0; /* geen zwarte ruimte boven footer */
-          padding: 20px 15px; /* compacte padding */
-          background: #8b7108; /* zorg dat het volledig bruin is */
+          margin-top: 0;
+          padding: 20px 15px;
+          background: #8b7108;
         }
 
         main {
-          padding-bottom: 0; /* geen extra ruimte onder footer */
+          padding-bottom: 0;
         }
       }
 
@@ -165,6 +234,7 @@
         margin-bottom: 24px;
         color: white;
       }
+
       .about-text p {
         font-size: 16px;
         line-height: 1.8;
@@ -182,10 +252,12 @@
         transform: none;
         transition: opacity 0.4s ease, transform 0.35s ease;
       }
+
       .footer-visible {
         opacity: 1;
         transform: translateY(0);
       }
+
       .footer-inner p {
         margin-bottom: 8px;
         opacity: 0.95;
@@ -197,11 +269,20 @@
   <body>
     <nav>
       <div class="nav-left">
-        <a href="../../index.html"
-          ><img src="../../images/logo26-removebg-preview.png" alt="Kova logo"
-        /></a>
-         <div class="beta"><a href="../../admin/login.html"  style="color: white;">now in alpha!</a></div>
+        <a href="../../index.html">
+          <img src="../../images/wit x.png" alt="Kova logo" />
+        </a>
+
+        <div class="beta">
+          <a href="../../admin/login.html">
+            <div class="beta-track">
+              <span class="beta-text">now in alpha!</span>
+              <span class="beta-text">now in alpha!</span>
+            </div>
+          </a>
+        </div>
       </div>
+
       <div class="nav-right">
         <a href="about.html">about</a>
         <span class="nav-sep">//</span>
@@ -217,26 +298,33 @@
         <div class="about-text">
           <h1>About KOVA</h1>
           <p>
-            KOVA is a digital outdoor
-            utility built for people who like being outside without overplanning
-            it. It’s about finding quiet places, overlooked corners, and hidden gems.
-            Mapped by real people, not algorithms. <br><br>
-            
-            The idea started from
-            a simple frustration: good places are hard to find unless someone
-            tells you. KOVA exists to collect those places and put them on a
-            map, without turning them into tourist traps. <br> <br>
-            
-            KOVA is intentionally
-            minimal. No feeds screaming for attention. No endless notifications.
-            Just a map, some context, and a growing community that knows when to
-            keep things low‑key. <br> <br>
-            
-            The project is currently in alpha. Features are
-            evolving, the map is growing, and some things may break — that’s
-            part of the process. <br> <br>
+            KOVA is a digital outdoor utility built for people who like being
+            outside without overplanning it. It’s about finding quiet places,
+            overlooked corners, and hidden gems. Mapped by real people, not
+            algorithms. <br /><br />
 
-            Built and maintained by <a href="https://www.instagram.com/maicomargiela/" style="color: #8b7108;">@maicomargiela.</a>
+            The idea started from a simple frustration: good places are hard to
+            find unless someone tells you. KOVA exists to collect those places
+            and put them on a map, without turning them into tourist traps.
+            <br />
+            <br />
+
+            KOVA is intentionally minimal. No feeds screaming for attention. No
+            endless notifications. Just a map, some context, and a growing
+            community that knows when to keep things low-key. <br />
+            <br />
+
+            The project is currently in alpha. Features are evolving, the map is
+            growing, and some things may break — that’s part of the process.
+            <br />
+            <br />
+
+            Built and maintained by
+            <a
+              href="https://www.instagram.com/maicomargiela/"
+              style="color: #8b7108"
+              >@maicomargiela.</a
+            >
           </p>
         </div>
       </div>
@@ -246,7 +334,9 @@
           <p>kova corp © 2026</p>
           <br />
           <a href="about.html" style="color: white">About</a><br />
-          <a href="https://www.instagram.com/kovaspots/" style="color: white">Instagram</a><br /><br />
+          <a href="https://www.instagram.com/kovaspots/" style="color: white"
+            >Instagram</a
+          ><br /><br />
           <a href="#" style="color: white">Terms of use</a><br />
           <a href="#" style="color: white">Privacy Policy</a><br />
           <a href="#" style="color: white">Cookie Policy</a><br /><br />
@@ -261,9 +351,8 @@
     </main>
 
     <script>
-      // footer show on scroll (window-based) - werkt Desktop + Mobile
       const footer = document.getElementById("siteFooter");
-      const showAfter = 40; // verander dit naar wens (px scroll)
+      const showAfter = 40;
 
       function checkFooter() {
         if (window.scrollY > showAfter) {
@@ -273,10 +362,8 @@
         }
       }
 
-      // init check (als user opent in midden van page)
       checkFooter();
       window.addEventListener("scroll", checkFooter, { passive: true });
     </script>
   </body>
 </html>
-
