@@ -13,6 +13,10 @@
         --line: rgba(255, 255, 255, 0.12);
       }
 
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
         background: var(--bg);
@@ -27,7 +31,6 @@
         min-height: 100dvh;
         display: flex;
         flex-direction: column;
-        box-sizing: border-box;
       }
 
       /* NAVBAR ------------------------------------------------------ */
@@ -38,7 +41,6 @@
         align-items: center;
         justify-content: space-between;
         border-bottom: 1px solid var(--line);
-        box-sizing: border-box;
         flex-shrink: 0;
       }
 
@@ -51,6 +53,7 @@
       .nav-left img {
         height: 35px;
         width: auto;
+        display: block;
       }
 
       .beta {
@@ -96,17 +99,29 @@
         }
       }
 
+      .nav-right {
+        display: flex;
+        align-items: center;
+      }
+
       .nav-right a {
         margin-left: 32px;
         text-decoration: none;
         color: var(--fg);
         font-size: 0.95rem;
         opacity: 0.8;
-        transition: opacity 0.25s;
+        transition:
+          opacity 0.25s,
+          color 0.25s;
+      }
+
+      .nav-right a:first-child {
+        margin-left: 0;
       }
 
       .navbar-seperator {
         margin-left: 20px;
+        opacity: 0.7;
       }
 
       .nav-right a:hover {
@@ -114,46 +129,13 @@
         color: #8b7108;
       }
 
-      /* CENTER ------------------------------------------------------ */
-      .center {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 0 20px;
-        box-sizing: border-box;
-        overflow: hidden;
-      }
-
-      .join-page {
-        color: var(--fg);
-        position: fixed;
-        bottom: 0%;
-        right: 0%;
-        padding-bottom: 17px;
-        padding-right: 15px;
-      }
-
-      .kova-corp {
-        position: absolute;
-        bottom: 0%;
-        padding-left: 15px;
-        position: fixed;
-      }
-
-      .update {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-      }
-
+      /* BLOG ------------------------------------------------------ */
       .changelog {
+        width: 100%;
         max-width: 700px;
         margin: 0 auto;
         padding: 20px;
-        padding-bottom: 70px;
+        padding-bottom: 80px;
       }
 
       .update {
@@ -161,21 +143,54 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
 
+      .update.alt {
+        background-color: rgba(255, 255, 255, 0.03);
+      }
+
       .update:last-child {
         border-bottom: none;
+      }
+
+      .update h2 {
+        margin: 0 0 10px 0;
+        font-size: 1.15rem;
+        line-height: 1.35;
+      }
+
+      .update p {
+        margin: 0 0 12px 0;
+        color: var(--fg);
+        line-height: 1.6;
+      }
+
+      .update strong {
+        display: block;
+        margin: 14px 0 8px 0;
+      }
+
+      .update ul {
+        margin: 0 0 12px 18px;
+        padding: 0;
+      }
+
+      .update li {
+        margin-bottom: 8px;
+        line-height: 1.55;
+        color: var(--fg);
       }
 
       .author {
         margin-top: 10px;
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
       }
 
       .author img {
         width: 20px;
         height: 20px;
         border-radius: 50%;
+        object-fit: cover;
       }
 
       .author span {
@@ -183,9 +198,35 @@
         color: rgba(255, 255, 255, 0.6);
       }
 
+      /* FOOTER ------------------------------------------------------ */
+      footer {
+        margin-top: auto;
+      }
+
+      .join-page {
+        color: var(--fg);
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        padding-bottom: 17px;
+        padding-right: 15px;
+        text-decoration: none;
+      }
+
+      .kova-corp {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        padding-left: 15px;
+        padding-bottom: 17px;
+        margin: 0;
+        color: var(--fg);
+      }
+
       @media (max-width: 600px) {
         nav {
           padding: 16px 18px;
+          gap: 12px;
         }
 
         .nav-left img {
@@ -222,15 +263,28 @@
           opacity: 0.5;
         }
 
-        nav {
-          gap: 12px;
+        .changelog {
+          padding: 14px;
+          padding-bottom: 80px;
+        }
+
+        .update {
+          padding: 14px 14px;
+        }
+
+        .update h2 {
+          font-size: 1rem;
+        }
+
+        .update p,
+        .update li {
+          font-size: 0.94rem;
         }
       }
     </style>
   </head>
 
   <body>
-    <!-- NAV -->
     <nav>
       <div class="nav-left">
         <a href="../../index.html">
@@ -257,10 +311,7 @@
     </nav>
 
     <section class="changelog">
-      <article
-        class="update"
-        style="background-color: rgba(255, 255, 255, 0.03)"
-      >
+      <article class="update alt">
         <h2>March 19, 2026 — Full UI rebrand</h2>
         <p>
           KOVA just went through its biggest visual update so far. The old look
@@ -274,18 +325,9 @@
         <strong>🚀 New features</strong>
         <ul>
           <li>Introduced a full new visual identity across the platform.</li>
-          <li>
-            Replaced the previous logo system with brand new logos made from
-            scratch.
-          </li>
-          <li>
-            Redesigned the map UI from the ground up for a cleaner and more
-            immersive feel.
-          </li>
-          <li>
-            Updated overall layout styling to better match the new KOVA
-            direction.
-          </li>
+          <li>Replaced the previous logo system with brand new logos made from scratch.</li>
+          <li>Redesigned the map UI from the ground up for a cleaner and more immersive feel.</li>
+          <li>Updated overall layout styling to better match the new KOVA direction.</li>
         </ul>
         <p>
           This update is less about adding one feature and more about redefining
@@ -297,116 +339,103 @@
         </div>
       </article>
 
-      <article
-        class="update"
-        style="background-color: rgba(255, 255, 255, 0.03)"
-      >
-        <article class="update">
-          <h2>March 10, 2026 — Spots clustering</h2>
-          <p>
-            Changed all the spots clustering algorithm to a more efficient one,
-            improving map performance and user experience when navigating
-            through dense areas.
-          </p>
-          <strong>🐞 Bug fixes / improvements</strong>
-          <ul>
-            <li>
-              Fixed map zoom issues on small devices, ensuring a smoother
-              navigation experience across all screen sizes.
-            </li>
-            <li>
-              Resolved marker icon overlapping on dense areas, improving
-              visibility and interaction with individual spots.
-            </li>
-            <li>Improved data validation before writing to the database.</li>
-          </ul>
-          <div class="author">
-            <img src="../../images/pfmaic.jpg" alt="Profile Pic" />
-            <span>@maicowave</span>
-          </div>
-        </article>
+      <article class="update">
+        <h2>March 10, 2026 — Spots clustering</h2>
+        <p>
+          Changed all the spots clustering algorithm to a more efficient one,
+          improving map performance and user experience when navigating through
+          dense areas.
+        </p>
+        <strong>🐞 Bug fixes / improvements</strong>
+        <ul>
+          <li>
+            Fixed map zoom issues on small devices, ensuring a smoother
+            navigation experience across all screen sizes.
+          </li>
+          <li>
+            Resolved marker icon overlapping on dense areas, improving
+            visibility and interaction with individual spots.
+          </li>
+          <li>Improved data validation before writing to the database.</li>
+        </ul>
+        <div class="author">
+          <img src="../../images/pfmaic.jpg" alt="Profile Pic" />
+          <span>@maicowave</span>
+        </div>
+      </article>
 
-        <article class="update">
-          <h2>Dec 12, 2025 — Database stability fix</h2>
-          <p>
-            Identified and fixed an issue affecting spot data consistency after
-            recent backend changes.
-          </p>
-          <strong>🐞 Bug fixes / improvements</strong>
-          <ul>
-            <li>
-              Fixed a database query causing some spots to not load correctly.
-            </li>
-            <li>
-              Resolved duplicate entries appearing after spot submissions.
-            </li>
-            <li>Improved data validation before writing to the database.</li>
-          </ul>
-          <div class="author">
-            <img src="../../images/pfmaic.jpg" alt="Profile Pic" />
-            <span>@maicowave</span>
-          </div>
-        </article>
+      <article class="update alt">
+        <h2>Dec 12, 2025 — Database stability fix</h2>
+        <p>
+          Identified and fixed an issue affecting spot data consistency after
+          recent backend changes.
+        </p>
+        <strong>🐞 Bug fixes / improvements</strong>
+        <ul>
+          <li>Fixed a database query causing some spots to not load correctly.</li>
+          <li>Resolved duplicate entries appearing after spot submissions.</li>
+          <li>Improved data validation before writing to the database.</li>
+        </ul>
+        <div class="author">
+          <img src="../../images/pfmaic.jpg" alt="Profile Pic" />
+          <span>@maicowave</span>
+        </div>
+      </article>
 
-        <article class="update">
-          <h2>Dec 3, 2025 — KOVA alpha launch</h2>
-          <p>KOVA is officially in alpha.</p>
-          <strong>🚀 New features</strong>
-          <ul>
-            <li>Closed access to the core map experience.</li>
-            <li>Spots and weather combined in one utility.</li>
-          </ul>
-          <p>
-            Alpha means things will change, break, and improve — feedback
-            matters more than polish.
-          </p>
-          <div class="author">
-            <img src="../../images/pfmaic.jpg" alt="Profile Pic" />
-            <span>@maicowave</span>
-          </div>
-        </article>
+      <article class="update">
+        <h2>Dec 3, 2025 — KOVA alpha launch</h2>
+        <p>KOVA is officially in alpha.</p>
+        <strong>🚀 New features</strong>
+        <ul>
+          <li>Closed access to the core map experience.</li>
+          <li>Spots and weather combined in one utility.</li>
+        </ul>
+        <p>
+          Alpha means things will change, break, and improve — feedback matters
+          more than polish.
+        </p>
+        <div class="author">
+          <img src="../../images/pfmaic.jpg" alt="Profile Pic" />
+          <span>@maicowave</span>
+        </div>
+      </article>
 
-        <article
-          class="update"
-          style="background-color: rgba(255, 255, 255, 0.03)"
-        >
-          <h2>Nov 18, 2025 — v0.5.4 map improvements</h2>
-          <p>
-            Improved the map performance and added markers for new community
-            spots.
-          </p>
-          <strong>🚀 New features</strong>
-          <ul>
-            <li>Spot clustering added for better map navigation.</li>
-            <li>Clickable info bubbles for each spot.</li>
-          </ul>
-          <strong>🐞 Bug fixes / improvements</strong>
-          <ul>
-            <li>Fixed map zoom issues on small devices.</li>
-            <li>Resolved marker icon overlapping on dense areas.</li>
-          </ul>
-          <div class="author">
-            <img src="../../images/pfmaic.jpg" alt="Profile Pic" />
-            <span>@maicowave</span>
-          </div>
-        </article>
+      <article class="update alt">
+        <h2>Nov 18, 2025 — v0.5.4 map improvements</h2>
+        <p>
+          Improved the map performance and added markers for new community
+          spots.
+        </p>
+        <strong>🚀 New features</strong>
+        <ul>
+          <li>Spot clustering added for better map navigation.</li>
+          <li>Clickable info bubbles for each spot.</li>
+        </ul>
+        <strong>🐞 Bug fixes / improvements</strong>
+        <ul>
+          <li>Fixed map zoom issues on small devices.</li>
+          <li>Resolved marker icon overlapping on dense areas.</li>
+        </ul>
+        <div class="author">
+          <img src="../../images/pfmaic.jpg" alt="Profile Pic" />
+          <span>@maicowave</span>
+        </div>
+      </article>
 
-        <article
-          class="update"
-          style="background-color: rgba(255, 255, 255, 0.03)"
-        >
-          <h2>Nov 18, 2025 — Launching the KOVA web page</h2>
-          <p>The KOVA web page is now live.</p>
-          <p>
-            This marks the first public-facing step of the project and acts as a
-            clean entry point into the KOVA ecosystem.
-          </p>
-          <div class="author">
-            <img src="../../images/pfmaic.jpg" alt="Profile Pic" />
-            <span>@maicowave</span>
-          </div>
-        </article>
+      <article class="update">
+        <h2>Nov 18, 2025 — Launching the KOVA web page</h2>
+        <p>The KOVA web page is now live.</p>
+        <p>
+          This marks the first public-facing step of the project and acts as a
+          clean entry point into the KOVA ecosystem.
+        </p>
+        <div class="author">
+          <img src="../../images/pfmaic.jpg" alt="Profile Pic" />
+          <span>@maicowave</span>
+        </div>
+      </article>
 
+      <article class="update alt">
         <h2>Jun 6, 2025 — v0.5.8 mini update</h2>
         <p>
           Just pushed 0.5.8, a mini update moving the big red button and fixing
@@ -440,10 +469,7 @@
         </div>
       </article>
 
-      <article
-        class="update"
-        style="background-color: rgba(255, 255, 255, 0.03)"
-      >
+      <article class="update alt">
         <h2>May 22, 2025 — Technical difficulties: server down temporarily</h2>
         <p>
           Quick update — should be resolved by tomorrow morning. Earlier today,
