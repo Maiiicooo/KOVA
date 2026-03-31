@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
   <head>
     <meta charset="utf-8" />
@@ -9,6 +9,7 @@
         --bg: #161515;
         --fg: #ffffff;
         --line: rgba(255, 255, 255, 0.08);
+        --accent: #8b7108;
       }
 
       * {
@@ -106,7 +107,9 @@
         color: var(--fg);
         opacity: 0.8;
         font-size: 0.95rem;
-        transition: opacity 0.25s;
+        transition:
+          opacity 0.25s,
+          color 0.25s;
       }
 
       .nav-sep {
@@ -115,7 +118,7 @@
       }
 
       .nav-right a:hover {
-        color: #8b7108;
+        color: var(--accent);
         opacity: 1;
       }
 
@@ -136,8 +139,58 @@
 
       .about-text {
         flex: 1 1 50%;
-        padding: 120px 60px 0px 60px;
+        padding: 120px 60px 40px 60px;
         background: var(--bg);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .about-text h1 {
+        font-size: 37px;
+        margin-bottom: 24px;
+        color: white;
+      }
+
+      .about-text p {
+        font-size: 16px;
+        line-height: 1.8;
+        color: white;
+        opacity: 0.95;
+      }
+
+      .support-wrap {
+        margin-top: 34px;
+      }
+
+      .support-note {
+        font-size: 14px;
+        line-height: 1.7;
+        color: white;
+        opacity: 0.72;
+        margin-bottom: 14px;
+        max-width: 500px;
+      }
+
+      .support-btn {
+        display: inline-block;
+        text-decoration: underline;
+        text-decoration-color: var(--accent);
+        text-underline-offset: 3px;
+        text-decoration-thickness: 1px;
+        color: var(--accent);
+        opacity: 1;
+        font-size: 0.95rem;
+        letter-spacing: 0.3px;
+        transition:
+          color 0.25s,
+          text-decoration-color 0.25s,
+          opacity 0.25s;
+      }
+
+      .support-btn:hover {
+        color: var(--fg);
+        text-decoration-color: var(--fg);
       }
 
       @media (max-width: 900px) {
@@ -193,15 +246,17 @@
         .about-image {
           width: 50%;
           height: auto;
+          min-height: auto;
         }
 
         .about-text {
           width: 50%;
-          padding: 60px 15px 0 15px;
+          padding: 60px 15px 20px 15px;
           font-size: 10px !important;
           line-height: 1.4;
           height: auto;
           overflow: visible;
+          justify-content: flex-start;
         }
 
         .about-text h1 {
@@ -211,10 +266,23 @@
 
         .about-text p {
           margin-bottom: 4px;
+          font-size: 10px;
+          line-height: 1.55;
         }
 
-        .about-text div {
-          display: none;
+        .support-wrap {
+          display: block;
+          margin-top: 16px;
+        }
+
+        .support-note {
+          font-size: 10px;
+          line-height: 1.5;
+          margin-bottom: 10px;
+        }
+
+        .support-btn {
+          font-size: 11px;
         }
 
         footer {
@@ -229,19 +297,6 @@
         }
       }
 
-      .about-text h1 {
-        font-size: 37px;
-        margin-bottom: 24px;
-        color: white;
-      }
-
-      .about-text p {
-        font-size: 16px;
-        line-height: 1.8;
-        color: white;
-        opacity: 0.95;
-      }
-
       /* FOOTER */
       .footer {
         background: #8b7108;
@@ -250,7 +305,9 @@
         margin-top: 0px;
         opacity: 0;
         transform: none;
-        transition: opacity 0.4s ease, transform 0.35s ease;
+        transition:
+          opacity 0.4s ease,
+          transform 0.35s ease;
       }
 
       .footer-visible {
@@ -287,14 +344,13 @@
         <a href="about.html">about</a>
         <span class="nav-sep">//</span>
         <a href="blog.html">blog</a>
-        <span class="nav-sep">//</span>
-        <a href="premium.html">premium</a>
       </div>
     </nav>
 
     <main>
       <div class="split-container">
         <div class="about-image" role="img" aria-label="about image"></div>
+
         <div class="about-text">
           <h1>About KOVA</h1>
           <p>
@@ -306,26 +362,38 @@
             The idea started from a simple frustration: good places are hard to
             find unless someone tells you. KOVA exists to collect those places
             and put them on a map, without turning them into tourist traps.
-            <br />
-            <br />
+            <br /><br />
 
             KOVA is intentionally minimal. No feeds screaming for attention. No
             endless notifications. Just a map, some context, and a growing
-            community that knows when to keep things low-key. <br />
-            <br />
+            community that knows when to keep things low-key. <br /><br />
 
             The project is currently in alpha. Features are evolving, the map is
             growing, and some things may break — that’s part of the process.
-            <br />
-            <br />
+            <br /><br />
 
             Built and maintained by
             <a
-              href="https://www.instagram.com/maicomargiela/"
+              href="https://www.instagram.com/maicowave_/"
               style="color: #8b7108"
-              >@maicomargiela.</a
+              >@maicowave.</a
             >
           </p>
+
+          <div class="support-wrap">
+            <p class="support-note">
+              If you like what I’m building and want to support KOVA, you can
+              buy me a beer. It helps me keep the project moving.
+            </p>
+            <a
+              class="support-btn"
+              href="https://buymeacoffee.com/maicowave"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              buy me a beer
+            </a>
+          </div>
         </div>
       </div>
 
