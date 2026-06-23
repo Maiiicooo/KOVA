@@ -1052,7 +1052,8 @@
       .long-press-hint {
         position: absolute;
         left: 50%;
-        top: calc(100% + 8px);
+        bottom: calc(100% + 10px);
+        top: auto;
         transform: translateX(-50%);
         padding: 6px 10px;
         border-radius: 999px;
@@ -1063,6 +1064,11 @@
         line-height: 1;
         white-space: nowrap;
         box-shadow: 0 12px 22px rgba(0, 0, 0, 0.28);
+      }
+
+      .long-press-indicator.hint-below .long-press-hint {
+        top: calc(100% + 8px);
+        bottom: auto;
       }
 
       .user-popup-card {
@@ -3161,6 +3167,7 @@
           el.style.left = point.x + "px";
           el.style.top = point.y + "px";
           el.style.setProperty("--long-press-ms", LONG_PRESS_MS + "ms");
+          el.classList.toggle("hint-below", point.y < 110);
           el.classList.remove("ready");
           void el.offsetWidth;
           el.classList.add("show");
@@ -3170,6 +3177,7 @@
           const el = ensureLongPressIndicator();
           el.style.left = point.x + "px";
           el.style.top = point.y + "px";
+          el.classList.toggle("hint-below", point.y < 110);
           el.classList.add("show", "ready");
           window.setTimeout(() => {
             if (!longPressIndicator) return;
