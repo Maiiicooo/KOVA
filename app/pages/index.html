@@ -515,26 +515,58 @@
       }
 
       .pinpoint {
-        width: auto;
-        height: auto;
+        position: relative;
+        width: 24px;
+        height: 24px;
         transform: translate(-50%, -50%);
         pointer-events: none;
-        color: rgba(139, 113, 8, 1);
-        font-family: "Open Sans", Inter, system-ui, sans-serif;
-        font-weight: 800;
-        font-size: 22px;
-        line-height: 1;
+        border-radius: 999px;
+        background: radial-gradient(
+          circle at 35% 35%,
+          #fff7cf 0%,
+          #d6b13e 24%,
+          #8b7108 68%,
+          #5b4700 100%
+        );
+        border: 2px solid rgba(255, 255, 255, 0.95);
+        box-shadow:
+          0 10px 22px rgba(0, 0, 0, 0.42),
+          0 0 0 6px rgba(139, 113, 8, 0.12);
         user-select: none;
         -webkit-user-select: none;
-        text-shadow: 0 10px 22px rgba(0, 0, 0, 0.55);
       }
 
       .pinpoint::before {
-        content: "X";
+        content: "";
+        position: absolute;
+        inset: -8px;
+        border-radius: inherit;
+        border: 1px solid rgba(139, 113, 8, 0.4);
+        opacity: 0.95;
       }
 
       .pinpoint::after {
-        display: none;
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 46px;
+        height: 46px;
+        border-radius: 999px;
+        border: 1px solid rgba(214, 177, 62, 0.35);
+        transform: translate(-50%, -50%);
+        animation: kovaPinPulse 1.7s ease-out infinite;
+      }
+
+      @keyframes kovaPinPulse {
+        0% {
+          transform: translate(-50%, -50%) scale(0.72);
+          opacity: 0.95;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1.24);
+          opacity: 0;
+        }
       }
 
       .maplibregl-popup-content {
@@ -793,14 +825,17 @@
       }
 
       .coord-popup {
-        background: #1e1e1e;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-        padding: 10px 12px;
+        width: min(360px, calc(100vw - 24px));
+        padding: 14px;
         color: white;
-        min-width: 180px;
-        max-width: min(320px, calc(100vw - 32px));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 18px;
+        background: linear-gradient(
+          180deg,
+          rgba(16, 16, 16, 0.98),
+          rgba(8, 8, 8, 0.96)
+        );
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
         font-family:
           Inter,
           system-ui,
@@ -810,15 +845,18 @@
 
       .coord-popup strong {
         display: block;
-        margin-bottom: 6px;
+        margin: 0;
+        font-size: 1.02rem;
+        line-height: 1.2;
+        letter-spacing: 0.1px;
       }
 
       .coord-popup .coords {
         display: block;
-        margin-bottom: 10px;
-        color: rgba(255, 255, 255, 0.82);
+        margin: 10px 0 0 0;
+        color: rgba(255, 255, 255, 0.76);
         font-size: 0.92rem;
-        line-height: 1.35;
+        line-height: 1.45;
         word-break: break-word;
       }
 
@@ -826,6 +864,7 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
+        margin-top: 12px;
       }
 
       .coord-popup .btn-row.single {
@@ -833,21 +872,197 @@
       }
 
       .coord-popup button {
-        padding: 10px 10px;
-        min-height: 42px;
-        background: rgba(255, 255, 255, 0.08);
+        width: 100%;
+        min-height: 46px;
+        padding: 12px 13px;
+        background: rgba(255, 255, 255, 0.06);
         color: white;
-        border: 1px solid rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 13px;
         cursor: pointer;
-        font-weight: 650;
-        border-radius: 10px;
+        font-weight: 700;
+        font-family: inherit;
+        font-size: 0.92rem;
         -webkit-tap-highlight-color: transparent;
         touch-action: manipulation;
+        transition:
+          transform 0.14s ease,
+          background 0.18s ease,
+          border-color 0.18s ease;
+      }
+
+      .coord-popup button:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.16);
       }
 
       .coord-popup button.primary {
-        background: #8b7108;
-        border-color: #8b7108;
+        background: linear-gradient(
+          180deg,
+          rgba(155, 126, 11, 1),
+          rgba(139, 113, 8, 1)
+        );
+        border-color: rgba(139, 113, 8, 1);
+      }
+
+      .coord-popup-search .coord-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+        color: rgba(214, 177, 62, 0.96);
+        font-size: 0.72rem;
+        font-weight: 780;
+        letter-spacing: 1.1px;
+        text-transform: uppercase;
+      }
+
+      .coord-popup-search .coord-kicker::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: radial-gradient(
+          circle at 35% 35%,
+          #fff7cf 0%,
+          #d6b13e 40%,
+          #8b7108 100%
+        );
+        box-shadow: 0 0 0 4px rgba(139, 113, 8, 0.14);
+      }
+
+      .coord-popup-search .coord-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .coord-popup-search .coord-pill {
+        padding: 9px 10px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.045);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .coord-popup-search .coord-pill-label {
+        display: block;
+        margin-bottom: 4px;
+        color: rgba(255, 255, 255, 0.48);
+        font-size: 0.7rem;
+        font-weight: 650;
+        letter-spacing: 0.7px;
+        text-transform: uppercase;
+      }
+
+      .coord-popup-search .coord-pill-value {
+        display: block;
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 0.84rem;
+        line-height: 1.35;
+      }
+
+      .coord-popup-search .search-note {
+        margin-top: 10px;
+        color: rgba(255, 255, 255, 0.58);
+        font-size: 0.8rem;
+        line-height: 1.42;
+      }
+
+      .coord-popup-search .search-cta {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .coord-popup-search .search-cta::before {
+        content: "⌁";
+        font-size: 1rem;
+        line-height: 1;
+      }
+
+      .long-press-indicator {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 78px;
+        height: 78px;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: 35;
+        opacity: 0;
+        transition: opacity 0.14s ease;
+      }
+
+      .long-press-indicator.show {
+        opacity: 1;
+      }
+
+      .long-press-indicator.ready {
+        opacity: 0;
+        transition: opacity 0.26s ease;
+      }
+
+      .long-press-core {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        transform: translate(-50%, -50%);
+        background: radial-gradient(
+          circle at 35% 35%,
+          #fff7cf 0%,
+          #d6b13e 32%,
+          #8b7108 75%,
+          #5b4700 100%
+        );
+        border: 2px solid rgba(255, 255, 255, 0.92);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
+      }
+
+      .long-press-ring {
+        position: absolute;
+        inset: 0;
+        border-radius: 999px;
+        border: 2px solid rgba(214, 177, 62, 0.78);
+        transform: scale(0.32);
+        opacity: 0.22;
+      }
+
+      .long-press-indicator.show .long-press-ring {
+        transform: scale(1);
+        opacity: 0.95;
+        transition:
+          transform var(--long-press-ms, 650ms) linear,
+          opacity var(--long-press-ms, 650ms) linear;
+      }
+
+      .long-press-indicator.ready .long-press-ring {
+        transform: scale(1.16);
+        opacity: 0;
+        transition:
+          transform 0.24s ease,
+          opacity 0.24s ease;
+      }
+
+      .long-press-hint {
+        position: absolute;
+        left: 50%;
+        top: calc(100% + 8px);
+        transform: translateX(-50%);
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(10, 10, 10, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.74rem;
+        line-height: 1;
+        white-space: nowrap;
+        box-shadow: 0 12px 22px rgba(0, 0, 0, 0.28);
       }
 
       .user-popup-card {
@@ -1083,12 +1298,25 @@
         }
 
         .coord-popup {
-          min-width: 0;
-          width: min(280px, calc(100vw - 28px));
+          width: min(340px, calc(100vw - 24px));
         }
 
         .coord-popup .btn-row {
           grid-template-columns: 1fr;
+        }
+
+        .coord-popup-search .coord-meta {
+          grid-template-columns: 1fr;
+        }
+
+        .long-press-indicator {
+          width: 72px;
+          height: 72px;
+        }
+
+        .long-press-hint {
+          font-size: 0.7rem;
+          padding: 5px 9px;
         }
       }
 
@@ -2756,9 +2984,7 @@
         const LONG_PRESS_MOVE_TOLERANCE_PX = 24;
 
         function needsLongPressForMapSearch() {
-          return window.matchMedia(
-            "(pointer: coarse), (hover: none), (max-width: 1024px)",
-          ).matches;
+          return window.matchMedia("(pointer: coarse), (hover: none)").matches;
         }
 
         function isMapOverlayTarget(target) {
@@ -2811,13 +3037,25 @@
           placeClickPin(lng, lat);
 
           const popupHTML = `
-            <div class="coord-popup">
-              <strong>Search spots</strong>
-              <span class="coords">Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(
-                5,
-              )}</span>
+            <div class="coord-popup coord-popup-search">
+              <div class="coord-kicker">KOVA search</div>
+              <strong>Search spots around this point</strong>
+              <span class="coords">
+                Load spots in a <b>10 km radius</b> around this location.
+              </span>
+              <div class="coord-meta">
+                <div class="coord-pill">
+                  <span class="coord-pill-label">Latitude</span>
+                  <span class="coord-pill-value">${lat.toFixed(5)}</span>
+                </div>
+                <div class="coord-pill">
+                  <span class="coord-pill-label">Longitude</span>
+                  <span class="coord-pill-value">${lng.toFixed(5)}</span>
+                </div>
+              </div>
+              <div class="search-note">Good for checking hidden nearby spots without accidentally adding a new one.</div>
               <div class="btn-row single">
-                <button data-action="show-spots" data-lat="${lat}" data-lng="${lng}" data-radius="${SEARCH_RADIUS_KM}">
+                <button class="primary search-cta" data-action="show-spots" data-lat="${lat}" data-lng="${lng}" data-radius="${SEARCH_RADIUS_KM}">
                   Search spots
                 </button>
               </div>
@@ -2828,7 +3066,7 @@
             offset: 18,
             closeButton: true,
             closeOnClick: false,
-            maxWidth: "320px",
+            maxWidth: "380px",
             className: "coord-map-popup",
           })
             .setLngLat([lng, lat])
@@ -2864,6 +3102,45 @@
 
         const mapContainer = map.getContainer();
         const mapCanvas = map.getCanvas();
+        let longPressIndicator = null;
+
+        function ensureLongPressIndicator() {
+          if (longPressIndicator) return longPressIndicator;
+
+          const el = document.createElement("div");
+          el.className = "long-press-indicator";
+          el.innerHTML =
+            '<div class="long-press-ring"></div><div class="long-press-core"></div><div class="long-press-hint">Hold to search</div>';
+          mapContainer.appendChild(el);
+          longPressIndicator = el;
+          return el;
+        }
+
+        function showLongPressIndicator(point) {
+          const el = ensureLongPressIndicator();
+          el.style.left = point.x + "px";
+          el.style.top = point.y + "px";
+          el.style.setProperty("--long-press-ms", LONG_PRESS_MS + "ms");
+          el.classList.remove("ready");
+          void el.offsetWidth;
+          el.classList.add("show");
+        }
+
+        function flashLongPressIndicator(point) {
+          const el = ensureLongPressIndicator();
+          el.style.left = point.x + "px";
+          el.style.top = point.y + "px";
+          el.classList.add("show", "ready");
+          window.setTimeout(() => {
+            if (!longPressIndicator) return;
+            longPressIndicator.classList.remove("show", "ready");
+          }, 260);
+        }
+
+        function hideLongPressIndicator() {
+          if (!longPressIndicator) return;
+          longPressIndicator.classList.remove("show", "ready");
+        }
 
         function clearLongPressTimer() {
           if (longPressTimer) {
@@ -2872,6 +3149,7 @@
           }
 
           longPressPointer = null;
+          hideLongPressIndicator();
         }
 
         function getPointFromClient(clientX, clientY) {
@@ -2905,6 +3183,7 @@
           if (hits && hits.length) return;
 
           clearLongPressTimer();
+          showLongPressIndicator(point);
 
           longPressPointer = {
             id: event.pointerId,
@@ -2926,6 +3205,7 @@
               } catch (e) {}
             }
 
+            flashLongPressIndicator(longPressPointer.point);
             showSearchPopupAt(lngLat.lng, lngLat.lat);
             clearLongPressTimer();
 
@@ -2996,6 +3276,7 @@
               if (hits && hits.length) return;
 
               clearLongPressTimer();
+              showLongPressIndicator(point);
 
               longPressPointer = {
                 id: "touch",
@@ -3017,6 +3298,7 @@
                   } catch (e) {}
                 }
 
+                flashLongPressIndicator(longPressPointer.point);
                 showSearchPopupAt(lngLat.lng, lngLat.lat);
                 clearLongPressTimer();
 
