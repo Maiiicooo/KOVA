@@ -1,0 +1,1099 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KOVA - add spot</title>
+
+    <link rel="manifest" href="../../manifest.json" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <link rel="apple-touch-icon" href="../../images/appicon.JPG" />
+
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
+    <link
+      href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css"
+      rel="stylesheet"
+    />
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+    <style>
+      :root {
+        --bg: transparent;
+        --fg: #fff;
+        --muted: rgba(255, 255, 255, 0.62);
+        --line: rgba(255, 255, 255, 0.12);
+        --accent: #8b7108;
+        --panel: rgba(14, 14, 14, 0.96);
+        --panel-soft: rgba(255, 255, 255, 0.045);
+        --shadow: 0 22px 58px rgba(0, 0, 0, 0.45);
+        --radius: 18px;
+        --success: rgba(163, 214, 158, 0.95);
+        --danger: rgba(255, 160, 160, 0.95);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        background:
+          radial-gradient(
+            circle at 20% 0%,
+            rgba(139, 113, 8, 0.14),
+            transparent 34%
+          ),
+          radial-gradient(
+            circle at 85% 18%,
+            rgba(255, 255, 255, 0.06),
+            transparent 32%
+          ),
+          #161515;
+        color: var(--fg);
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        overflow-x: hidden;
+      }
+
+      nav {
+        width: 100%;
+        padding: 22px 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-sizing: border-box;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: var(--bg);
+        z-index: 50;
+        pointer-events: none;
+      }
+
+      nav > * {
+        pointer-events: auto;
+      }
+
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .nav-left img {
+        height: 50px;
+        width: auto;
+        display: block;
+      }
+
+      .nav-right {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        min-width: 0;
+      }
+
+      .hamburger-toggle {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.24);
+        color: rgba(255, 255, 255, 0.9);
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+        font-family: inherit;
+        appearance: none;
+        -webkit-appearance: none;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.24);
+        transition:
+          transform 0.2s ease,
+          background 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .hamburger-toggle span {
+        width: 17px;
+        height: 2px;
+        display: block;
+        border-radius: 999px;
+        background: currentColor;
+        transition:
+          transform 0.22s ease,
+          opacity 0.18s ease,
+          width 0.2s ease;
+      }
+
+      .hamburger-toggle:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(139, 113, 8, 0.72);
+        color: var(--accent);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+      }
+
+      .hamburger-toggle:focus-visible {
+        outline: 2px solid rgba(139, 113, 8, 0.9);
+        outline-offset: 4px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(1) {
+        transform: translateY(6px) rotate(45deg);
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(2) {
+        opacity: 0;
+        width: 8px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(3) {
+        transform: translateY(-6px) rotate(-45deg);
+      }
+
+      .hamburger-menu {
+        position: absolute;
+        top: 54px;
+        right: 0;
+        width: min(230px, calc(100vw - 28px));
+        padding: 9px;
+        display: grid;
+        gap: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        background: rgba(8, 8, 8, 0.68);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 22px 58px rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+        transform-origin: top right;
+        pointer-events: none;
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .nav-right.open .hamburger-menu {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+
+      .hamburger-menu a {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 0.94rem;
+        font-weight: 520;
+        line-height: 1.2;
+        letter-spacing: 0.15px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 13px;
+        cursor: pointer;
+        padding: 12px 13px;
+        margin: 0;
+        font-family: inherit;
+        white-space: nowrap;
+        appearance: none;
+        -webkit-appearance: none;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          color 0.18s ease;
+      }
+
+      .hamburger-menu a::after {
+        content: "→";
+        color: var(--accent);
+        opacity: 0;
+        transform: translateX(-5px);
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .hamburger-menu a:hover {
+        color: #fff;
+        background: rgba(139, 113, 8, 0.18);
+        border-color: rgba(139, 113, 8, 0.28);
+        transform: translateX(2px);
+      }
+
+      .hamburger-menu a:hover::after {
+        opacity: 0.9;
+        transform: translateX(0);
+      }
+
+      .hamburger-menu a:focus-visible {
+        outline: 2px solid rgba(139, 113, 8, 0.9);
+        outline-offset: 2px;
+      }
+
+      .page {
+        width: min(1080px, 100%);
+        margin: 0 auto;
+        padding: 122px 24px 56px;
+      }
+
+      .hero {
+        max-width: 760px;
+        margin-bottom: 18px;
+      }
+
+      .eyebrow {
+        margin-bottom: 10px;
+        color: var(--accent);
+        font-size: 0.72rem;
+        font-weight: 760;
+        letter-spacing: 1.9px;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: clamp(2.1rem, 7vw, 4rem);
+        line-height: 0.96;
+        letter-spacing: -2.4px;
+      }
+
+      .hero p {
+        margin: 0;
+        max-width: 66ch;
+        color: var(--muted);
+        font-size: 1rem;
+        line-height: 1.55;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .card {
+        background: linear-gradient(180deg, var(--panel), rgba(8, 8, 8, 0.96));
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .section-title h2 {
+        margin: 0;
+        font-size: 1rem;
+        letter-spacing: 0.2px;
+      }
+
+      .pill {
+        padding: 6px 9px;
+        border-radius: 999px;
+        border: 1px solid rgba(139, 113, 8, 0.36);
+        background: rgba(139, 113, 8, 0.1);
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 0.78rem;
+        white-space: nowrap;
+      }
+
+      label {
+        display: block;
+        margin: 14px 0 6px;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 0.88rem;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 13px 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(0, 0, 0, 0.34);
+        color: white;
+        font: inherit;
+        outline: none;
+        transition:
+          border-color 0.18s ease,
+          background 0.18s ease,
+          box-shadow 0.18s ease;
+      }
+
+      input:focus,
+      textarea:focus {
+        border-color: rgba(139, 113, 8, 0.78);
+        background: rgba(0, 0, 0, 0.46);
+        box-shadow: 0 0 0 3px rgba(139, 113, 8, 0.14);
+      }
+
+      textarea {
+        min-height: 132px;
+        resize: vertical;
+      }
+
+      input[type="file"] {
+        padding: 11px;
+        cursor: pointer;
+      }
+
+      .btn {
+        width: 100%;
+        min-height: 48px;
+        margin-top: 12px;
+        padding: 13px 14px;
+        border: 1px solid rgba(139, 113, 8, 0.86);
+        border-radius: 15px;
+        background: rgba(139, 113, 8, 0.95);
+        color: white;
+        font: inherit;
+        font-weight: 760;
+        cursor: pointer;
+        transition:
+          transform 0.16s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          opacity 0.18s ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        background: rgba(139, 113, 8, 1);
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: default;
+        transform: none;
+      }
+
+      .btn.secondary {
+        border-color: rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.065);
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .btn.secondary:hover {
+        background: rgba(255, 255, 255, 0.09);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .mini-map {
+        width: 100%;
+        height: 390px;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: #080808;
+      }
+
+      .map-marker {
+        width: auto;
+        height: auto;
+        pointer-events: none;
+        color: rgba(139, 113, 8, 1);
+        font-family: "Open Sans", Inter, system-ui, sans-serif;
+        font-weight: 850;
+        font-size: 24px;
+        line-height: 1;
+        user-select: none;
+        -webkit-user-select: none;
+        text-shadow: 0 10px 22px rgba(0, 0, 0, 0.62);
+      }
+
+      .map-marker::before {
+        content: "X";
+      }
+
+      .maplibregl-control-container,
+      .maplibregl-ctrl-bottom-left,
+      .maplibregl-ctrl-logo,
+      .maplibregl-ctrl-attrib,
+      .maptiler-attribution {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+
+      .photo-preview {
+        width: 100%;
+        max-height: 300px;
+        object-fit: cover;
+        border-radius: 18px;
+        margin-top: 10px;
+        display: none;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: #080808;
+      }
+
+      .status {
+        margin-top: 14px;
+        padding: 12px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.75);
+        display: none;
+        line-height: 1.45;
+        font-size: 0.92rem;
+      }
+
+      .status.show {
+        display: block;
+      }
+
+      .status.good {
+        color: var(--success);
+      }
+
+      .status.bad {
+        color: var(--danger);
+      }
+
+      .small {
+        margin-top: 7px;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.82rem;
+        line-height: 1.45;
+      }
+
+      .hint-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .hint {
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 16px;
+        background: var(--panel-soft);
+        color: rgba(255, 255, 255, 0.66);
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+
+      .hint b {
+        color: #fff;
+      }
+
+      @media (max-width: 860px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .mini-map {
+          height: 300px;
+        }
+      }
+
+      @media (max-width: 600px) {
+        nav {
+          padding: 14px 14px;
+          align-items: flex-start;
+          gap: 12px;
+        }
+
+        .nav-left img {
+          height: 38px;
+        }
+
+        .hamburger-toggle {
+          width: 40px;
+          height: 40px;
+        }
+
+        .hamburger-menu {
+          top: 50px;
+          width: min(220px, calc(100vw - 28px));
+        }
+
+        .hamburger-menu a {
+          font-size: 0.88rem;
+          padding: 11px 12px;
+        }
+
+        .page {
+          padding: 96px 14px 36px;
+        }
+
+        .card {
+          border-radius: 22px;
+          padding: 15px;
+        }
+
+        h1 {
+          letter-spacing: -1.8px;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .mini-map {
+          height: 245px;
+        }
+
+        .section-title {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 8px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav>
+      <div class="nav-left">
+        <a href="../../index.html">
+          <img src="../../images/kova_wit_x_png.png" alt="Kova logo small" />
+        </a>
+      </div>
+
+      <div class="nav-right">
+        <button
+          class="hamburger-toggle"
+          type="button"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="kovaMenu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="hamburger-menu" id="kovaMenu" aria-hidden="true">
+          <a href="../../app/pages/index.html">map</a>
+          <a href="../../app/pages/radar.html">weather</a>
+          <a href="../../web/pages/about.html">About us</a>
+          <a href="../../index.html">home</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="page">
+      <section class="hero">
+        <div class="eyebrow">KOVA submit</div>
+        <h1>Add a spot.</h1>
+        <p>
+          Drop a location, add a photo and send it to pending spots. New spots
+          stay offline until they are reviewed.
+        </p>
+      </section>
+
+      <form id="spotForm" class="layout">
+        <section class="card">
+          <div class="section-title">
+            <h2>Spot details</h2>
+            <span class="pill">pending review</span>
+          </div>
+
+          <button class="btn secondary" type="button" id="gpsBtn">
+            Use current GPS location
+          </button>
+
+          <div class="grid">
+            <div>
+              <label for="lat">Latitude</label>
+              <input id="lat" required inputmode="decimal" />
+            </div>
+
+            <div>
+              <label for="lng">Longitude</label>
+              <input id="lng" required inputmode="decimal" />
+            </div>
+          </div>
+
+          <label for="photoFile">Spot photo</label>
+          <input id="photoFile" type="file" accept="image/*" required />
+          <img id="photoPreview" class="photo-preview" alt="Spot preview" />
+
+          <label for="name">Spot name</label>
+          <input id="name" placeholder="Hidden sunset bench" required />
+
+          <label for="description">Description</label>
+          <textarea
+            id="description"
+            placeholder="Short vibe, access info, warnings, best time to go..."
+            required
+          ></textarea>
+
+          <label for="addedBy">Added by</label>
+          <input id="addedBy" value="Maico" />
+
+          <button class="btn" type="submit" id="saveBtn">
+            Save to pending spots
+          </button>
+
+          <div id="status" class="status"></div>
+        </section>
+
+        <aside class="card">
+          <div class="section-title">
+            <h2>GPS check map</h2>
+            <span class="pill">tap to correct</span>
+          </div>
+
+          <div id="miniMap" class="mini-map"></div>
+          <div class="small">
+            Tap the mini map or drag the X marker if the location needs a small
+            correction.
+          </div>
+
+          <div class="hint-list">
+            <div class="hint">
+              <b>Tip:</b> open this page from the map after searching a point.
+              Coordinates in the URL are automatically filled in.
+            </div>
+            <div class="hint">
+              <b>Photo:</b> use a clear image that shows the vibe of the spot.
+            </div>
+          </div>
+        </aside>
+      </form>
+    </main>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const navRight = document.querySelector(".nav-right");
+        const menuToggle = document.querySelector(".hamburger-toggle");
+        const menuPanel = document.getElementById("kovaMenu");
+
+        function closeHamburgerMenu() {
+          if (!navRight || !menuToggle || !menuPanel) return;
+          navRight.classList.remove("open");
+          menuToggle.setAttribute("aria-expanded", "false");
+          menuPanel.setAttribute("aria-hidden", "true");
+        }
+
+        if (navRight && menuToggle && menuPanel) {
+          menuToggle.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isOpen = navRight.classList.toggle("open");
+            menuToggle.setAttribute("aria-expanded", String(isOpen));
+            menuPanel.setAttribute("aria-hidden", String(!isOpen));
+          });
+
+          menuPanel.addEventListener("click", (e) => {
+            if (e.target.closest("a")) closeHamburgerMenu();
+          });
+
+          document.addEventListener("click", (e) => {
+            if (!navRight.contains(e.target)) closeHamburgerMenu();
+          });
+
+          document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeHamburgerMenu();
+          });
+        }
+
+        const MAPTILER_KEY = "7TBqy4hTdFfQeIq7oXKj";
+
+        maptilersdk.config.apiKey = MAPTILER_KEY;
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyARxFI9HyJxrINfzDazhxFHKSrGLX8KoBk",
+          authDomain: "kova-6052a.firebaseapp.com",
+          projectId: "kova-6052a",
+          storageBucket: "kova-6052a.firebasestorage.app",
+          messagingSenderId: "873689812978",
+          appId: "1:873689812978:web:e0581f3df823e51239656b",
+          measurementId: "G-VM5224Z3K6",
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        const form = document.getElementById("spotForm");
+        const gpsBtn = document.getElementById("gpsBtn");
+        const saveBtn = document.getElementById("saveBtn");
+        const statusEl = document.getElementById("status");
+
+        const latInput = document.getElementById("lat");
+        const lngInput = document.getElementById("lng");
+        const photoFileInput = document.getElementById("photoFile");
+        const photoPreview = document.getElementById("photoPreview");
+        const nameInput = document.getElementById("name");
+        const descriptionInput = document.getElementById("description");
+        const addedByInput = document.getElementById("addedBy");
+
+        let miniMap = null;
+        let spotMarker = null;
+        let initialCoordsApplied = false;
+
+        function status(message, type = "") {
+          statusEl.textContent = message;
+          statusEl.className = "status show";
+
+          if (type === "good") statusEl.classList.add("good");
+          if (type === "bad") statusEl.classList.add("bad");
+        }
+
+        function makeSafeFileName(name) {
+          return String(name || "spot.jpg")
+            .toLowerCase()
+            .replace(/[^a-z0-9._-]/g, "-")
+            .slice(0, 80);
+        }
+
+        function encodeGeohash(latitude, longitude, precision = 9) {
+          const base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
+
+          let idx = 0;
+          let bit = 0;
+          let evenBit = true;
+          let geohash = "";
+
+          let latMin = -90;
+          let latMax = 90;
+          let lonMin = -180;
+          let lonMax = 180;
+
+          while (geohash.length < precision) {
+            if (evenBit) {
+              const lonMid = (lonMin + lonMax) / 2;
+
+              if (longitude >= lonMid) {
+                idx = idx * 2 + 1;
+                lonMin = lonMid;
+              } else {
+                idx = idx * 2;
+                lonMax = lonMid;
+              }
+            } else {
+              const latMid = (latMin + latMax) / 2;
+
+              if (latitude >= latMid) {
+                idx = idx * 2 + 1;
+                latMin = latMid;
+              } else {
+                idx = idx * 2;
+                latMax = latMid;
+              }
+            }
+
+            evenBit = !evenBit;
+
+            if (++bit === 5) {
+              geohash += base32.charAt(idx);
+              bit = 0;
+              idx = 0;
+            }
+          }
+
+          return geohash;
+        }
+
+        function readCoordsFromURL() {
+          const params = new URLSearchParams(window.location.search);
+
+          const coords = params.get("coords");
+          if (coords) {
+            const parts = coords
+              .split(",")
+              .map((part) => Number(String(part).trim().replace(",", ".")));
+
+            if (
+              parts.length >= 2 &&
+              Number.isFinite(parts[0]) &&
+              Number.isFinite(parts[1])
+            ) {
+              return { lat: parts[0], lng: parts[1] };
+            }
+          }
+
+          const lat = Number(String(params.get("lat") || "").replace(",", "."));
+          const lng = Number(String(params.get("lng") || "").replace(",", "."));
+
+          if (Number.isFinite(lat) && Number.isFinite(lng)) {
+            return { lat, lng };
+          }
+
+          return null;
+        }
+
+        function initMiniMap() {
+          miniMap = new maptilersdk.Map({
+            container: "miniMap",
+            style: `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${MAPTILER_KEY}`,
+            center: [4.5, 50.85],
+            zoom: 7,
+            navigationControl: false,
+            geolocateControl: false,
+            projectionControl: false,
+            doubleClickZoom: false,
+          });
+
+          if (miniMap.doubleClickZoom) miniMap.doubleClickZoom.disable();
+
+          miniMap.on("click", (e) => {
+            const lat = e.lngLat.lat;
+            const lng = e.lngLat.lng;
+
+            setCoordsAndMarker(lat, lng, {
+              zoom: Math.max(miniMap.getZoom(), 16),
+              message: "Marker manually corrected on map.",
+            });
+          });
+
+          miniMap.on("load", () => {
+            applyInitialCoordsFromURL();
+          });
+        }
+
+        function setCoordsAndMarker(lat, lng, options = {}) {
+          const zoom = options.zoom || 16;
+          const message = options.message || "";
+
+          latInput.value = Number(lat).toFixed(6);
+          lngInput.value = Number(lng).toFixed(6);
+
+          if (!spotMarker) {
+            const markerEl = document.createElement("div");
+            markerEl.className = "map-marker";
+
+            spotMarker = new maptilersdk.Marker({
+              element: markerEl,
+              anchor: "center",
+              draggable: true,
+            })
+              .setLngLat([lng, lat])
+              .addTo(miniMap);
+
+            spotMarker.on("dragend", () => {
+              const pos = spotMarker.getLngLat();
+              latInput.value = pos.lat.toFixed(6);
+              lngInput.value = pos.lng.toFixed(6);
+              status("Marker dragged. Coords updated.", "good");
+            });
+          } else {
+            spotMarker.setLngLat([lng, lat]);
+          }
+
+          miniMap.easeTo({
+            center: [lng, lat],
+            zoom,
+            duration: 450,
+          });
+
+          if (message) {
+            status(message, "good");
+          }
+        }
+
+        function applyInitialCoordsFromURL() {
+          if (initialCoordsApplied) return;
+
+          const coords = readCoordsFromURL();
+          if (!coords) return;
+
+          initialCoordsApplied = true;
+          setCoordsAndMarker(coords.lat, coords.lng, {
+            zoom: 17,
+            message: "Coordinates loaded from map.",
+          });
+        }
+
+        function updateMarkerFromInputs() {
+          const lat = Number(latInput.value.replace(",", "."));
+          const lng = Number(lngInput.value.replace(",", "."));
+
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+          if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+
+          setCoordsAndMarker(lat, lng, {
+            zoom: Math.max(miniMap.getZoom(), 15),
+            message: "Coords changed. Map updated.",
+          });
+        }
+
+        async function uploadPhoto(file, docId) {
+          const fileName = makeSafeFileName(file.name);
+          const path = `spot_photos/${docId}/${Date.now()}-${fileName}`;
+          const ref = storage.ref().child(path);
+
+          const snapshot = await ref.put(file, {
+            contentType: file.type || "image/jpeg",
+          });
+
+          return await snapshot.ref.getDownloadURL();
+        }
+
+        gpsBtn.addEventListener("click", () => {
+          if (!navigator.geolocation) {
+            status("GPS not supported on this device.", "bad");
+            return;
+          }
+
+          gpsBtn.disabled = true;
+          status("Getting location...");
+
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const lat = pos.coords.latitude;
+              const lng = pos.coords.longitude;
+              const accuracy = Math.round(pos.coords.accuracy || 0);
+
+              setCoordsAndMarker(lat, lng, {
+                zoom: 17,
+                message: `GPS locked. Accuracy: ±${accuracy}m.`,
+              });
+
+              gpsBtn.disabled = false;
+            },
+            (err) => {
+              status(err.message || "Could not get location.", "bad");
+              gpsBtn.disabled = false;
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 15000,
+              maximumAge: 0,
+            },
+          );
+        });
+
+        latInput.addEventListener("change", updateMarkerFromInputs);
+        lngInput.addEventListener("change", updateMarkerFromInputs);
+
+        photoFileInput.addEventListener("change", () => {
+          const file = photoFileInput.files && photoFileInput.files[0];
+
+          if (!file) {
+            photoPreview.style.display = "none";
+            photoPreview.removeAttribute("src");
+            return;
+          }
+
+          const previewURL = URL.createObjectURL(file);
+          photoPreview.src = previewURL;
+          photoPreview.style.display = "block";
+        });
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const lat = Number(latInput.value.replace(",", "."));
+          const lng = Number(lngInput.value.replace(",", "."));
+          const file = photoFileInput.files && photoFileInput.files[0];
+
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+            status("Invalid coordinates.", "bad");
+            return;
+          }
+
+          if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+            status("Coordinates out of range.", "bad");
+            return;
+          }
+
+          if (!file) {
+            status("Choose or take a photo first.", "bad");
+            return;
+          }
+
+          const name = nameInput.value.trim();
+          const description = descriptionInput.value.trim();
+          const addedBy = addedByInput.value.trim() || "Maico";
+
+          if (!name || !description) {
+            status("Name and description are required.", "bad");
+            return;
+          }
+
+          saveBtn.disabled = true;
+          status("Preparing pending spot...");
+
+          try {
+            const docRef = db.collection("pending_spots").doc();
+            const geohash = encodeGeohash(lat, lng, 9);
+
+            status("Uploading photo...");
+            const photoURL = await uploadPhoto(file, docRef.id);
+
+            status("Saving to pending spots...");
+
+            await docRef.set({
+              name,
+              description,
+              photoURL,
+              addedBy,
+              lat,
+              lng,
+              geohash,
+
+              status: "pending",
+
+              ratingSum: 0,
+              ratingCount: 0,
+              avgRating: 0,
+
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+
+            status("Spot saved to pending_spots. Not live yet.", "good");
+
+            nameInput.value = "";
+            descriptionInput.value = "";
+            photoFileInput.value = "";
+            photoPreview.style.display = "none";
+            photoPreview.removeAttribute("src");
+          } catch (err) {
+            console.error(err);
+            status(err.message || "Could not save pending spot.", "bad");
+          } finally {
+            saveBtn.disabled = false;
+          }
+        });
+
+        initMiniMap();
+      });
+    </script>
+  </body>
+</html>
