@@ -1,563 +1,198 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>KOVA - spots</title>
-    <link rel="manifest" href="../../manifest.json" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <link rel="apple-touch-icon" href="../../images/appicon.JPG" />
-
-    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
-    <link
-      href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css"
-      rel="stylesheet"
-    />
-
-    <script src="https://cdn.jsdelivr.net/npm/geofire-common@6.0.0/dist/geofire-common/geofire-common.min.js"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Kova — alpha</title>
 
     <style>
       :root {
-        --bg: transparent;
+        --bg: #161515;
         --fg: #fff;
         --muted: rgba(255, 255, 255, 0.6);
         --line: rgba(255, 255, 255, 0.12);
-        --accent: #8b7108;
-        --panel: rgba(10, 10, 10, 0.94);
-        --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
-        --radius: 18px;
-        --success: rgba(163, 214, 158, 0.95);
-        --danger: rgba(255, 160, 160, 0.95);
       }
 
-      * {
+      /* BODY – 100% scherm, nooit scrollen */
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+          sans-serif;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
         box-sizing: border-box;
       }
 
-      body {
-        margin: 0;
-        padding: 0;
-        font-family:
-          Inter,
-          system-ui,
-          -apple-system,
-          "Segoe UI",
-          Roboto,
-          sans-serif;
-        background: #161515;
-        color: var(--fg);
-        height: 100dvh;
-        overflow: hidden;
-      }
-
+      /* NAVBAR ------------------------------------------------------ */
       nav {
         width: 100%;
         padding: 22px 34px;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        border-bottom: 1px solid var(--line);
         box-sizing: border-box;
-        position: fixed;
-        top: 0;
-        background: var(--bg);
-        z-index: 20;
-        pointer-events: none;
-      }
-
-      nav > * {
-        pointer-events: auto;
+        flex-shrink: 0;
       }
 
       .nav-left {
         display: flex;
         align-items: center;
         gap: 12px;
-        min-width: 0;
       }
 
       .nav-left img {
-        height: 50px;
+        height: 35px;
         width: auto;
-        display: block;
       }
 
       .beta {
-        padding: 2px 6px;
-        font-size: 0.85rem;
-        background-color: var(--accent);
-        color: white;
-        letter-spacing: 0.5px;
-        white-space: nowrap;
-      }
-
-      .nav-right {
+        width: 110px;
+        height: 20px;
+        overflow: hidden;
         position: relative;
         display: flex;
         align-items: center;
-        justify-content: flex-end;
-        min-width: 0;
       }
 
-      .hamburger-toggle {
-        width: 44px;
-        height: 44px;
+      .beta a {
+        color: white;
+        text-decoration: none;
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .beta-track {
         display: inline-flex;
+        align-items: center;
+        gap: 32px;
+        white-space: nowrap;
+        animation: alphaScroll 8s linear infinite;
+      }
+
+      .beta-text {
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        color: white;
+        display: inline-block;
+      }
+
+      @keyframes alphaScroll {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(calc(-50% - 16px));
+        }
+      }
+
+      .nav-right a {
+        margin-left: 32px;
+        text-decoration: none;
+        color: var(--fg);
+        font-size: 0.95rem;
+        opacity: 0.8;
+        transition: opacity 0.25s;
+      }
+
+      .navbar-seperator {
+        margin-left: 20px;
+      }
+
+      .nav-right a:hover {
+        opacity: 1;
+        color: #8b7108;
+      }
+
+      /* CENTER ------------------------------------------------------ */
+      .center {
+        flex: 1;
+        display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 4px;
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        border-radius: 999px;
-        background: rgba(0, 0, 0, 0.2);
-        color: rgba(255, 255, 255, 0.9);
-        cursor: pointer;
-        padding: 0;
-        margin: 0;
-        font-family: inherit;
-        appearance: none;
-        -webkit-appearance: none;
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.24);
-        transition:
-          transform 0.2s ease,
-          background 0.2s ease,
-          border-color 0.2s ease,
-          color 0.2s ease,
-          box-shadow 0.2s ease;
+        text-align: center;
+        padding: 0 20px;
+        box-sizing: border-box;
+        overflow: hidden;
       }
 
-      .hamburger-toggle span {
-        width: 17px;
-        height: 2px;
-        display: block;
-        border-radius: 999px;
-        background: currentColor;
-        transition:
-          transform 0.22s ease,
-          opacity 0.18s ease,
-          width 0.2s ease;
-      }
-
-      .hamburger-toggle:hover {
-        transform: translateY(-1px);
-        background: rgba(255, 255, 255, 0.08);
-        border-color: rgba(139, 113, 8, 0.72);
-        color: var(--accent);
-        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
-      }
-
-      .hamburger-toggle:focus-visible {
-        outline: 2px solid rgba(139, 113, 8, 0.9);
-        outline-offset: 4px;
-      }
-
-      .nav-right.open .hamburger-toggle span:nth-child(1) {
-        transform: translateY(6px) rotate(45deg);
-      }
-
-      .nav-right.open .hamburger-toggle span:nth-child(2) {
+      .main-logo {
+        width: 300px;
         opacity: 0;
-        width: 8px;
+        transform: scale(0.85);
+        animation: fadeInScale 1.8s ease forwards;
       }
 
-      .nav-right.open .hamburger-toggle span:nth-child(3) {
-        transform: translateY(-6px) rotate(-45deg);
+      @keyframes fadeInScale {
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
       }
 
-      .hamburger-menu {
-        position: absolute;
-        top: 54px;
-        right: 0;
-        width: min(230px, calc(100vw - 28px));
-        padding: 9px;
-        display: grid;
-        gap: 5px;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 18px;
-        background: rgba(8, 8, 8, 0.58);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        box-shadow: 0 22px 58px rgba(0, 0, 0, 0.45);
+      .quote {
+        font-size: 15px;
+        font-weight: 500;
+        min-height: 32px;
+        letter-spacing: 0.5px;
+        color: var(--muted);
+        max-width: 600px;
+        line-height: 1.45;
+        margin-top: 18px;
+      }
+
+      .updates-section {
+        margin-top: 35px;
         opacity: 0;
-        transform: translateY(-8px) scale(0.96);
-        transform-origin: top right;
-        pointer-events: none;
-        transition:
-          opacity 0.18s ease,
-          transform 0.18s ease,
-          background 0.18s ease;
+        animation: fadeIn 1.3s ease forwards;
+        animation-delay: 2.2s;
       }
 
-      .nav-right.open .hamburger-menu {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        pointer-events: auto;
+      @keyframes fadeIn {
+        to {
+          opacity: 1;
+        }
       }
 
-      .hamburger-menu a,
-      .hamburger-menu button {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        text-decoration: none;
-        color: rgba(255, 255, 255, 0.84);
-        font-size: 0.94rem;
-        font-weight: 520;
-        line-height: 1.2;
-        letter-spacing: 0.15px;
-        background: transparent;
-        border: 1px solid transparent;
-        border-radius: 13px;
-        cursor: pointer;
-        padding: 12px 13px;
-        margin: 0;
-        font-family: inherit;
-        white-space: nowrap;
-        appearance: none;
-        -webkit-appearance: none;
-        transition:
-          transform 0.18s ease,
-          background 0.18s ease,
-          border-color 0.18s ease,
-          color 0.18s ease;
-      }
-
-      .hamburger-menu a::after,
-      .hamburger-menu button::after {
-        content: "→";
-        color: var(--accent);
-        opacity: 0;
-        transform: translateX(-5px);
-        transition:
-          opacity 0.18s ease,
-          transform 0.18s ease;
-      }
-
-      .hamburger-menu a:hover,
-      .hamburger-menu button:hover {
-        color: #fff;
-        background: rgba(139, 113, 8, 0.18);
-        border-color: rgba(139, 113, 8, 0.28);
-        transform: translateX(2px);
-      }
-
-      .hamburger-menu a:hover::after,
-      .hamburger-menu button:hover::after {
+      .updates-title {
+        font-size: 28px;
+        margin-bottom: 15px;
         opacity: 0.9;
-        transform: translateX(0);
       }
 
-      .hamburger-menu a:focus-visible,
-      .hamburger-menu button:focus-visible {
-        outline: 2px solid rgba(139, 113, 8, 0.9);
-        outline-offset: 2px;
-      }
-
-      .kova-tutorial {
-        position: fixed;
-        inset: 0;
-        z-index: 10000;
-        display: grid;
-        place-items: center;
-        padding: 24px;
-        background: rgba(0, 0, 0, 0.52);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.22s ease;
-      }
-
-      .kova-tutorial.open {
-        opacity: 1;
-        pointer-events: auto;
-      }
-
-      .tutorial-card {
-        width: min(520px, calc(100vw - 28px));
-        min-height: 560px;
-        position: relative;
+      .updates-form {
         display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 28px;
-        background: #101010;
-        box-shadow: 0 28px 70px rgba(0, 0, 0, 0.58);
-        transform: translateY(12px) scale(0.985);
-        transition: transform 0.24s ease;
+        justify-content: center;
+        gap: 10px;
       }
 
-      .kova-tutorial.open .tutorial-card {
-        transform: translateY(0) scale(1);
+      .updates-form input {
+        padding: 10px 14px;
+        border: none;
+        outline: none;
+        width: 220px;
+        font-size: 16px;
       }
 
-      .tutorial-close {
-        position: absolute;
-        top: 18px;
-        right: 18px;
-        z-index: 3;
-        width: 36px;
-        height: 36px;
-        display: inline-grid;
-        place-items: center;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 999px;
-        background: #191919;
-        color: rgba(255, 255, 255, 0.76);
+      .updates-form button {
+        padding: 10px 18px;
+        border: none;
+        font-size: 15px;
+        font-weight: 600;
         cursor: pointer;
-        font-size: 1.2rem;
-        line-height: 1;
-        transition:
-          color 0.18s ease,
-          background 0.18s ease,
-          border-color 0.18s ease,
-          transform 0.18s ease;
+        background: white;
+        color: black;
+        transition: 0.25s;
       }
 
-      .tutorial-close:hover {
-        color: #fff;
-        background: #222;
-        border-color: rgba(139, 113, 8, 0.5);
-        transform: scale(1.03);
-      }
-
-      .tutorial-content {
-        display: flex;
-        flex: 1;
-        flex-direction: column;
-        padding: 34px;
-      }
-
-      .tutorial-kicker {
-        width: max-content;
-        margin-bottom: 22px;
-        color: var(--accent);
-        font-size: 0.72rem;
-        font-weight: 760;
-        letter-spacing: 1.9px;
-        text-transform: uppercase;
-      }
-
-      .tutorial-visual {
-        height: 190px;
-        position: relative;
-        display: grid;
-        place-items: center;
-        margin-bottom: 30px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 22px;
-        background: #171717;
-        overflow: hidden;
-      }
-
-      .tutorial-map-lines {
-        position: absolute;
-        inset: 18px;
-        opacity: 0.2;
-        background:
-          linear-gradient(
-            90deg,
-            transparent 0 48%,
-            rgba(255, 255, 255, 0.34) 49% 50%,
-            transparent 51% 100%
-          ),
-          linear-gradient(
-            0deg,
-            transparent 0 48%,
-            rgba(255, 255, 255, 0.28) 49% 50%,
-            transparent 51% 100%
-          );
-        background-size: 54px 54px;
-      }
-
-      .tutorial-orb {
-        width: 88px;
-        height: 88px;
-        position: relative;
-        display: grid;
-        place-items: center;
-        border: 1px solid rgba(139, 113, 8, 0.48);
-        border-radius: 24px;
-        background: rgba(139, 113, 8, 0.14);
-        color: var(--accent);
-        font-size: 2.7rem;
-        font-weight: 850;
-        letter-spacing: -1px;
-      }
-
-      .tutorial-title {
-        margin: 0 0 12px 0;
-        color: #fff;
-        font-size: clamp(2.25rem, 8vw, 3.25rem);
-        line-height: 0.96;
-        letter-spacing: -2px;
-      }
-
-      .tutorial-text {
-        min-height: 92px;
-        margin: 0;
-        color: rgba(255, 255, 255, 0.68);
-        font-size: 1.02rem;
-        line-height: 1.58;
-      }
-
-      .tutorial-text b {
-        color: var(--accent);
-        font-weight: 700;
-      }
-
-      .tutorial-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        margin-top: auto;
-        padding-top: 28px;
-      }
-
-      .tutorial-dots {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .tutorial-dot {
-        width: 7px;
-        height: 7px;
-        display: block;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.28);
-        transition:
-          width 0.2s ease,
-          background 0.2s ease;
-      }
-
-      .tutorial-dot.active {
-        width: 25px;
-        background: var(--accent);
-      }
-
-      .tutorial-actions {
-        display: flex;
-        align-items: center;
-        gap: 9px;
-      }
-
-      .tutorial-btn {
-        appearance: none;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 999px;
-        background: #181818;
-        color: rgba(255, 255, 255, 0.88);
-        cursor: pointer;
-        font-family: inherit;
-        font-size: 0.92rem;
-        font-weight: 650;
-        min-height: 44px;
-        padding: 0 17px;
-        transition:
-          background 0.18s ease,
-          border-color 0.18s ease,
-          color 0.18s ease,
-          transform 0.18s ease;
-      }
-
-      .tutorial-btn:hover {
-        color: #fff;
-        background: #222;
-        border-color: rgba(255, 255, 255, 0.18);
-        transform: translateY(-1px);
-      }
-
-      .tutorial-btn.primary {
-        min-width: 96px;
-        border-color: rgba(139, 113, 8, 0.92);
-        background: var(--accent);
-        color: #fff;
-      }
-
-      .tutorial-btn.primary:hover {
-        background: #9a7d09;
-      }
-
-      .tutorial-btn:disabled {
-        opacity: 0.34;
-        pointer-events: none;
-      }
-
-      #map {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 100%;
-        z-index: 0;
-      }
-
-      .maplibregl-control-container,
-      .maplibregl-ctrl-bottom-left,
-      .maplibregl-ctrl-logo,
-      .maplibregl-ctrl-attrib,
-      .maptiler-attribution {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-      }
-
-      .pinpoint {
-        width: auto;
-        height: auto;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-        color: rgba(139, 113, 8, 1);
-        font-family: "Open Sans", Inter, system-ui, sans-serif;
-        font-weight: 800;
-        font-size: 22px;
-        line-height: 1;
-        user-select: none;
-        -webkit-user-select: none;
-        text-shadow: 0 10px 22px rgba(0, 0, 0, 0.55);
-      }
-
-      .pinpoint::before {
-        content: "X";
-      }
-
-      .pinpoint::after {
-        display: none;
-      }
-
-      .maplibregl-popup-content {
-        background: transparent !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-      }
-
-      .maplibregl-popup-tip {
-        display: none !important;
-      }
-
-      .maplibregl-popup-close-button {
-        color: rgba(255, 255, 255, 0.7) !important;
-        background: transparent !important;
-        font-size: 18px;
-        padding: 10px 12px !important;
-        z-index: 40;
-      }
-
-      footer {
-        transition:
-          opacity 0.18s ease,
-          transform 0.18s ease;
-      }
-
-      footer.footer-hidden {
-        opacity: 0;
-        transform: translateY(8px);
-        pointer-events: none;
+      .updates-form button:hover {
+        background: #e5e5e5;
       }
 
       .join-page {
@@ -567,2366 +202,146 @@
         right: 0%;
         padding-bottom: 17px;
         padding-right: 15px;
-        z-index: 30;
       }
 
       .kova-corp {
         position: absolute;
         bottom: 0%;
         padding-left: 15px;
-        z-index: 30;
-      }
-
-      .kova-popup {
-        width: min(600px, calc(100vw - 28px));
-        max-height: min(72vh, 760px);
-        background: linear-gradient(180deg, var(--panel), rgba(0, 0, 0, 0.92));
-        border: 1px solid rgba(255, 255, 255, 0.09);
-        border-radius: var(--radius);
-        overflow: hidden;
-        box-shadow: var(--shadow);
-        display: flex;
-        flex-direction: column;
-      }
-
-      .kova-popup .hero {
-        position: relative;
-        height: clamp(190px, 24vw, 260px);
-        background: #111;
-        overflow: hidden;
-        flex-shrink: 0;
-      }
-
-      .kova-popup .body {
-        padding: 16px;
-        background: linear-gradient(
-          180deg,
-          rgba(18, 18, 18, 0.92),
-          rgba(0, 0, 0, 0.94)
-        );
-        overflow-y: auto;
-        overscroll-behavior: contain;
-      }
-
-      .kova-popup .hero img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-        filter: saturate(1.05) contrast(1.05);
-        transform: scale(1.01);
-        opacity: 0;
-        transition: opacity 0.28s ease;
-      }
-
-      .kova-popup .hero.is-loaded img {
-        opacity: 1;
-      }
-
-      .kova-popup .hero::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          180deg,
-          rgba(0, 0, 0, 0) 0%,
-          rgba(0, 0, 0, 0.25) 55%,
-          rgba(0, 0, 0, 0.78) 100%
-        );
-        pointer-events: none;
-        z-index: 2;
-      }
-
-      .kova-popup .badge {
-        position: absolute;
-        left: 14px;
-        top: 14px;
-        padding: 7px 10px;
-        font-size: 0.78rem;
-        letter-spacing: 0.6px;
-        text-transform: uppercase;
-        background: rgba(0, 0, 0, 0.55);
-        border: 1px solid rgba(255, 255, 255, 0.16);
-        border-radius: 999px;
-        color: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(8px);
-        z-index: 3;
-      }
-
-      .kova-popup .title {
-        font-size: clamp(1.06rem, 1.2vw, 1.25rem);
-        font-weight: 650;
-        line-height: 1.2;
-        margin: 0 0 8px 0;
-        letter-spacing: 0.2px;
-        word-break: break-word;
-      }
-
-      .kova-popup .desc {
-        margin: 0 0 10px 0;
-        color: rgba(255, 255, 255, 0.78);
-        font-size: 0.96rem;
-        line-height: 1.5;
-        word-break: break-word;
-      }
-
-      .kova-popup .byline {
-        margin: 0 0 14px 0;
-        font-size: 0.86rem;
-        color: rgba(255, 255, 255, 0.65);
-        letter-spacing: 0.2px;
-        word-break: break-word;
-      }
-
-      .kova-popup .byline b {
-        color: rgba(255, 255, 255, 0.9);
-        font-weight: 650;
-      }
-
-      .kova-btn {
-        appearance: none;
-        width: 100%;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        background: rgba(255, 255, 255, 0.06);
-        color: white;
-        padding: 12px 14px;
-        border-radius: 14px;
-        cursor: pointer;
-        font-weight: 650;
-        letter-spacing: 0.2px;
-        transition:
-          transform 0.12s ease,
-          background 0.2s ease,
-          border-color 0.2s ease;
-        user-select: none;
-        -webkit-tap-highlight-color: transparent;
-        touch-action: manipulation;
-        min-height: 46px;
-      }
-
-      .kova-btn:hover {
-        background: rgba(255, 255, 255, 0.085);
-        border-color: rgba(255, 255, 255, 0.18);
-        transform: translateY(-1px);
-      }
-
-      .kova-btn.primary {
-        background: rgba(139, 113, 8, 0.95);
-        border-color: rgba(139, 113, 8, 0.95);
-        color: #fff;
-      }
-
-      .kova-btn.primary:hover {
-        background: rgba(139, 113, 8, 1);
-      }
-
-      .kova-btn .sub {
-        display: block;
-        font-weight: 500;
-        font-size: 0.78rem;
-        opacity: 0.9;
-        margin-top: 2px;
-      }
-
-      .kova-fallback,
-      .kova-loading {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background:
-          radial-gradient(
-            circle at 30% 20%,
-            rgba(139, 113, 8, 0.25),
-            transparent 55%
-          ),
-          radial-gradient(
-            circle at 70% 80%,
-            rgba(255, 255, 255, 0.08),
-            transparent 50%
-          ),
-          #0b0b0b;
-        color: rgba(255, 255, 255, 0.85);
-        font-weight: 600;
-        letter-spacing: 0.2px;
-      }
-
-      .kova-loading {
-        z-index: 1;
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .kova-loading.hidden,
-      .kova-fallback.hidden {
-        display: none;
-      }
-
-      .kova-spinner {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        border: 3px solid rgba(255, 255, 255, 0.18);
-        border-top-color: rgba(255, 255, 255, 0.88);
-        animation: spin 0.8s linear infinite;
-      }
-
-      .kova-loading-text {
-        font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.78);
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      .coord-popup {
-        background: #1e1e1e;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-        padding: 10px 12px;
-        color: white;
-        min-width: 180px;
-        max-width: min(320px, calc(100vw - 32px));
-        font-family:
-          Inter,
-          system-ui,
-          -apple-system,
-          sans-serif;
-      }
-
-      .coord-popup strong {
-        display: block;
-        margin-bottom: 6px;
-      }
-
-      .coord-popup .coords {
-        display: block;
-        margin-bottom: 10px;
-        color: rgba(255, 255, 255, 0.82);
-        font-size: 0.92rem;
-        line-height: 1.35;
-        word-break: break-word;
-      }
-
-      .coord-popup .btn-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-      }
-
-      .coord-popup .btn-row.single {
-        grid-template-columns: 1fr;
-      }
-
-      .coord-popup button {
-        padding: 10px 10px;
-        min-height: 42px;
-        background: rgba(255, 255, 255, 0.08);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        cursor: pointer;
-        font-weight: 650;
-        border-radius: 10px;
-        -webkit-tap-highlight-color: transparent;
-        touch-action: manipulation;
-      }
-
-      .coord-popup button.primary {
-        background: #8b7108;
-        border-color: #8b7108;
-      }
-
-      .user-popup-card {
-        width: 180px;
-        text-align: center;
-        font-family:
-          Inter,
-          system-ui,
-          -apple-system,
-          sans-serif;
-        background: linear-gradient(180deg, var(--panel), rgba(0, 0, 0, 0.92));
-        border: 1px solid rgba(255, 255, 255, 0.09);
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: var(--shadow);
-      }
-
-      .user-popup-card img {
-        width: 100%;
-        height: auto;
-        display: block;
-      }
-
-      .user-popup-card .body {
-        padding: 12px;
-        color: white;
-        font-size: 0.92rem;
-      }
-
-      .player-marker {
-        cursor: pointer;
-        pointer-events: auto;
-      }
-
-      .spot-meta {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 12px;
-        margin: 14px 0 14px 0;
-      }
-
-      .spot-card-box {
-        background: rgba(255, 255, 255, 0.045);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 14px;
-        padding: 12px;
-        min-width: 0;
-      }
-
-      .spot-box-title {
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.7px;
-        color: rgba(255, 255, 255, 0.58);
-        margin-bottom: 10px;
-      }
-
-      .rating-summary {
-        font-size: 0.96rem;
-        color: rgba(255, 255, 255, 0.94);
-        line-height: 1.45;
-        word-break: break-word;
-      }
-
-      .rating-summary small {
-        color: rgba(255, 255, 255, 0.62);
-        font-size: 0.82rem;
-        display: inline-block;
-        margin-left: 3px;
-      }
-
-      .stars-row {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 10px;
-      }
-
-      .star-btn {
-        appearance: none;
-        border: 0;
-        background: transparent;
-        color: rgba(255, 255, 255, 0.28);
-        font-size: 1.65rem;
-        line-height: 1;
-        padding: 2px;
-        cursor: pointer;
-        transition:
-          transform 0.12s ease,
-          color 0.16s ease,
-          opacity 0.16s ease;
-        min-width: 32px;
-        min-height: 32px;
-      }
-
-      .star-btn.active {
-        color: #d7b84c;
-      }
-
-      .star-btn:hover {
-        transform: translateY(-1px);
-      }
-
-      .star-btn.disabled {
-        cursor: default;
-        opacity: 0.45;
-        pointer-events: none;
-      }
-
-      .rating-note {
-        margin-top: 8px;
-        font-size: 0.84rem;
-        color: rgba(255, 255, 255, 0.65);
-        line-height: 1.45;
-      }
-
-      .popup-status {
-        margin-top: 9px;
-        font-size: 0.84rem;
-        color: rgba(255, 255, 255, 0.72);
-        line-height: 1.4;
-        min-height: 18px;
-      }
-
-      .popup-status.success {
-        color: var(--success);
-      }
-
-      .popup-status.error {
-        color: var(--danger);
-      }
-
-      @media (min-width: 880px) {
-        .spot-meta {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      @media (max-width: 700px) {
-        .spot-sheet-popup.maplibregl-popup {
-          position: fixed !important;
-          left: 0 !important;
-          right: 0 !important;
-          bottom: 0 !important;
-          top: auto !important;
-          transform: none !important;
-          margin: 0 !important;
-          z-index: 9999 !important;
-          pointer-events: none;
-          width: 100% !important;
-          max-width: 100% !important;
-        }
-
-        .spot-sheet-popup .maplibregl-popup-content {
-          width: 100vw !important;
-          max-width: 100vw !important;
-          pointer-events: auto;
-          padding: 0 8px 8px 8px !important;
-          box-sizing: border-box;
-        }
-
-        .spot-sheet-popup .maplibregl-popup-close-button {
-          top: 8px;
-          right: 8px;
-          font-size: 20px;
-        }
-
-        .kova-popup {
-          width: 100% !important;
-          max-height: min(88dvh, 900px);
-          border-radius: 22px 22px 0 0;
-          border-left: 0;
-          border-right: 0;
-          border-bottom: 0;
-        }
-
-        .kova-popup .hero {
-          height: 210px;
-        }
-
-        .kova-popup .body {
-          padding: 14px;
-        }
-
-        .stars-row {
-          gap: 6px;
-        }
-
-        .star-btn {
-          font-size: 1.55rem;
-        }
       }
 
       @media (max-width: 600px) {
         nav {
-          padding: 14px 14px;
-          align-items: flex-start;
-          gap: 12px;
+          padding: 16px 18px;
         }
 
         .nav-left img {
-          height: 38px;
-        }
-
-        .beta {
-          font-size: 0.7rem;
-          padding: 2px 5px;
-        }
-
-        .nav-right {
-          max-width: none;
-          flex-wrap: nowrap;
-        }
-
-        .hamburger-toggle {
-          width: 40px;
           height: 40px;
         }
 
-        .hamburger-menu {
-          top: 50px;
-          width: min(220px, calc(100vw - 28px));
+        .beta {
+          width: 90px;
+          height: 18px;
         }
 
-        .hamburger-menu a,
-        .hamburger-menu button {
-          font-size: 0.88rem;
-          padding: 11px 12px;
+        .beta-text {
+          font-size: 0.7rem;
         }
 
-        .kova-popup .hero {
-          height: 190px;
+        .nav-right {
+          display: flex;
+          align-items: center;
+          gap: 10px;
         }
 
-        .coord-popup {
-          min-width: 0;
-          width: min(280px, calc(100vw - 28px));
+        .nav-right a {
+          margin-left: 0;
+          font-size: 0.85rem;
         }
 
-        .coord-popup .btn-row {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      @media (max-width: 420px) {
-        .hamburger-menu {
-          width: min(210px, calc(100vw - 24px));
+        .navbar-seperator {
+          margin-left: 0;
+          opacity: 0.5;
         }
 
-        .kova-popup .hero {
-          height: 176px;
+        nav {
+          gap: 12px;
         }
 
-        .rating-summary {
-          font-size: 0.92rem;
+        .main-logo {
+          width: 250px;
         }
 
-        .kova-btn {
-          font-size: 0.92rem;
-        }
-      }
-
-      @media (max-width: 600px) {
-        .kova-tutorial {
-          padding: 14px;
-          align-items: end;
-        }
-
-        .tutorial-card {
-          width: 100%;
-          min-height: min(580px, calc(100dvh - 28px));
-          border-radius: 30px;
-        }
-
-        .tutorial-content {
-          padding: 24px;
-        }
-
-        .tutorial-visual {
-          height: 172px;
-          margin-bottom: 24px;
-        }
-
-        .tutorial-title {
-          font-size: clamp(2rem, 10vw, 2.5rem);
-        }
-
-        .tutorial-footer {
-          align-items: flex-end;
-        }
-
-        .tutorial-actions {
-          gap: 7px;
-        }
-
-        .tutorial-btn {
-          min-height: 40px;
-          padding: 0 13px;
-          font-size: 0.88rem;
+        .updates-form input {
+          font-size: 16px;
+          width: 200px;
         }
       }
     </style>
   </head>
 
   <body>
+    <!-- NAV -->
     <nav>
       <div class="nav-left">
-        <a href="../../index.html">
-          <img src="../../images/kova_wit_x_png.png" alt="Kova logo small" />
+        <a href="index.html">
+          <img src="images/kova_alleen_x_png.png" alt="Kova logo small" />
         </a>
+
+        <div class="beta">
+          <a href="admin/login.html">
+            <div class="beta-track">
+              <span class="beta-text">now in alpha!</span>
+              <span class="beta-text">now in alpha!</span>
+            </div>
+          </a>
+        </div>
       </div>
 
       <div class="nav-right">
-        <button
-          class="hamburger-toggle"
-          type="button"
-          aria-label="Open menu"
-          aria-expanded="false"
-          aria-controls="kovaMenu"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-
-        <div class="hamburger-menu" id="kovaMenu" aria-hidden="true">
-          <a href="../../admin.html">add spot</a>
-          <button type="button" data-action="open-tutorial">tutorial</button>
-          <a href="../../app/pages/radar.html">weather</a>
-          <a href="../../web/pages/about.html">About us</a>
-        </div>
+        <a href="web/pages/about.html">about</a>
+        <span class="navbar-seperator">//</span>
+        <a href="web/pages/blog.html">blog</a>
       </div>
     </nav>
 
-    <div class="kova-tutorial" id="kovaTutorial" aria-hidden="true">
-      <div
-        class="tutorial-card"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="tutorialTitle"
-        aria-describedby="tutorialText"
-      >
-        <button
-          class="tutorial-close"
-          type="button"
-          data-tutorial-close
-          aria-label="Close tutorial"
-        >
-          ×
-        </button>
+    <!-- CENTER CONTENT -->
+    <div class="center">
+      <img
+        src="images/kova_wit_x_png.png"
+        class="main-logo"
+        alt="Kova logo main"
+      />
 
-        <div class="tutorial-content">
-          <div class="tutorial-kicker">KOVA codex</div>
-
-          <div class="tutorial-visual" aria-hidden="true">
-            <div class="tutorial-map-lines"></div>
-            <div class="tutorial-orb" data-tutorial-icon>X</div>
-          </div>
-
-          <h2 class="tutorial-title" id="tutorialTitle"></h2>
-          <p class="tutorial-text" id="tutorialText"></p>
-
-          <div class="tutorial-footer">
-            <div class="tutorial-dots" data-tutorial-dots></div>
-
-            <div class="tutorial-actions">
-              <button class="tutorial-btn" type="button" data-tutorial-back>
-                Back
-              </button>
-              <button
-                class="tutorial-btn primary"
-                type="button"
-                data-tutorial-next
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div class="quote" id="quote"></div>
     </div>
 
-    <footer id="kovaFooter">
+    <footer>
       <p class="kova-corp">kova corp © 2026</p>
-      <a class="join-page" href="../../web/Contribute/contribute.html">
-        Contribute
-      </a>
+      <a class="join-page" href="web/Contribute/contribute.html">Contribute</a>
     </footer>
 
-    <div id="map"></div>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        serverTimestamp,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js";
 
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+      // Firebase configuratie
+      const firebaseConfig = {
+        apiKey: "AIzaSyARxFI9HyJxrINfzDazhxFHKSrGLX8KoBk",
+        authDomain: "kova-6052a.firebaseapp.com",
+        projectId: "kova-6052a",
+        storageBucket: "kova-6052a.firebasestorage.app",
+        messagingSenderId: "873689812978",
+        appId: "1:873689812978:web:e0581f3df823e51239656b",
+        measurementId: "G-VM5224Z3K6",
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const db = getFirestore(app);
+    </script>
 
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const navRight = document.querySelector(".nav-right");
-        const menuToggle = document.querySelector(".hamburger-toggle");
-        const menuPanel = document.getElementById("kovaMenu");
+      const text = "Every spot is a treasure!";
+      const quoteElement = document.getElementById("quote");
+      let i = 0;
 
-        function closeHamburgerMenu() {
-          if (!navRight || !menuToggle || !menuPanel) return;
-          navRight.classList.remove("open");
-          menuToggle.setAttribute("aria-expanded", "false");
-          menuPanel.setAttribute("aria-hidden", "true");
+      function typeEffect() {
+        if (i < text.length) {
+          quoteElement.textContent += text.charAt(i);
+          i++;
+          setTimeout(typeEffect, 50);
         }
+      }
 
-        if (navRight && menuToggle && menuPanel) {
-          menuToggle.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const isOpen = navRight.classList.toggle("open");
-            menuToggle.setAttribute("aria-expanded", String(isOpen));
-            menuPanel.setAttribute("aria-hidden", String(!isOpen));
-          });
-
-          menuPanel.addEventListener("click", (e) => {
-            if (e.target.closest("a")) closeHamburgerMenu();
-          });
-
-          document.addEventListener("click", (e) => {
-            if (!navRight.contains(e.target)) closeHamburgerMenu();
-          });
-
-          document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape") closeHamburgerMenu();
-          });
-        }
-
-        const TUTORIAL_STORAGE_KEY = "kova_tutorial_seen_v1";
-        const tutorialOverlay = document.getElementById("kovaTutorial");
-        const tutorialTitle = document.getElementById("tutorialTitle");
-        const tutorialText = document.getElementById("tutorialText");
-        const tutorialIcon = document.querySelector("[data-tutorial-icon]");
-        const tutorialDots = document.querySelector("[data-tutorial-dots]");
-        const tutorialBackBtn = document.querySelector("[data-tutorial-back]");
-        const tutorialNextBtn = document.querySelector("[data-tutorial-next]");
-        const tutorialCloseBtn = document.querySelector(
-          "[data-tutorial-close]",
-        );
-        const tutorialOpenBtns = document.querySelectorAll(
-          "[data-action='open-tutorial']",
-        );
-
-        const tutorialSlides = [
-          {
-            icon: "K",
-            title: "Welcome to KOVA.",
-            text: "A clean map for real spots. Open the map, find nearby places and keep the good ones easy to reach.",
-          },
-          {
-            icon: "X",
-            title: "Find spots.",
-            text: "Tap a <b>spot marker</b> to open the photo, description, rating and route button.",
-          },
-          {
-            icon: "⌁",
-            title: "Search the map.",
-            text: "Desktop: click an empty point. Phone or tablet: <b>long press</b>. KOVA searches spots in a 10 km radius.",
-          },
-          {
-            icon: "+",
-            title: "Add from the menu.",
-            text: "New spots are added through <b>add spot</b> in the hamburger menu. This keeps accidental map taps out of the flow.",
-          },
-        ];
-
-        let tutorialIndex = 0;
-
-        function hasSeenTutorial() {
-          try {
-            return localStorage.getItem(TUTORIAL_STORAGE_KEY) === "true";
-          } catch (e) {
-            return false;
-          }
-        }
-
-        function rememberTutorialSeen() {
-          try {
-            localStorage.setItem(TUTORIAL_STORAGE_KEY, "true");
-          } catch (e) {}
-        }
-
-        function renderTutorialSlide() {
-          const slide = tutorialSlides[tutorialIndex];
-          if (!slide || !tutorialOverlay) return;
-
-          if (tutorialTitle) tutorialTitle.textContent = slide.title;
-          if (tutorialText) tutorialText.innerHTML = slide.text;
-          if (tutorialIcon) tutorialIcon.textContent = slide.icon;
-
-          if (tutorialDots) {
-            tutorialDots.innerHTML = tutorialSlides
-              .map(
-                (_, index) =>
-                  `<span class="tutorial-dot ${index === tutorialIndex ? "active" : ""}"></span>`,
-              )
-              .join("");
-          }
-
-          if (tutorialBackBtn) tutorialBackBtn.disabled = tutorialIndex === 0;
-          if (tutorialNextBtn) {
-            tutorialNextBtn.textContent =
-              tutorialIndex === tutorialSlides.length - 1 ? "Start" : "Next";
-          }
-        }
-
-        function openTutorial() {
-          if (!tutorialOverlay) return;
-          closeHamburgerMenu();
-          tutorialIndex = 0;
-          renderTutorialSlide();
-          tutorialOverlay.classList.add("open");
-          tutorialOverlay.setAttribute("aria-hidden", "false");
-        }
-
-        function closeTutorial({ remember = true } = {}) {
-          if (!tutorialOverlay) return;
-          tutorialOverlay.classList.remove("open");
-          tutorialOverlay.setAttribute("aria-hidden", "true");
-          if (remember) rememberTutorialSeen();
-        }
-
-        tutorialOpenBtns.forEach((btn) => {
-          btn.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            openTutorial();
-          });
-        });
-
-        if (tutorialBackBtn) {
-          tutorialBackBtn.addEventListener("click", () => {
-            tutorialIndex = Math.max(0, tutorialIndex - 1);
-            renderTutorialSlide();
-          });
-        }
-
-        if (tutorialNextBtn) {
-          tutorialNextBtn.addEventListener("click", () => {
-            if (tutorialIndex >= tutorialSlides.length - 1) {
-              closeTutorial({ remember: true });
-              return;
-            }
-
-            tutorialIndex += 1;
-            renderTutorialSlide();
-          });
-        }
-
-        if (tutorialCloseBtn) {
-          tutorialCloseBtn.addEventListener("click", () => {
-            closeTutorial({ remember: true });
-          });
-        }
-
-        if (tutorialOverlay) {
-          tutorialOverlay.addEventListener("click", (e) => {
-            if (e.target === tutorialOverlay) {
-              closeTutorial({ remember: true });
-            }
-          });
-        }
-
-        document.addEventListener("keydown", (e) => {
-          if (
-            e.key === "Escape" &&
-            tutorialOverlay &&
-            tutorialOverlay.classList.contains("open")
-          ) {
-            closeTutorial({ remember: true });
-          }
-        });
-
-        if (!hasSeenTutorial()) {
-          window.setTimeout(() => openTutorial(), 450);
-        }
-
-        maptilersdk.config.apiKey = "7TBqy4hTdFfQeIq7oXKj";
-
-        const DEFAULT_CENTER = [4.5, 50.85];
-        const DEFAULT_ZOOM = 7.5;
-        const USER_START_ZOOM = 11;
-
-        const SEARCH_RADIUS_KM = 10;
-        const DUPLICATE_BLOCK_RADIUS_M = 80;
-        const LOCAL_RATINGS_KEY = "kova_spot_ratings_v1";
-
-        const map = new maptilersdk.Map({
-          container: "map",
-          style:
-            "https://api.maptiler.com/maps/dataviz-dark/style.json?key=7TBqy4hTdFfQeIq7oXKj",
-          center: DEFAULT_CENTER,
-          zoom: DEFAULT_ZOOM,
-          minZoom: 5,
-          navigationControl: false,
-          projectionControl: false,
-          geolocateControl: false,
-          doubleClickZoom: false,
-        });
-
-        if (map.doubleClickZoom) map.doubleClickZoom.disable();
-
-        map.on("dblclick", (e) => {
-          e.preventDefault();
-        });
-
-        const firebaseConfig = {
-          apiKey: "AIzaSyARxFI9HyJxrINfzDazhxFHKSrGLX8KoBk",
-          authDomain: "kova-6052a.firebaseapp.com",
-          projectId: "kova-6052a",
-          storageBucket: "kova-6052a.firebasestorage.app",
-          messagingSenderId: "873689812978",
-          appId: "1:873689812978:web:e0581f3df823e51239656b",
-          measurementId: "G-VM5224Z3K6",
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        const footerEl = document.getElementById("kovaFooter");
-
-        let activePopup = null;
-        let activeCoordPopup = null;
-        let clickPin = null;
-        let userMarker = null;
-        let userPopup = null;
-        let userMarkerEl = null;
-        let userLat = null;
-        let userLng = null;
-        let mapLoaded = false;
-        let initialNearbyLoaded = false;
-        let userMarkerAdded = false;
-
-        const SOURCE_ID = "spots";
-        const LAYER_CLUSTERS_X = "spots-clusters-x";
-        const LAYER_CLUSTERS_COUNT = "spots-clusters-count";
-        const LAYER_POINTS = "spots-points";
-
-        function getLocalRatings() {
-          try {
-            const raw = localStorage.getItem(LOCAL_RATINGS_KEY);
-            const parsed = raw ? JSON.parse(raw) : {};
-            return parsed && typeof parsed === "object" ? parsed : {};
-          } catch (e) {
-            return {};
-          }
-        }
-
-        function setLocalRatings(ratings) {
-          try {
-            localStorage.setItem(LOCAL_RATINGS_KEY, JSON.stringify(ratings));
-          } catch (e) {}
-        }
-
-        function getLocalRating(spotId) {
-          const ratings = getLocalRatings();
-          const value = Number(ratings[spotId]);
-          return Number.isInteger(value) && value >= 1 && value <= 5
-            ? value
-            : null;
-        }
-
-        function setLocalRating(spotId, value) {
-          const ratings = getLocalRatings();
-          ratings[spotId] = value;
-          setLocalRatings(ratings);
-        }
-
-        const showFooter = () =>
-          footerEl && footerEl.classList.remove("footer-hidden");
-        const hideFooter = () =>
-          footerEl && footerEl.classList.add("footer-hidden");
-
-        function updateFooterVisibility() {
-          const somethingOpen =
-            !!activePopup ||
-            !!activeCoordPopup ||
-            !!(userPopup && userPopup.isOpen());
-
-          if (somethingOpen) hideFooter();
-          else showFooter();
-        }
-
-        function escapeHTML(str) {
-          return String(str ?? "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-        }
-
-        function safeHttpsURL(url) {
-          const s = String(url || "").trim();
-          return s.startsWith("https://") ? s : "";
-        }
-
-        function setStatus(el, message = "", type = "") {
-          if (!el) return;
-          el.textContent = message;
-          el.classList.remove("success", "error");
-          if (type) el.classList.add(type);
-        }
-
-        function openNavigation(lat, lng) {
-          const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent);
-          const isAndroid = /Android/.test(navigator.userAgent);
-          const q = `${lat},${lng}`;
-          const label = "KOVA Spot";
-
-          if (isAndroid) {
-            window.location.href = `geo:${q}?q=${q}(${encodeURIComponent(label)})`;
-            return;
-          }
-
-          if (isApple) {
-            window.location.href = `https://maps.apple.com/?daddr=${encodeURIComponent(
-              q,
-            )}&dirflg=d`;
-            return;
-          }
-
-          window.open(
-            `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-              q,
-            )}`,
-            "_blank",
-          );
-        }
-
-        async function goAddSpot(lat, lng) {
-          const coordStr = `${lat.toFixed(5)},${lng.toFixed(5)}`;
-          try {
-            await navigator.clipboard.writeText(coordStr);
-          } catch (e) {}
-
-          const url = `../../web/Contribute/contributespot.html?coords=${encodeURIComponent(
-            coordStr,
-          )}`;
-          window.location.href = url;
-        }
-
-        function removeClickPin() {
-          if (clickPin) {
-            clickPin.remove();
-            clickPin = null;
-          }
-        }
-
-        function placeClickPin(lng, lat) {
-          if (!clickPin) {
-            const pinEl = document.createElement("div");
-            pinEl.className = "pinpoint";
-            clickPin = new maptilersdk.Marker({ element: pinEl })
-              .setLngLat([lng, lat])
-              .addTo(map);
-          } else {
-            clickPin.setLngLat([lng, lat]);
-          }
-        }
-
-        function closeCoordPopup() {
-          if (activeCoordPopup) {
-            activeCoordPopup.remove();
-            activeCoordPopup = null;
-            updateFooterVisibility();
-          }
-          removeClickPin();
-        }
-
-        function closeUserPopup() {
-          if (userPopup && userPopup.isOpen()) {
-            userPopup.remove();
-          }
-          updateFooterVisibility();
-        }
-
-        function closeAll() {
-          if (activePopup) {
-            activePopup.remove();
-            activePopup = null;
-          }
-
-          if (activeCoordPopup) {
-            activeCoordPopup.remove();
-            activeCoordPopup = null;
-          }
-
-          closeUserPopup();
-          removeClickPin();
-          updateFooterVisibility();
-        }
-
-        function syncUserMarker() {
-          if (
-            !userMarker ||
-            typeof userLat !== "number" ||
-            typeof userLng !== "number"
-          ) {
-            return;
-          }
-
-          if (!userMarkerAdded) {
-            userMarker.setLngLat([userLng, userLat]).addTo(map);
-            userMarkerAdded = true;
-          } else {
-            userMarker.setLngLat([userLng, userLat]);
-          }
-        }
-
-        function easeToSpotWithPopupSpace(lng, lat) {
-          const isMobile = window.matchMedia("(max-width: 700px)").matches;
-
-          if (isMobile) {
-            map.easeTo({
-              center: [lng, lat],
-              zoom: Math.max(map.getZoom(), 12),
-              duration: 520,
-            });
-            return;
-          }
-
-          const canvas = map.getCanvas();
-          const h = canvas ? canvas.clientHeight : window.innerHeight;
-          const liftPx = Math.round(Math.min(420, h * 0.34));
-
-          map.easeTo({
-            center: [lng, lat],
-            zoom: Math.max(map.getZoom(), 12),
-            duration: 520,
-            offset: [0, -liftPx],
-          });
-        }
-
-        function attachPopupImageLoader(popup) {
-          requestAnimationFrame(() => {
-            if (!popup) return;
-
-            const popupEl = popup.getElement();
-            if (!popupEl) return;
-
-            const hero = popupEl.querySelector(".hero[data-photo-url]");
-            if (!hero) return;
-
-            const photoURL = hero.getAttribute("data-photo-url") || "";
-            const img = hero.querySelector("img[data-spot-image]");
-            const loading = hero.querySelector(".kova-loading");
-            const fallback = hero.querySelector(".kova-fallback");
-
-            if (!photoURL || !img) {
-              if (loading) loading.classList.add("hidden");
-              if (fallback) fallback.classList.remove("hidden");
-              return;
-            }
-
-            const preload = new Image();
-
-            preload.onload = () => {
-              img.src = photoURL;
-              hero.classList.add("is-loaded");
-              if (loading) loading.classList.add("hidden");
-              if (fallback) fallback.classList.add("hidden");
-            };
-
-            preload.onerror = () => {
-              if (loading) loading.classList.add("hidden");
-              if (fallback) fallback.classList.remove("hidden");
-            };
-
-            preload.src = photoURL;
-          });
-        }
-
-        function renderStars(avgRating) {
-          const rounded = Math.round(Number(avgRating) || 0);
-          let html = "";
-          for (let i = 1; i <= 5; i++) {
-            html += i <= rounded ? "★" : "☆";
-          }
-          return html;
-        }
-
-        function makeSpotPopupHTML(props) {
-          const name = escapeHTML(props.name);
-          const desc = escapeHTML(props.description);
-          const addedByRaw =
-            props.addedBy || props.added_by || props.author || "";
-          const addedBy = escapeHTML(addedByRaw || "unknown");
-          const photoURL = safeHttpsURL(props.photoURL);
-
-          return `
-            <div class="kova-popup" data-spot-id="${escapeHTML(props.id)}">
-              <div class="hero" data-photo-url="${escapeHTML(photoURL)}">
-                <div class="badge">spot</div>
-
-                <div class="kova-loading">
-                  <div class="kova-spinner"></div>
-                  <div class="kova-loading-text">Loading image...</div>
-                </div>
-
-                <div class="kova-fallback hidden">No image yet</div>
-
-                <img
-                  data-spot-image
-                  alt="${name}"
-                  loading="lazy"
-                  decoding="async"
-                  fetchpriority="low"
-                />
-              </div>
-
-              <div class="body">
-                <h3 class="title">${name}</h3>
-                <p class="desc">${desc || "No description yet."}</p>
-                <p class="byline">added by <b>${addedBy}</b></p>
-
-                <div class="spot-meta">
-                  <div class="spot-card-box">
-                    <div class="spot-box-title">Rating</div>
-                    <div class="rating-summary" data-rating-summary>
-                      ${renderStars(props.avgRating || 0)} ${Number(
-                        props.avgRating || 0,
-                      ).toFixed(1)}
-                      <small>(${Number(props.ratingCount || 0)} ratings)</small>
-                    </div>
-
-                    <div class="stars-row" data-stars-row></div>
-                    <div class="rating-note" data-rating-note></div>
-                    <div class="popup-status" data-rating-status></div>
-                  </div>
-                </div>
-
-                <button
-                  class="kova-btn primary"
-                  data-action="nav"
-                  data-lat="${props.lat}"
-                  data-lng="${props.lng}"
-                  style="margin-top: 14px"
-                >
-                  Route
-                  <span class="sub">open GPS</span>
-                </button>
-              </div>
-            </div>
-          `;
-        }
-
-        function makeNoSpotsPopupHTML(lat, lng, radiusKm) {
-          return `
-            <div class="coord-popup">
-              <strong>No spots found</strong>
-              <span class="coords">Nothing here yet in this ${radiusKm} km radius.</span>
-            </div>
-          `;
-        }
-
-        function makeDuplicateSpotPopupHTML(
-          lat,
-          lng,
-          nearestSpot,
-          distanceMeters,
-        ) {
-          const cleanDistance =
-            distanceMeters < 10 ? "< 10m" : `${Math.round(distanceMeters)}m`;
-
-          const spotName = escapeHTML(nearestSpot?.name || "existing spot");
-
-          return `
-            <div class="coord-popup">
-              <strong>Spot already nearby</strong>
-              <span class="coords">
-                There is already a spot too close to this location.<br>
-                Nearest: <b>${spotName}</b><br>
-                Distance: ${cleanDistance}
-              </span>
-              <div class="btn-row single">
-                <button data-action="show-spots" data-lat="${lat}" data-lng="${lng}" data-radius="${SEARCH_RADIUS_KM}">
-                  Show nearby spots
-                </button>
-              </div>
-            </div>
-          `;
-        }
-
-        function emptyGeoJSON() {
-          return { type: "FeatureCollection", features: [] };
-        }
-
-        function setSpotsGeoJSON(features) {
-          const src = map.getSource(SOURCE_ID);
-          if (!src) return;
-          src.setData({
-            type: "FeatureCollection",
-            features,
-          });
-        }
-
-        function toRad(x) {
-          return (x * Math.PI) / 180;
-        }
-
-        function haversineMeters(aLat, aLng, bLat, bLng) {
-          const R = 6371000;
-          const dLat = toRad(bLat - aLat);
-          const dLng = toRad(bLng - aLng);
-
-          const s1 =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(toRad(aLat)) *
-              Math.cos(toRad(bLat)) *
-              Math.sin(dLng / 2) *
-              Math.sin(dLng / 2);
-
-          const c = 2 * Math.atan2(Math.sqrt(s1), Math.sqrt(1 - s1));
-          return R * c;
-        }
-
-        function getBoundsForRadius(lat, lng, radiusKm) {
-          const safeCos = Math.max(Math.cos((lat * Math.PI) / 180), 0.01);
-          const latDelta = radiusKm / 111;
-          const lngDelta = radiusKm / (111 * safeCos);
-
-          return {
-            minLat: lat - latDelta,
-            maxLat: lat + latDelta,
-            minLng: lng - lngDelta,
-            maxLng: lng + lngDelta,
-          };
-        }
-
-        function renderInteractiveStars(
-          starsRow,
-          selectedValue,
-          disabled = false,
-        ) {
-          if (!starsRow) return;
-          let html = "";
-
-          for (let i = 1; i <= 5; i++) {
-            html += `
-              <button
-                type="button"
-                class="star-btn ${i <= selectedValue ? "active" : ""} ${disabled ? "disabled" : ""}"
-                data-rate-value="${i}"
-                ${disabled ? "disabled" : ""}
-                aria-label="Rate ${i} star${i > 1 ? "s" : ""}"
-              >★</button>
-            `;
-          }
-
-          starsRow.innerHTML = html;
-        }
-
-        async function rateSpot(spotId, newRating) {
-          if (!Number.isInteger(newRating) || newRating < 1 || newRating > 5) {
-            throw new Error("Invalid rating.");
-          }
-
-          const previousRating = getLocalRating(spotId);
-          if (previousRating) {
-            throw new Error("This spot has already been rated on this device.");
-          }
-
-          const spotRef = db.collection("spots").doc(spotId);
-
-          await db.runTransaction(async (transaction) => {
-            const spotSnap = await transaction.get(spotRef);
-
-            if (!spotSnap.exists) {
-              throw new Error("Spot not found.");
-            }
-
-            const spotData = spotSnap.data() || {};
-            let ratingSum = Number(spotData.ratingSum || 0);
-            let ratingCount = Number(spotData.ratingCount || 0);
-
-            ratingSum += newRating;
-            ratingCount += 1;
-
-            if (ratingCount < 0) ratingCount = 0;
-            if (ratingSum < 0) ratingSum = 0;
-
-            const avgRating = ratingCount > 0 ? ratingSum / ratingCount : 0;
-
-            transaction.set(
-              spotRef,
-              {
-                ratingSum: Math.round(ratingSum),
-                ratingCount: Math.round(ratingCount),
-                avgRating: Number(avgRating.toFixed(2)),
-              },
-              { merge: true },
-            );
-          });
-
-          setLocalRating(spotId, newRating);
-        }
-
-        async function getSpotDocData(spotId) {
-          const snap = await db.collection("spots").doc(spotId).get();
-          return snap.exists ? snap.data() || {} : {};
-        }
-
-        async function hydratePopupData(popup, fallbackProps = {}) {
-          if (!popup) return;
-          const popupEl = popup.getElement();
-          if (!popupEl) return;
-
-          const card = popupEl.querySelector(".kova-popup[data-spot-id]");
-          if (!card) return;
-
-          const spotId = card.getAttribute("data-spot-id") || fallbackProps.id;
-          if (!spotId) return;
-
-          const ratingSummaryEl = popupEl.querySelector(
-            "[data-rating-summary]",
-          );
-          const starsRowEl = popupEl.querySelector("[data-stars-row]");
-          const ratingNoteEl = popupEl.querySelector("[data-rating-note]");
-          const ratingStatusEl = popupEl.querySelector("[data-rating-status]");
-
-          try {
-            const spotData = await getSpotDocData(spotId);
-            const localRating = getLocalRating(spotId);
-            const avgRating = Number(spotData.avgRating || 0);
-            const ratingCount = Number(spotData.ratingCount || 0);
-            const alreadyRated = localRating !== null;
-
-            if (ratingSummaryEl) {
-              ratingSummaryEl.innerHTML = `
-                ${renderStars(avgRating)} ${avgRating.toFixed(1)}
-                <small>(${ratingCount} ratings)</small>
-              `;
-            }
-
-            renderInteractiveStars(starsRowEl, localRating || 0, alreadyRated);
-
-            if (ratingNoteEl) {
-              ratingNoteEl.textContent = alreadyRated
-                ? `You already rated this spot on this device: ${localRating}/5`
-                : "Tap a star to rate this spot.";
-            }
-
-            setStatus(ratingStatusEl, "");
-          } catch (err) {
-            console.error("Popup hydrate error:", err);
-            setStatus(ratingStatusEl, "Could not load rating data.", "error");
-          }
-
-          if (starsRowEl && !starsRowEl.dataset.bound) {
-            starsRowEl.dataset.bound = "true";
-
-            starsRowEl.addEventListener("click", async (e) => {
-              const btn = e.target.closest("[data-rate-value]");
-              if (!btn) return;
-
-              const spotCard = popupEl.querySelector(
-                ".kova-popup[data-spot-id]",
-              );
-              const liveSpotId = spotCard?.getAttribute("data-spot-id");
-              const value = Number(btn.getAttribute("data-rate-value"));
-
-              if (!liveSpotId || !Number.isInteger(value)) return;
-
-              const ratingStatusElLocal = popupEl.querySelector(
-                "[data-rating-status]",
-              );
-              const ratingNoteElLocal =
-                popupEl.querySelector("[data-rating-note]");
-
-              if (getLocalRating(liveSpotId) !== null) {
-                setStatus(
-                  ratingStatusElLocal,
-                  "You already rated this spot on this device.",
-                  "error",
-                );
-                return;
-              }
-
-              try {
-                setStatus(ratingStatusElLocal, "Saving rating...");
-                await rateSpot(liveSpotId, value);
-                setStatus(ratingStatusElLocal, "Rating saved.", "success");
-
-                if (ratingNoteElLocal) {
-                  ratingNoteElLocal.textContent = `You already rated this spot on this device: ${value}/5`;
-                }
-
-                await hydratePopupData(popup, { id: liveSpotId });
-              } catch (err) {
-                console.error("Rating error:", err);
-                setStatus(
-                  ratingStatusElLocal,
-                  err?.message || "Could not save rating.",
-                  "error",
-                );
-              }
-            });
-          }
-        }
-
-        async function findNearbyExistingSpot(
-          lat,
-          lng,
-          radiusM = DUPLICATE_BLOCK_RADIUS_M,
-        ) {
-          const docsById = new Map();
-          const radiusKm = radiusM / 1000;
-          const canGeoHash =
-            window.geofire &&
-            typeof window.geofire.geohashQueryBounds === "function";
-
-          try {
-            if (canGeoHash) {
-              const bounds = window.geofire.geohashQueryBounds(
-                [lat, lng],
-                radiusM,
-              );
-
-              await Promise.all(
-                bounds.map(async (bound) => {
-                  const q = db
-                    .collection("spots")
-                    .orderBy("geohash")
-                    .startAt(bound[0])
-                    .endAt(bound[1]);
-
-                  const snap = await q.get();
-                  snap.forEach((doc) => {
-                    docsById.set(doc.id, { id: doc.id, ...doc.data() });
-                  });
-                }),
-              );
-            } else {
-              const box = getBoundsForRadius(lat, lng, radiusKm);
-              const q = db
-                .collection("spots")
-                .where("lat", ">=", box.minLat)
-                .where("lat", "<=", box.maxLat);
-
-              const snap = await q.get();
-              snap.forEach((doc) => {
-                const d = doc.data();
-                if (
-                  d &&
-                  typeof d.lng === "number" &&
-                  d.lng >= box.minLng &&
-                  d.lng <= box.maxLng
-                ) {
-                  docsById.set(doc.id, { id: doc.id, ...d });
-                }
-              });
-            }
-          } catch (err) {
-            console.error("Duplicate check error:", err);
-            return null;
-          }
-
-          let nearest = null;
-
-          docsById.forEach((spot) => {
-            if (
-              !spot ||
-              typeof spot.lat !== "number" ||
-              typeof spot.lng !== "number"
-            ) {
-              return;
-            }
-
-            const distance = haversineMeters(lat, lng, spot.lat, spot.lng);
-
-            if (distance <= radiusM) {
-              if (!nearest || distance < nearest.distance) {
-                nearest = { ...spot, distance };
-              }
-            }
-          });
-
-          return nearest;
-        }
-
-        function showNoSpotsPopup(lat, lng, radiusKm) {
-          closeCoordPopup();
-          placeClickPin(lng, lat);
-
-          activeCoordPopup = new maptilersdk.Popup({
-            offset: 18,
-            closeButton: true,
-            closeOnClick: false,
-            maxWidth: "320px",
-            className: "coord-map-popup",
-          })
-            .setLngLat([lng, lat])
-            .setHTML(makeNoSpotsPopupHTML(lat, lng, radiusKm))
-            .addTo(map);
-
-          updateFooterVisibility();
-
-          activeCoordPopup.once("close", () => {
-            activeCoordPopup = null;
-            removeClickPin();
-            updateFooterVisibility();
-          });
-        }
-
-        function showDuplicateSpotPopup(lat, lng, nearestSpot) {
-          closeCoordPopup();
-          placeClickPin(lng, lat);
-
-          activeCoordPopup = new maptilersdk.Popup({
-            offset: 18,
-            closeButton: true,
-            closeOnClick: false,
-            maxWidth: "320px",
-            className: "coord-map-popup",
-          })
-            .setLngLat([lng, lat])
-            .setHTML(
-              makeDuplicateSpotPopupHTML(
-                lat,
-                lng,
-                nearestSpot,
-                nearestSpot.distance,
-              ),
-            )
-            .addTo(map);
-
-          updateFooterVisibility();
-
-          activeCoordPopup.once("close", () => {
-            activeCoordPopup = null;
-            removeClickPin();
-            updateFooterVisibility();
-          });
-        }
-
-        async function fetchSpotsInRadius(
-          centerLat,
-          centerLng,
-          radiusKm = SEARCH_RADIUS_KM,
-          options = {},
-        ) {
-          const { recenter = true, showEmptyPopup = true } = options;
-          const radiusM = radiusKm * 1000;
-          const docsById = new Map();
-          const canGeoHash =
-            window.geofire &&
-            typeof window.geofire.geohashQueryBounds === "function";
-
-          try {
-            if (canGeoHash) {
-              const bounds = window.geofire.geohashQueryBounds(
-                [centerLat, centerLng],
-                radiusM,
-              );
-
-              await Promise.all(
-                bounds.map(async (bound) => {
-                  const q = db
-                    .collection("spots")
-                    .orderBy("geohash")
-                    .startAt(bound[0])
-                    .endAt(bound[1]);
-
-                  const snap = await q.get();
-                  snap.forEach((doc) => {
-                    docsById.set(doc.id, doc.data());
-                  });
-                }),
-              );
-            } else {
-              const box = getBoundsForRadius(centerLat, centerLng, radiusKm);
-              const q = db
-                .collection("spots")
-                .where("lat", ">=", box.minLat)
-                .where("lat", "<=", box.maxLat);
-
-              const snap = await q.get();
-              snap.forEach((doc) => {
-                const d = doc.data();
-                if (
-                  d &&
-                  typeof d.lng === "number" &&
-                  d.lng >= box.minLng &&
-                  d.lng <= box.maxLng
-                ) {
-                  docsById.set(doc.id, d);
-                }
-              });
-            }
-          } catch (err) {
-            console.error("Radius fetch error:", err);
-            return;
-          }
-
-          const features = [];
-
-          docsById.forEach((spot, id) => {
-            if (
-              !spot ||
-              typeof spot.lat !== "number" ||
-              typeof spot.lng !== "number"
-            ) {
-              return;
-            }
-
-            const distance = haversineMeters(
-              centerLat,
-              centerLng,
-              spot.lat,
-              spot.lng,
-            );
-
-            if (distance > radiusM) return;
-
-            features.push({
-              type: "Feature",
-              geometry: {
-                type: "Point",
-                coordinates: [spot.lng, spot.lat],
-              },
-              properties: {
-                id,
-                name: spot.name || "",
-                description: spot.description || "",
-                addedBy: spot.addedBy || "",
-                added_by: spot.added_by || "",
-                author: spot.author || "",
-                photoURL: spot.photoURL || "",
-                lat: spot.lat,
-                lng: spot.lng,
-                avgRating: Number(spot.avgRating || 0),
-                ratingCount: Number(spot.ratingCount || 0),
-              },
-            });
-          });
-
-          setSpotsGeoJSON(features);
-
-          if (features.length === 0) {
-            if (showEmptyPopup) {
-              showNoSpotsPopup(centerLat, centerLng, radiusKm);
-            }
-            return;
-          }
-
-          closeCoordPopup();
-
-          if (recenter) {
-            map.easeTo({
-              center: [centerLng, centerLat],
-              zoom: Math.max(map.getZoom(), 11),
-              duration: 500,
-            });
-          }
-        }
-
-        async function zoomToClusterSpots(clusterId, fallbackCoords) {
-          const src = map.getSource(SOURCE_ID);
-          if (!src) return;
-
-          try {
-            const leaves = await src.getClusterLeaves(
-              Number(clusterId),
-              100,
-              0,
-            );
-
-            if (Array.isArray(leaves) && leaves.length > 1) {
-              const bounds = new maptilersdk.LngLatBounds();
-
-              leaves.forEach((leaf) => {
-                const coords = leaf?.geometry?.coordinates;
-                if (
-                  Array.isArray(coords) &&
-                  typeof coords[0] === "number" &&
-                  typeof coords[1] === "number"
-                ) {
-                  bounds.extend(coords);
-                }
-              });
-
-              if (!bounds.isEmpty()) {
-                map.fitBounds(bounds, {
-                  padding: { top: 90, bottom: 90, left: 90, right: 90 },
-                  maxZoom: 15,
-                  duration: 650,
-                });
-                return;
-              }
-            }
-
-            if (Array.isArray(leaves) && leaves.length === 1) {
-              const onlyCoords = leaves[0]?.geometry?.coordinates;
-              if (Array.isArray(onlyCoords)) {
-                map.easeTo({
-                  center: onlyCoords,
-                  zoom: Math.max(map.getZoom(), 14),
-                  duration: 520,
-                });
-                return;
-              }
-            }
-
-            const zoom = await src.getClusterExpansionZoom(Number(clusterId));
-            map.easeTo({
-              center: fallbackCoords,
-              zoom,
-              duration: 520,
-            });
-          } catch (err) {
-            console.error("Cluster zoom error:", err);
-
-            try {
-              const zoom = await src.getClusterExpansionZoom(Number(clusterId));
-              map.easeTo({
-                center: fallbackCoords,
-                zoom,
-                duration: 520,
-              });
-            } catch (fallbackErr) {
-              console.error("Cluster fallback zoom error:", fallbackErr);
-            }
-          }
-        }
-
-        async function maybeLoadInitialNearbySpots() {
-          if (
-            initialNearbyLoaded ||
-            !mapLoaded ||
-            typeof userLat !== "number" ||
-            typeof userLng !== "number"
-          ) {
-            return;
-          }
-
-          initialNearbyLoaded = true;
-          syncUserMarker();
-
-          map.jumpTo({
-            center: [userLng, userLat],
-            zoom: USER_START_ZOOM,
-          });
-
-          await fetchSpotsInRadius(userLat, userLng, SEARCH_RADIUS_KM, {
-            recenter: false,
-            showEmptyPopup: false,
-          });
-        }
-
-        async function refreshNearbyUserSpots() {
-          if (
-            typeof userLat !== "number" ||
-            typeof userLng !== "number" ||
-            !mapLoaded
-          ) {
-            return;
-          }
-
-          syncUserMarker();
-
-          map.jumpTo({
-            center: [userLng, userLat],
-            zoom: USER_START_ZOOM,
-          });
-
-          await fetchSpotsInRadius(userLat, userLng, SEARCH_RADIUS_KM, {
-            recenter: false,
-            showEmptyPopup: false,
-          });
-        }
-
-        function requestUserLocation() {
-          if (!navigator.geolocation) return;
-
-          navigator.geolocation.getCurrentPosition(
-            async (pos) => {
-              userLng = pos.coords.longitude;
-              userLat = pos.coords.latitude;
-              syncUserMarker();
-              await maybeLoadInitialNearbySpots();
-            },
-            (err) => {
-              console.warn("Locatie fout:", err.message);
-            },
-            {
-              enableHighAccuracy: true,
-              timeout: 15000,
-              maximumAge: 0,
-            },
-          );
-        }
-
-        if (navigator.geolocation) {
-          userMarkerEl = document.createElement("img");
-          userMarkerEl.src = "../../images/playericon.png";
-          userMarkerEl.style.width = "28px";
-          userMarkerEl.style.height = "28px";
-          userMarkerEl.classList.add("player-marker");
-
-          const userPopupHTML = `
-            <div class="user-popup-card">
-              <img src="../../images/playeravatar.png" alt="Player avatar">
-              <div class="body">
-                <strong>This is you</strong>
-              </div>
-            </div>
-          `;
-
-          userPopup = new maptilersdk.Popup({
-            offset: 25,
-            closeButton: true,
-            closeOnClick: false,
-            className: "user-map-popup",
-            maxWidth: "200px",
-          }).setHTML(userPopupHTML);
-
-          userMarker = new maptilersdk.Marker({
-            element: userMarkerEl,
-            anchor: "center",
-          }).setPopup(userPopup);
-
-          userMarkerEl.addEventListener("click", async (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            closeCoordPopup();
-
-            if (activePopup) {
-              activePopup.remove();
-              activePopup = null;
-            }
-
-            if (userPopup.isOpen()) {
-              userPopup.remove();
-            } else {
-              userMarker.togglePopup();
-            }
-
-            await refreshNearbyUserSpots();
-            updateFooterVisibility();
-          });
-
-          userPopup.on("open", updateFooterVisibility);
-          userPopup.on("close", updateFooterVisibility);
-
-          requestUserLocation();
-        }
-
-        document.addEventListener("click", async (e) => {
-          const navBtn = e.target.closest("[data-action='nav']");
-          if (navBtn) {
-            e.preventDefault();
-            e.stopPropagation();
-            const lat = Number(navBtn.getAttribute("data-lat"));
-            const lng = Number(navBtn.getAttribute("data-lng"));
-            openNavigation(lat, lng);
-            return;
-          }
-
-          const addBtn = e.target.closest("[data-action='add-spot']");
-          if (addBtn) {
-            e.preventDefault();
-            e.stopPropagation();
-            const lat = Number(addBtn.getAttribute("data-lat"));
-            const lng = Number(addBtn.getAttribute("data-lng"));
-
-            const existingSpot = await findNearbyExistingSpot(
-              lat,
-              lng,
-              DUPLICATE_BLOCK_RADIUS_M,
-            );
-
-            if (existingSpot) {
-              showDuplicateSpotPopup(lat, lng, existingSpot);
-              return;
-            }
-
-            await goAddSpot(lat, lng);
-            return;
-          }
-
-          const showBtn = e.target.closest("[data-action='show-spots']");
-          if (showBtn) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const lat = Number(showBtn.getAttribute("data-lat"));
-            const lng = Number(showBtn.getAttribute("data-lng"));
-            const radiusKm =
-              Number(showBtn.getAttribute("data-radius")) || SEARCH_RADIUS_KM;
-
-            await fetchSpotsInRadius(lat, lng, radiusKm);
-            return;
-          }
-        });
-
-        map.on("load", async () => {
-          mapLoaded = true;
-
-          map.addSource(SOURCE_ID, {
-            type: "geojson",
-            data: emptyGeoJSON(),
-            cluster: true,
-            clusterMaxZoom: 13,
-            clusterRadius: 55,
-          });
-
-          map.addLayer({
-            id: LAYER_CLUSTERS_X,
-            type: "symbol",
-            source: SOURCE_ID,
-            filter: ["has", "point_count"],
-            layout: {
-              "text-field": "X",
-              "text-font": ["Open Sans Bold"],
-              "text-size": [
-                "step",
-                ["get", "point_count"],
-                22,
-                10,
-                24,
-                25,
-                26,
-                75,
-                29,
-                200,
-                33,
-              ],
-              "text-offset": [0, 0],
-              "text-allow-overlap": true,
-              "text-ignore-placement": true,
-            },
-            paint: {
-              "text-color": "rgba(139, 113, 8, 1)",
-            },
-          });
-
-          map.addLayer({
-            id: LAYER_CLUSTERS_COUNT,
-            type: "symbol",
-            source: SOURCE_ID,
-            filter: ["has", "point_count"],
-            layout: {
-              "text-field": "{point_count_abbreviated}",
-              "text-font": ["Open Sans Bold"],
-              "text-size": [
-                "step",
-                ["get", "point_count"],
-                11,
-                10,
-                12,
-                25,
-                13,
-                75,
-                14,
-                200,
-                15,
-              ],
-              "text-offset": [0.72, 0.08],
-              "text-anchor": "left",
-              "text-allow-overlap": true,
-              "text-ignore-placement": true,
-            },
-            paint: {
-              "text-color": "#ffffff",
-            },
-          });
-
-          map.addLayer({
-            id: LAYER_POINTS,
-            type: "symbol",
-            source: SOURCE_ID,
-            filter: ["!", ["has", "point_count"]],
-            layout: {
-              "text-field": "X",
-              "text-font": ["Open Sans Bold"],
-              "text-size": 22,
-              "text-allow-overlap": true,
-              "text-ignore-placement": true,
-            },
-            paint: {
-              "text-color": "rgba(139, 113, 8, 1)",
-            },
-          });
-
-          map.on("mouseenter", LAYER_POINTS, () => {
-            map.getCanvas().style.cursor = "pointer";
-          });
-
-          map.on("mouseleave", LAYER_POINTS, () => {
-            map.getCanvas().style.cursor = "";
-          });
-
-          map.on("mouseenter", LAYER_CLUSTERS_X, () => {
-            map.getCanvas().style.cursor = "pointer";
-          });
-
-          map.on("mouseleave", LAYER_CLUSTERS_X, () => {
-            map.getCanvas().style.cursor = "";
-          });
-
-          map.on("mouseenter", LAYER_CLUSTERS_COUNT, () => {
-            map.getCanvas().style.cursor = "pointer";
-          });
-
-          map.on("mouseleave", LAYER_CLUSTERS_COUNT, () => {
-            map.getCanvas().style.cursor = "";
-          });
-
-          map.on("click", LAYER_CLUSTERS_X, async (e) => {
-            const feature = e.features?.[0];
-            if (!feature) return;
-
-            const clusterId = Number(feature.properties?.cluster_id);
-            if (!Number.isFinite(clusterId)) return;
-
-            closeCoordPopup();
-            closeUserPopup();
-
-            if (activePopup) {
-              activePopup.remove();
-              activePopup = null;
-            }
-
-            const coords = feature.geometry.coordinates;
-            await zoomToClusterSpots(clusterId, coords);
-          });
-
-          map.on("click", LAYER_CLUSTERS_COUNT, async (e) => {
-            const feature = e.features?.[0];
-            if (!feature) return;
-
-            const clusterId = Number(feature.properties?.cluster_id);
-            if (!Number.isFinite(clusterId)) return;
-
-            closeCoordPopup();
-            closeUserPopup();
-
-            if (activePopup) {
-              activePopup.remove();
-              activePopup = null;
-            }
-
-            const coords = feature.geometry.coordinates;
-            await zoomToClusterSpots(clusterId, coords);
-          });
-
-          map.on("click", LAYER_POINTS, async (e) => {
-            const f = e.features?.[0];
-            if (!f) return;
-
-            closeCoordPopup();
-            closeUserPopup();
-
-            if (activePopup) {
-              activePopup.remove();
-            }
-
-            const coords = f.geometry.coordinates;
-            const props = { ...(f.properties || {}) };
-
-            props.id = String(props.id || "");
-            props.lat = Number(props.lat);
-            props.lng = Number(props.lng);
-            props.avgRating = Number(props.avgRating || 0);
-            props.ratingCount = Number(props.ratingCount || 0);
-
-            const popup = new maptilersdk.Popup({
-              offset: 18,
-              maxWidth: "620px",
-              closeButton: true,
-              closeOnClick: false,
-              className: "spot-sheet-popup",
-            })
-              .setLngLat(coords)
-              .setHTML(makeSpotPopupHTML(props))
-              .addTo(map);
-
-            activePopup = popup;
-            attachPopupImageLoader(popup);
-            updateFooterVisibility();
-
-            easeToSpotWithPopupSpace(coords[0], coords[1]);
-
-            await hydratePopupData(popup, props);
-
-            popup.once("close", () => {
-              activePopup = null;
-              updateFooterVisibility();
-            });
-          });
-
-          await maybeLoadInitialNearbySpots();
-          updateFooterVisibility();
-        });
-
-        map.on("dragstart", closeAll);
-
-        let longPressTimer = null;
-        let longPressStart = null;
-        let suppressNextMapClick = false;
-
-        const LONG_PRESS_MS = 560;
-        const LONG_PRESS_MOVE_TOLERANCE_PX = 12;
-
-        function needsLongPressForMapSearch() {
-          return window.matchMedia("(pointer: coarse), (max-width: 1024px)")
-            .matches;
-        }
-
-        function isMapOverlayTarget(target) {
-          return (
-            target &&
-            (target.closest(".player-marker") ||
-              target.closest(".user-popup-card") ||
-              target.closest(".user-map-popup") ||
-              target.closest(".maplibregl-popup") ||
-              target.closest("nav"))
-          );
-        }
-
-        function getSpotHitsAtPoint(point) {
-          return map.queryRenderedFeatures(point, {
-            layers: [LAYER_CLUSTERS_X, LAYER_CLUSTERS_COUNT, LAYER_POINTS],
-          });
-        }
-
-        function clearMapPopupsForSearch() {
-          closeUserPopup();
-
-          if (activePopup) {
-            activePopup.remove();
-            activePopup = null;
-          }
-
-          if (activeCoordPopup) {
-            activeCoordPopup.remove();
-            activeCoordPopup = null;
-          }
-        }
-
-        function showSearchPopupAt(lng, lat) {
-          clearMapPopupsForSearch();
-          placeClickPin(lng, lat);
-
-          const popupHTML = `
-            <div class="coord-popup">
-              <strong>Search spots</strong>
-              <span class="coords">Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(
-                5,
-              )}</span>
-              <div class="btn-row single">
-                <button data-action="show-spots" data-lat="${lat}" data-lng="${lng}" data-radius="${SEARCH_RADIUS_KM}">
-                  Search spots
-                </button>
-              </div>
-            </div>
-          `;
-
-          activeCoordPopup = new maptilersdk.Popup({
-            offset: 18,
-            closeButton: true,
-            closeOnClick: false,
-            maxWidth: "320px",
-            className: "coord-map-popup",
-          })
-            .setLngLat([lng, lat])
-            .setHTML(popupHTML)
-            .addTo(map);
-
-          updateFooterVisibility();
-
-          activeCoordPopup.once("close", () => {
-            activeCoordPopup = null;
-            removeClickPin();
-            updateFooterVisibility();
-          });
-        }
-
-        map.on("click", async (event) => {
-          if (suppressNextMapClick) {
-            suppressNextMapClick = false;
-            return;
-          }
-
-          if (needsLongPressForMapSearch()) return;
-
-          const target = event.originalEvent?.target;
-          if (isMapOverlayTarget(target)) return;
-
-          const hits = getSpotHitsAtPoint(event.point);
-          if (hits && hits.length) return;
-
-          const { lng, lat } = event.lngLat;
-          showSearchPopupAt(lng, lat);
-        });
-
-        const mapCanvas = map.getCanvas();
-
-        function clearLongPressTimer() {
-          if (longPressTimer) {
-            window.clearTimeout(longPressTimer);
-            longPressTimer = null;
-          }
-          longPressStart = null;
-        }
-
-        function getTouchPoint(touch) {
-          const rect = mapCanvas.getBoundingClientRect();
-          return {
-            x: touch.clientX - rect.left,
-            y: touch.clientY - rect.top,
-          };
-        }
-
-        mapCanvas.addEventListener(
-          "touchstart",
-          (event) => {
-            if (!needsLongPressForMapSearch()) return;
-            if (event.touches.length !== 1) {
-              clearLongPressTimer();
-              return;
-            }
-
-            const target = event.target;
-            if (isMapOverlayTarget(target)) return;
-
-            const touch = event.touches[0];
-            const point = getTouchPoint(touch);
-            const hits = getSpotHitsAtPoint(point);
-
-            if (hits && hits.length) return;
-
-            clearLongPressTimer();
-            longPressStart = {
-              clientX: touch.clientX,
-              clientY: touch.clientY,
-              point,
-            };
-
-            longPressTimer = window.setTimeout(() => {
-              const lngLat = map.unproject([point.x, point.y]);
-              suppressNextMapClick = true;
-
-              window.setTimeout(() => {
-                suppressNextMapClick = false;
-              }, 700);
-
-              showSearchPopupAt(lngLat.lng, lngLat.lat);
-              clearLongPressTimer();
-            }, LONG_PRESS_MS);
-          },
-          { passive: true },
-        );
-
-        mapCanvas.addEventListener(
-          "touchmove",
-          (event) => {
-            if (!longPressStart || !event.touches.length) return;
-
-            const touch = event.touches[0];
-            const dx = Math.abs(touch.clientX - longPressStart.clientX);
-            const dy = Math.abs(touch.clientY - longPressStart.clientY);
-
-            if (
-              dx > LONG_PRESS_MOVE_TOLERANCE_PX ||
-              dy > LONG_PRESS_MOVE_TOLERANCE_PX
-            ) {
-              clearLongPressTimer();
-            }
-          },
-          { passive: true },
-        );
-
-        mapCanvas.addEventListener("touchend", clearLongPressTimer, {
-          passive: true,
-        });
-
-        mapCanvas.addEventListener("touchcancel", clearLongPressTimer, {
-          passive: true,
-        });
-
-        updateFooterVisibility();
-      });
+      setTimeout(typeEffect, 1700);
     </script>
   </body>
 </html>
