@@ -93,47 +93,400 @@
       }
 
       .nav-right {
+        position: relative;
         display: flex;
         align-items: center;
-        gap: 12px;
-        min-width: 0;
-        flex-wrap: wrap;
         justify-content: flex-end;
+        min-width: 0;
       }
 
-      .nav-right a,
-      .nav-right button {
-        text-decoration: none;
-        color: var(--fg);
-        font-size: 0.95rem;
-        font-weight: 400;
-        line-height: 1.2;
-        letter-spacing: 0;
-        opacity: 0.8;
-        transition:
-          opacity 0.25s,
-          color 0.25s;
-        background: transparent;
-        border: 0;
+      .hamburger-toggle {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.2);
+        color: rgba(255, 255, 255, 0.9);
         cursor: pointer;
         padding: 0;
+        margin: 0;
+        font-family: inherit;
+        appearance: none;
+        -webkit-appearance: none;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.24);
+        transition:
+          transform 0.2s ease,
+          background 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .hamburger-toggle span {
+        width: 17px;
+        height: 2px;
+        display: block;
+        border-radius: 999px;
+        background: currentColor;
+        transition:
+          transform 0.22s ease,
+          opacity 0.18s ease,
+          width 0.2s ease;
+      }
+
+      .hamburger-toggle:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(139, 113, 8, 0.72);
+        color: var(--accent);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+      }
+
+      .hamburger-toggle:focus-visible {
+        outline: 2px solid rgba(139, 113, 8, 0.9);
+        outline-offset: 4px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(1) {
+        transform: translateY(6px) rotate(45deg);
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(2) {
+        opacity: 0;
+        width: 8px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(3) {
+        transform: translateY(-6px) rotate(-45deg);
+      }
+
+      .hamburger-menu {
+        position: absolute;
+        top: 54px;
+        right: 0;
+        width: min(230px, calc(100vw - 28px));
+        padding: 9px;
+        display: grid;
+        gap: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        background: rgba(8, 8, 8, 0.58);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 22px 58px rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+        transform-origin: top right;
+        pointer-events: none;
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .nav-right.open .hamburger-menu {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+
+      .hamburger-menu a,
+      .hamburger-menu button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 0.94rem;
+        font-weight: 520;
+        line-height: 1.2;
+        letter-spacing: 0.15px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 13px;
+        cursor: pointer;
+        padding: 12px 13px;
         margin: 0;
         font-family: inherit;
         white-space: nowrap;
         appearance: none;
         -webkit-appearance: none;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          color 0.18s ease;
       }
 
-      .nav-right a:hover,
-      .nav-right button:hover {
-        opacity: 1;
+      .hamburger-menu a::after,
+      .hamburger-menu button::after {
+        content: "→";
         color: var(--accent);
+        opacity: 0;
+        transform: translateX(-5px);
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease;
       }
 
-      .navbar-seperator {
-        opacity: 0.5;
-        font-size: 0.95rem;
-        line-height: 1.2;
+      .hamburger-menu a:hover,
+      .hamburger-menu button:hover {
+        color: #fff;
+        background: rgba(139, 113, 8, 0.18);
+        border-color: rgba(139, 113, 8, 0.28);
+        transform: translateX(2px);
+      }
+
+      .hamburger-menu a:hover::after,
+      .hamburger-menu button:hover::after {
+        opacity: 0.9;
+        transform: translateX(0);
+      }
+
+      .hamburger-menu a:focus-visible,
+      .hamburger-menu button:focus-visible {
+        outline: 2px solid rgba(139, 113, 8, 0.9);
+        outline-offset: 2px;
+      }
+
+      .kova-tutorial {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: rgba(0, 0, 0, 0.52);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.22s ease;
+      }
+
+      .kova-tutorial.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .tutorial-card {
+        width: min(520px, calc(100vw - 28px));
+        min-height: 560px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 28px;
+        background: #101010;
+        box-shadow: 0 28px 70px rgba(0, 0, 0, 0.58);
+        transform: translateY(12px) scale(0.985);
+        transition: transform 0.24s ease;
+      }
+
+      .kova-tutorial.open .tutorial-card {
+        transform: translateY(0) scale(1);
+      }
+
+      .tutorial-close {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        z-index: 3;
+        width: 36px;
+        height: 36px;
+        display: inline-grid;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        background: #191919;
+        color: rgba(255, 255, 255, 0.76);
+        cursor: pointer;
+        font-size: 1.2rem;
+        line-height: 1;
+        transition:
+          color 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .tutorial-close:hover {
+        color: #fff;
+        background: #222;
+        border-color: rgba(139, 113, 8, 0.5);
+        transform: scale(1.03);
+      }
+
+      .tutorial-content {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        padding: 34px;
+      }
+
+      .tutorial-kicker {
+        width: max-content;
+        margin-bottom: 22px;
+        color: var(--accent);
+        font-size: 0.72rem;
+        font-weight: 760;
+        letter-spacing: 1.9px;
+        text-transform: uppercase;
+      }
+
+      .tutorial-visual {
+        height: 190px;
+        position: relative;
+        display: grid;
+        place-items: center;
+        margin-bottom: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 22px;
+        background: #171717;
+        overflow: hidden;
+      }
+
+      .tutorial-map-lines {
+        position: absolute;
+        inset: 18px;
+        opacity: 0.2;
+        background:
+          linear-gradient(
+            90deg,
+            transparent 0 48%,
+            rgba(255, 255, 255, 0.34) 49% 50%,
+            transparent 51% 100%
+          ),
+          linear-gradient(
+            0deg,
+            transparent 0 48%,
+            rgba(255, 255, 255, 0.28) 49% 50%,
+            transparent 51% 100%
+          );
+        background-size: 54px 54px;
+      }
+
+      .tutorial-orb {
+        width: 88px;
+        height: 88px;
+        position: relative;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(139, 113, 8, 0.48);
+        border-radius: 24px;
+        background: rgba(139, 113, 8, 0.14);
+        color: var(--accent);
+        font-size: 2.7rem;
+        font-weight: 850;
+        letter-spacing: -1px;
+      }
+
+      .tutorial-title {
+        margin: 0 0 12px 0;
+        color: #fff;
+        font-size: clamp(2.25rem, 8vw, 3.25rem);
+        line-height: 0.96;
+        letter-spacing: -2px;
+      }
+
+      .tutorial-text {
+        min-height: 92px;
+        margin: 0;
+        color: rgba(255, 255, 255, 0.68);
+        font-size: 1.02rem;
+        line-height: 1.58;
+      }
+
+      .tutorial-text b {
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      .tutorial-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-top: auto;
+        padding-top: 28px;
+      }
+
+      .tutorial-dots {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .tutorial-dot {
+        width: 7px;
+        height: 7px;
+        display: block;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.28);
+        transition:
+          width 0.2s ease,
+          background 0.2s ease;
+      }
+
+      .tutorial-dot.active {
+        width: 25px;
+        background: var(--accent);
+      }
+
+      .tutorial-actions {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+
+      .tutorial-btn {
+        appearance: none;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 999px;
+        background: #181818;
+        color: rgba(255, 255, 255, 0.88);
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.92rem;
+        font-weight: 650;
+        min-height: 44px;
+        padding: 0 17px;
+        transition:
+          background 0.18s ease,
+          border-color 0.18s ease,
+          color 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .tutorial-btn:hover {
+        color: #fff;
+        background: #222;
+        border-color: rgba(255, 255, 255, 0.18);
+        transform: translateY(-1px);
+      }
+
+      .tutorial-btn.primary {
+        min-width: 96px;
+        border-color: rgba(139, 113, 8, 0.92);
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .tutorial-btn.primary:hover {
+        background: #9a7d09;
+      }
+
+      .tutorial-btn:disabled {
+        opacity: 0.34;
+        pointer-events: none;
       }
 
       #map {
@@ -698,16 +1051,24 @@
         }
 
         .nav-right {
-          gap: 8px;
-          row-gap: 4px;
-          max-width: 55%;
+          max-width: none;
+          flex-wrap: nowrap;
         }
 
-        .nav-right a,
-        .nav-right button,
-        .navbar-seperator {
-          font-size: 0.82rem;
-          line-height: 1.2;
+        .hamburger-toggle {
+          width: 40px;
+          height: 40px;
+        }
+
+        .hamburger-menu {
+          top: 50px;
+          width: min(220px, calc(100vw - 28px));
+        }
+
+        .hamburger-menu a,
+        .hamburger-menu button {
+          font-size: 0.88rem;
+          padding: 11px 12px;
         }
 
         .kova-popup .hero {
@@ -725,8 +1086,8 @@
       }
 
       @media (max-width: 420px) {
-        .nav-right {
-          max-width: 58%;
+        .hamburger-menu {
+          width: min(210px, calc(100vw - 24px));
         }
 
         .kova-popup .hero {
@@ -741,6 +1102,46 @@
           font-size: 0.92rem;
         }
       }
+
+      @media (max-width: 600px) {
+        .kova-tutorial {
+          padding: 14px;
+          align-items: end;
+        }
+
+        .tutorial-card {
+          width: 100%;
+          min-height: min(580px, calc(100dvh - 28px));
+          border-radius: 30px;
+        }
+
+        .tutorial-content {
+          padding: 24px;
+        }
+
+        .tutorial-visual {
+          height: 172px;
+          margin-bottom: 24px;
+        }
+
+        .tutorial-title {
+          font-size: clamp(2rem, 10vw, 2.5rem);
+        }
+
+        .tutorial-footer {
+          align-items: flex-end;
+        }
+
+        .tutorial-actions {
+          gap: 7px;
+        }
+
+        .tutorial-btn {
+          min-height: 40px;
+          padding: 0 13px;
+          font-size: 0.88rem;
+        }
+      }
     </style>
   </head>
 
@@ -753,13 +1154,74 @@
       </div>
 
       <div class="nav-right">
-        <a href="radar.html">wx</a>
-        <span class="navbar-seperator">//</span>
-        <a href="tutorial.html">dx</a>
-        <span class="navbar-seperator">//</span>
-        <a href="about.html">about</a>
+        <button
+          class="hamburger-toggle"
+          type="button"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="kovaMenu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="hamburger-menu" id="kovaMenu" aria-hidden="true">
+          <a href="../../admin.html">add spot</a>
+          <button type="button" data-action="open-tutorial">tutorial</button>
+          <a href="../../app/pages/radar.html">weather</a>
+          <a href="../../web/pages/about.html">About us</a>
+        </div>
       </div>
     </nav>
+
+    <div class="kova-tutorial" id="kovaTutorial" aria-hidden="true">
+      <div
+        class="tutorial-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tutorialTitle"
+        aria-describedby="tutorialText"
+      >
+        <button
+          class="tutorial-close"
+          type="button"
+          data-tutorial-close
+          aria-label="Close tutorial"
+        >
+          ×
+        </button>
+
+        <div class="tutorial-content">
+          <div class="tutorial-kicker">KOVA codex</div>
+
+          <div class="tutorial-visual" aria-hidden="true">
+            <div class="tutorial-map-lines"></div>
+            <div class="tutorial-orb" data-tutorial-icon>X</div>
+          </div>
+
+          <h2 class="tutorial-title" id="tutorialTitle"></h2>
+          <p class="tutorial-text" id="tutorialText"></p>
+
+          <div class="tutorial-footer">
+            <div class="tutorial-dots" data-tutorial-dots></div>
+
+            <div class="tutorial-actions">
+              <button class="tutorial-btn" type="button" data-tutorial-back>
+                Back
+              </button>
+              <button
+                class="tutorial-btn primary"
+                type="button"
+                data-tutorial-next
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <footer id="kovaFooter">
       <p class="kova-corp">kova corp © 2026</p>
@@ -775,6 +1237,189 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
+        const navRight = document.querySelector(".nav-right");
+        const menuToggle = document.querySelector(".hamburger-toggle");
+        const menuPanel = document.getElementById("kovaMenu");
+
+        function closeHamburgerMenu() {
+          if (!navRight || !menuToggle || !menuPanel) return;
+          navRight.classList.remove("open");
+          menuToggle.setAttribute("aria-expanded", "false");
+          menuPanel.setAttribute("aria-hidden", "true");
+        }
+
+        if (navRight && menuToggle && menuPanel) {
+          menuToggle.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isOpen = navRight.classList.toggle("open");
+            menuToggle.setAttribute("aria-expanded", String(isOpen));
+            menuPanel.setAttribute("aria-hidden", String(!isOpen));
+          });
+
+          menuPanel.addEventListener("click", (e) => {
+            if (e.target.closest("a")) closeHamburgerMenu();
+          });
+
+          document.addEventListener("click", (e) => {
+            if (!navRight.contains(e.target)) closeHamburgerMenu();
+          });
+
+          document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeHamburgerMenu();
+          });
+        }
+
+        const TUTORIAL_STORAGE_KEY = "kova_tutorial_seen_v1";
+        const tutorialOverlay = document.getElementById("kovaTutorial");
+        const tutorialTitle = document.getElementById("tutorialTitle");
+        const tutorialText = document.getElementById("tutorialText");
+        const tutorialIcon = document.querySelector("[data-tutorial-icon]");
+        const tutorialDots = document.querySelector("[data-tutorial-dots]");
+        const tutorialBackBtn = document.querySelector("[data-tutorial-back]");
+        const tutorialNextBtn = document.querySelector("[data-tutorial-next]");
+        const tutorialCloseBtn = document.querySelector(
+          "[data-tutorial-close]",
+        );
+        const tutorialOpenBtns = document.querySelectorAll(
+          "[data-action='open-tutorial']",
+        );
+
+        const tutorialSlides = [
+          {
+            icon: "K",
+            title: "Welcome to KOVA.",
+            text: "A clean map for real spots. Open the map, find nearby places and keep the good ones easy to reach.",
+          },
+          {
+            icon: "X",
+            title: "Find spots.",
+            text: "Tap a <b>spot marker</b> to open the photo, description, rating and route button.",
+          },
+          {
+            icon: "⌁",
+            title: "Search the map.",
+            text: "Desktop: click an empty point. Phone or tablet: <b>long press</b>. KOVA searches spots in a 10 km radius.",
+          },
+          {
+            icon: "+",
+            title: "Add from the menu.",
+            text: "New spots are added through <b>add spot</b> in the hamburger menu. This keeps accidental map taps out of the flow.",
+          },
+        ];
+
+        let tutorialIndex = 0;
+
+        function hasSeenTutorial() {
+          try {
+            return localStorage.getItem(TUTORIAL_STORAGE_KEY) === "true";
+          } catch (e) {
+            return false;
+          }
+        }
+
+        function rememberTutorialSeen() {
+          try {
+            localStorage.setItem(TUTORIAL_STORAGE_KEY, "true");
+          } catch (e) {}
+        }
+
+        function renderTutorialSlide() {
+          const slide = tutorialSlides[tutorialIndex];
+          if (!slide || !tutorialOverlay) return;
+
+          if (tutorialTitle) tutorialTitle.textContent = slide.title;
+          if (tutorialText) tutorialText.innerHTML = slide.text;
+          if (tutorialIcon) tutorialIcon.textContent = slide.icon;
+
+          if (tutorialDots) {
+            tutorialDots.innerHTML = tutorialSlides
+              .map(
+                (_, index) =>
+                  `<span class="tutorial-dot ${index === tutorialIndex ? "active" : ""}"></span>`,
+              )
+              .join("");
+          }
+
+          if (tutorialBackBtn) tutorialBackBtn.disabled = tutorialIndex === 0;
+          if (tutorialNextBtn) {
+            tutorialNextBtn.textContent =
+              tutorialIndex === tutorialSlides.length - 1 ? "Start" : "Next";
+          }
+        }
+
+        function openTutorial() {
+          if (!tutorialOverlay) return;
+          closeHamburgerMenu();
+          tutorialIndex = 0;
+          renderTutorialSlide();
+          tutorialOverlay.classList.add("open");
+          tutorialOverlay.setAttribute("aria-hidden", "false");
+        }
+
+        function closeTutorial({ remember = true } = {}) {
+          if (!tutorialOverlay) return;
+          tutorialOverlay.classList.remove("open");
+          tutorialOverlay.setAttribute("aria-hidden", "true");
+          if (remember) rememberTutorialSeen();
+        }
+
+        tutorialOpenBtns.forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openTutorial();
+          });
+        });
+
+        if (tutorialBackBtn) {
+          tutorialBackBtn.addEventListener("click", () => {
+            tutorialIndex = Math.max(0, tutorialIndex - 1);
+            renderTutorialSlide();
+          });
+        }
+
+        if (tutorialNextBtn) {
+          tutorialNextBtn.addEventListener("click", () => {
+            if (tutorialIndex >= tutorialSlides.length - 1) {
+              closeTutorial({ remember: true });
+              return;
+            }
+
+            tutorialIndex += 1;
+            renderTutorialSlide();
+          });
+        }
+
+        if (tutorialCloseBtn) {
+          tutorialCloseBtn.addEventListener("click", () => {
+            closeTutorial({ remember: true });
+          });
+        }
+
+        if (tutorialOverlay) {
+          tutorialOverlay.addEventListener("click", (e) => {
+            if (e.target === tutorialOverlay) {
+              closeTutorial({ remember: true });
+            }
+          });
+        }
+
+        document.addEventListener("keydown", (e) => {
+          if (
+            e.key === "Escape" &&
+            tutorialOverlay &&
+            tutorialOverlay.classList.contains("open")
+          ) {
+            closeTutorial({ remember: true });
+          }
+        });
+
+        if (!hasSeenTutorial()) {
+          window.setTimeout(() => openTutorial(), 450);
+        }
+
         maptilersdk.config.apiKey = "7TBqy4hTdFfQeIq7oXKj";
 
         const DEFAULT_CENTER = [4.5, 50.85];
@@ -1149,12 +1794,7 @@
           return `
             <div class="coord-popup">
               <strong>No spots found</strong>
-              <span class="coords">Nothing here yet in this ${radiusKm} km radius.<br>Be the first to mark this spot.</span>
-              <div class="btn-row single">
-                <button class="primary" data-action="add-spot" data-lat="${lat}" data-lng="${lng}">
-                  Add spot
-                </button>
-              </div>
+              <span class="coords">Nothing here yet in this ${radiusKm} km radius.</span>
             </div>
           `;
         }
@@ -2101,25 +2741,36 @@
 
         map.on("dragstart", closeAll);
 
-        map.on("click", async (event) => {
-          const target = event.originalEvent?.target;
+        let longPressTimer = null;
+        let longPressStart = null;
+        let suppressNextMapClick = false;
 
-          if (
+        const LONG_PRESS_MS = 560;
+        const LONG_PRESS_MOVE_TOLERANCE_PX = 12;
+
+        function needsLongPressForMapSearch() {
+          return window.matchMedia("(pointer: coarse), (max-width: 1024px)")
+            .matches;
+        }
+
+        function isMapOverlayTarget(target) {
+          return (
             target &&
             (target.closest(".player-marker") ||
               target.closest(".user-popup-card") ||
               target.closest(".user-map-popup") ||
-              target.closest(".maplibregl-popup"))
-          ) {
-            return;
-          }
+              target.closest(".maplibregl-popup") ||
+              target.closest("nav"))
+          );
+        }
 
-          const hits = map.queryRenderedFeatures(event.point, {
+        function getSpotHitsAtPoint(point) {
+          return map.queryRenderedFeatures(point, {
             layers: [LAYER_CLUSTERS_X, LAYER_CLUSTERS_COUNT, LAYER_POINTS],
           });
+        }
 
-          if (hits && hits.length) return;
-
+        function clearMapPopupsForSearch() {
           closeUserPopup();
 
           if (activePopup) {
@@ -2131,34 +2782,21 @@
             activeCoordPopup.remove();
             activeCoordPopup = null;
           }
+        }
 
-          const { lng, lat } = event.lngLat;
-
+        function showSearchPopupAt(lng, lat) {
+          clearMapPopupsForSearch();
           placeClickPin(lng, lat);
-
-          const existingSpot = await findNearbyExistingSpot(
-            lat,
-            lng,
-            DUPLICATE_BLOCK_RADIUS_M,
-          );
-
-          if (existingSpot) {
-            showDuplicateSpotPopup(lat, lng, existingSpot);
-            return;
-          }
 
           const popupHTML = `
             <div class="coord-popup">
-              <strong>Coordinates</strong>
+              <strong>Search spots</strong>
               <span class="coords">Lat: ${lat.toFixed(5)}<br>Lng: ${lng.toFixed(
                 5,
               )}</span>
-              <div class="btn-row">
+              <div class="btn-row single">
                 <button data-action="show-spots" data-lat="${lat}" data-lng="${lng}" data-radius="${SEARCH_RADIUS_KM}">
-                  Show spots
-                </button>
-                <button class="primary" data-action="add-spot" data-lat="${lat}" data-lng="${lng}">
-                  Add spot
+                  Search spots
                 </button>
               </div>
             </div>
@@ -2182,6 +2820,109 @@
             removeClickPin();
             updateFooterVisibility();
           });
+        }
+
+        map.on("click", async (event) => {
+          if (suppressNextMapClick) {
+            suppressNextMapClick = false;
+            return;
+          }
+
+          if (needsLongPressForMapSearch()) return;
+
+          const target = event.originalEvent?.target;
+          if (isMapOverlayTarget(target)) return;
+
+          const hits = getSpotHitsAtPoint(event.point);
+          if (hits && hits.length) return;
+
+          const { lng, lat } = event.lngLat;
+          showSearchPopupAt(lng, lat);
+        });
+
+        const mapCanvas = map.getCanvas();
+
+        function clearLongPressTimer() {
+          if (longPressTimer) {
+            window.clearTimeout(longPressTimer);
+            longPressTimer = null;
+          }
+          longPressStart = null;
+        }
+
+        function getTouchPoint(touch) {
+          const rect = mapCanvas.getBoundingClientRect();
+          return {
+            x: touch.clientX - rect.left,
+            y: touch.clientY - rect.top,
+          };
+        }
+
+        mapCanvas.addEventListener(
+          "touchstart",
+          (event) => {
+            if (!needsLongPressForMapSearch()) return;
+            if (event.touches.length !== 1) {
+              clearLongPressTimer();
+              return;
+            }
+
+            const target = event.target;
+            if (isMapOverlayTarget(target)) return;
+
+            const touch = event.touches[0];
+            const point = getTouchPoint(touch);
+            const hits = getSpotHitsAtPoint(point);
+
+            if (hits && hits.length) return;
+
+            clearLongPressTimer();
+            longPressStart = {
+              clientX: touch.clientX,
+              clientY: touch.clientY,
+              point,
+            };
+
+            longPressTimer = window.setTimeout(() => {
+              const lngLat = map.unproject([point.x, point.y]);
+              suppressNextMapClick = true;
+
+              window.setTimeout(() => {
+                suppressNextMapClick = false;
+              }, 700);
+
+              showSearchPopupAt(lngLat.lng, lngLat.lat);
+              clearLongPressTimer();
+            }, LONG_PRESS_MS);
+          },
+          { passive: true },
+        );
+
+        mapCanvas.addEventListener(
+          "touchmove",
+          (event) => {
+            if (!longPressStart || !event.touches.length) return;
+
+            const touch = event.touches[0];
+            const dx = Math.abs(touch.clientX - longPressStart.clientX);
+            const dy = Math.abs(touch.clientY - longPressStart.clientY);
+
+            if (
+              dx > LONG_PRESS_MOVE_TOLERANCE_PX ||
+              dy > LONG_PRESS_MOVE_TOLERANCE_PX
+            ) {
+              clearLongPressTimer();
+            }
+          },
+          { passive: true },
+        );
+
+        mapCanvas.addEventListener("touchend", clearLongPressTimer, {
+          passive: true,
+        });
+
+        mapCanvas.addEventListener("touchcancel", clearLongPressTimer, {
+          passive: true,
         });
 
         updateFooterVisibility();

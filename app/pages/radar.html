@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -27,20 +27,31 @@
         --muted: rgba(255, 255, 255, 0.6);
         --line: rgba(255, 255, 255, 0.12);
         --accent: #8b7108;
+        --panel: rgba(10, 10, 10, 0.94);
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+        --radius: 18px;
+      }
+
+      * {
+        box-sizing: border-box;
       }
 
       body {
         margin: 0;
         padding: 0;
-        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
           sans-serif;
         background: #161515;
         color: var(--fg);
-        height: 100vh;
+        height: 100dvh;
         overflow: hidden;
       }
 
-      /* NAVBAR (zelfde als index) ---------------------------------- */
       nav {
         width: 100%;
         padding: 22px 34px;
@@ -51,47 +62,193 @@
         position: fixed;
         top: 0;
         background: var(--bg);
-        z-index: 20;
+        z-index: 40;
+        pointer-events: none;
+      }
+
+      nav > * {
+        pointer-events: auto;
       }
 
       .nav-left {
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 0;
       }
 
       .nav-left img {
         height: 50px;
         width: auto;
+        display: block;
       }
 
-      .beta {
-        padding: 2px;
-        font-size: 0.85rem;
-        background-color: var(--accent);
-        color: white;
-        letter-spacing: 0.5px;
+      .nav-right {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        min-width: 0;
       }
 
-      .nav-right a {
-        margin-left: 32px;
-        text-decoration: none;
-        color: var(--fg);
-        font-size: 0.95rem;
-        opacity: 0.8;
-        transition: opacity 0.25s, color 0.25s;
+      .hamburger-toggle {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.2);
+        color: rgba(255, 255, 255, 0.9);
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+        font-family: inherit;
+        appearance: none;
+        -webkit-appearance: none;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.24);
+        transition:
+          transform 0.2s ease,
+          background 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease,
+          box-shadow 0.2s ease;
       }
 
-      .nav-right a:hover {
-        opacity: 1;
+      .hamburger-toggle span {
+        width: 17px;
+        height: 2px;
+        display: block;
+        border-radius: 999px;
+        background: currentColor;
+        transition:
+          transform 0.22s ease,
+          opacity 0.18s ease,
+          width 0.2s ease;
+      }
+
+      .hamburger-toggle:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(139, 113, 8, 0.72);
         color: var(--accent);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
       }
 
-      .navbar-seperator {
-        margin-left: 20px;
+      .hamburger-toggle:focus-visible {
+        outline: 2px solid rgba(139, 113, 8, 0.9);
+        outline-offset: 4px;
       }
 
-      /* MAP -------------------------------------------------------- */
+      .nav-right.open .hamburger-toggle span:nth-child(1) {
+        transform: translateY(6px) rotate(45deg);
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(2) {
+        opacity: 0;
+        width: 8px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(3) {
+        transform: translateY(-6px) rotate(-45deg);
+      }
+
+      .hamburger-menu {
+        position: absolute;
+        top: 54px;
+        right: 0;
+        width: min(230px, calc(100vw - 28px));
+        padding: 9px;
+        display: grid;
+        gap: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        background: rgba(8, 8, 8, 0.58);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 22px 58px rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+        transform-origin: top right;
+        pointer-events: none;
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .nav-right.open .hamburger-menu {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+
+      .hamburger-menu a,
+      .hamburger-menu button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 0.94rem;
+        font-weight: 520;
+        line-height: 1.2;
+        letter-spacing: 0.15px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 13px;
+        cursor: pointer;
+        padding: 12px 13px;
+        margin: 0;
+        font-family: inherit;
+        white-space: nowrap;
+        appearance: none;
+        -webkit-appearance: none;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          color 0.18s ease;
+      }
+
+      .hamburger-menu a::after,
+      .hamburger-menu button::after {
+        content: "→";
+        color: var(--accent);
+        opacity: 0;
+        transform: translateX(-5px);
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .hamburger-menu a:hover,
+      .hamburger-menu button:hover {
+        color: #fff;
+        background: rgba(139, 113, 8, 0.18);
+        border-color: rgba(139, 113, 8, 0.28);
+        transform: translateX(2px);
+      }
+
+      .hamburger-menu a:hover::after,
+      .hamburger-menu button:hover::after {
+        opacity: 0.9;
+        transform: translateX(0);
+      }
+
+      .hamburger-menu a:focus-visible,
+      .hamburger-menu button:focus-visible {
+        outline: 2px solid rgba(139, 113, 8, 0.9);
+        outline-offset: 2px;
+      }
+
       #map {
         position: absolute;
         top: 0;
@@ -101,52 +258,62 @@
         background: #444952;
       }
 
-      /* HUD (tijd + mode) ----------------------------------------- */
       .hud {
         position: fixed;
-        top: 86px; /* onder navbar */
+        top: 86px;
         left: 16px;
         z-index: 30;
         display: flex;
         flex-direction: column;
         gap: 8px;
+        pointer-events: none;
       }
 
       .hud-row {
         display: flex;
         align-items: center;
         gap: 10px;
+        pointer-events: auto;
       }
 
-      .hud-chip {
-        background: rgba(0, 0, 0, 0.45);
-        border: 1px solid var(--line);
-        padding: 8px 10px;
-        color: white;
-        text-shadow: 0 0 6px black;
+      .hud-chip,
+      .hud-btn {
+        min-height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(8, 8, 8, 0.42);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 999px;
+        padding: 9px 12px;
+        color: rgba(255, 255, 255, 0.88);
+        text-shadow: 0 0 8px rgba(0, 0, 0, 0.65);
         font-size: 12px;
         line-height: 1;
-        backdrop-filter: blur(6px);
+        letter-spacing: 0.1px;
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
+        user-select: none;
+        -webkit-user-select: none;
       }
 
       .hud-btn {
-        background: rgba(0, 0, 0, 0.45);
-        border: 1px solid var(--line);
-        padding: 8px 10px;
-        color: white;
         cursor: pointer;
-        font-size: 12px;
-        line-height: 1;
-        transition: color 0.25s, border-color 0.25s;
-        user-select: none;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          color 0.18s ease;
       }
 
       .hud-btn:hover {
-        color: var(--accent);
-        border-color: rgba(139, 113, 8, 0.6);
+        transform: translateY(-1px);
+        color: #fff;
+        background: rgba(139, 113, 8, 0.18);
+        border-color: rgba(139, 113, 8, 0.34);
       }
 
-      /* hide maptiler watermark */
       .maplibregl-control-container,
       .maplibregl-ctrl-bottom-left,
       .maplibregl-ctrl-logo,
@@ -157,57 +324,142 @@
         opacity: 0 !important;
       }
 
+      .maplibregl-popup-content {
+        background: transparent !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .maplibregl-popup-tip {
+        display: none !important;
+      }
+
+      .maplibregl-popup-close-button {
+        color: rgba(255, 255, 255, 0.7) !important;
+        background: transparent !important;
+        font-size: 18px;
+        padding: 10px 12px !important;
+        z-index: 40;
+      }
+
+      .user-popup-card {
+        width: 180px;
+        text-align: center;
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: linear-gradient(180deg, var(--panel), rgba(0, 0, 0, 0.92));
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      .user-popup-card img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .user-popup-card .body {
+        padding: 12px;
+        color: white;
+        font-size: 0.92rem;
+      }
+
+      .player-marker {
+        cursor: pointer;
+        pointer-events: auto;
+      }
+
       @media (max-width: 600px) {
         nav {
-          padding: 16px 18px;
+          padding: 14px 14px;
+          align-items: flex-start;
+          gap: 12px;
         }
+
         .nav-left img {
+          height: 38px;
+        }
+
+        .nav-right {
+          max-width: none;
+          flex-wrap: nowrap;
+        }
+
+        .hamburger-toggle {
+          width: 40px;
           height: 40px;
         }
-        .beta {
-          font-size: 0.7rem;
-          padding: 2px 5px;
+
+        .hamburger-menu {
+          top: 50px;
+          width: min(220px, calc(100vw - 28px));
         }
-        .nav-right a {
-          margin-left: 0;
-          font-size: 0.85rem;
-        }
-        .navbar-seperator {
-          margin-left: 0;
-          opacity: 0.5;
+
+        .hamburger-menu a,
+        .hamburger-menu button {
+          font-size: 0.88rem;
+          padding: 11px 12px;
         }
 
         .hud {
           top: 74px;
           left: 12px;
+          gap: 7px;
+        }
+
+        .hud-row {
+          gap: 8px;
+        }
+
+        .hud-chip,
+        .hud-btn {
+          min-height: 32px;
+          padding: 8px 10px;
+          font-size: 11px;
+        }
+      }
+
+      @media (max-width: 420px) {
+        .hamburger-menu {
+          width: min(210px, calc(100vw - 24px));
         }
       }
     </style>
   </head>
 
   <body>
-    <!-- NAVBAR -->
     <nav>
       <div class="nav-left">
         <a href="../../index.html">
-          <img src="../../images/kogaskeer.png" alt="Kova logo small" />
+          <img src="../../images/kova_wit_x_png.png" alt="Kova logo small" />
         </a>
-        <div class="beta">
-          <a href="../../app/pages/tutorial.html" style="color: white"
-            >codex!</a
-          >
-        </div>
       </div>
+
       <div class="nav-right">
-        <a href="../../app/pages/index.html">nv</a>
-        <span class="navbar-seperator">//</span>
-        <a href="../../web/Contribute/contributespot.html">add</a>
-        <span class="navbar-seperator">//</span>
-        <a href="about.html">about</a>
+        <button
+          class="hamburger-toggle"
+          type="button"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="kovaMenu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="hamburger-menu" id="kovaMenu" aria-hidden="true">
+          <a href="../../app/pages/index.html">spots</a>
+          <a href="../../web/pages/about.html">about us</a>
+        </div>
       </div>
     </nav>
 
-    <!-- HUD -->
     <div class="hud">
       <div class="hud-row">
         <div class="hud-chip" id="time-text">Loading…</div>
@@ -222,138 +474,181 @@
       </div>
     </div>
 
-    <!-- MAP -->
     <div id="map"></div>
 
     <script>
-      maptilersdk.config.apiKey = "7TBqy4hTdFfQeIq7oXKj";
+      document.addEventListener("DOMContentLoaded", () => {
+        const navRight = document.querySelector(".nav-right");
+        const menuToggle = document.querySelector(".hamburger-toggle");
+        const menuPanel = document.getElementById("kovaMenu");
 
-      const map = new maptilersdk.Map({
-        container: "map",
-        style:
-          "https://api.maptiler.com/maps/dataviz-dark/style.json?key=7TBqy4hTdFfQeIq7oXKj",
-        zoom: 7.5,
-        center: [4.5, 50.85],
-        projection: "mercator",
-        antialias: false,
-        fadeDuration: 0,
-        hash: false,
-        minZoom: 5,
-        maxZoom: 10,
-        projectionControl: false,
-        navigationControl: false,
-        geolocateControl: false,
-      });
+        function closeHamburgerMenu() {
+          if (!navRight || !menuToggle || !menuPanel) return;
+          navRight.classList.remove("open");
+          menuToggle.setAttribute("aria-expanded", "false");
+          menuPanel.setAttribute("aria-hidden", "true");
+        }
 
-      // GEOLOCATIE (zelfde player popup vibe)
-      if (navigator.geolocation) {
-        const userMarkerEl = document.createElement("img");
-        userMarkerEl.src = "../../images/playericon.png";
-        userMarkerEl.style.width = "28px";
-        userMarkerEl.style.height = "28px";
-        userMarkerEl.style.transform = "translate(-50%, -50%)";
+        if (navRight && menuToggle && menuPanel) {
+          menuToggle.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
 
-        const userPopupHTML = `
-          <div style="width:150px; text-align:center; font-family:sans-serif;">
-            <img src="../../images/playeravatar.png" style="width:100%; height:auto; border-radius:6px; margin-bottom:6px;">
-            <strong>This is you</strong><br>
-          </div>
-        `;
-        const userPopup = new maptilersdk.Popup({ offset: 25 }).setHTML(
-          userPopupHTML
-        );
+            const isOpen = navRight.classList.toggle("open");
+            menuToggle.setAttribute("aria-expanded", String(isOpen));
+            menuPanel.setAttribute("aria-hidden", String(!isOpen));
+          });
 
-        const userMarker = new maptilersdk.Marker({ element: userMarkerEl })
-          .setLngLat([0, 0])
-          .setPopup(userPopup)
-          .addTo(map);
+          menuPanel.addEventListener("click", (e) => {
+            if (e.target.closest("a")) closeHamburgerMenu();
+          });
 
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const lng = position.coords.longitude;
-            const lat = position.coords.latitude;
-            userMarker.setLngLat([lng, lat]);
-            map.setCenter([lng, lat]);
-          },
-          (err) => console.warn("Location error:", err.message),
-          { enableHighAccuracy: true }
-        );
-      }
+          document.addEventListener("click", (e) => {
+            if (!navRight.contains(e.target)) closeHamburgerMenu();
+          });
 
-      // Layers
-      const radarLayer = new maptilerweather.RadarLayer({ opacity: 0.7 });
-      // const windLayer = new maptilerweather.WindLayer({ opacity: 0.5 });
+          document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeHamburgerMenu();
+          });
+        }
 
-      let liveTimer;
-      let isForecasting = false;
+        maptilersdk.config.apiKey = "7TBqy4hTdFfQeIq7oXKj";
 
-      function fmt(d) {
-        return d.toLocaleString("nl-BE", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
+        const map = new maptilersdk.Map({
+          container: "map",
+          style:
+            "https://api.maptiler.com/maps/dataviz-dark/style.json?key=7TBqy4hTdFfQeIq7oXKj",
+          zoom: 7.5,
+          center: [4.5, 50.85],
+          projection: "mercator",
+          antialias: false,
+          fadeDuration: 0,
+          hash: false,
+          minZoom: 5,
+          maxZoom: 10,
+          projectionControl: false,
+          navigationControl: false,
+          geolocateControl: false,
         });
-      }
 
-      // Live clock + set layer animation time
-      function tickLive() {
-        const now = new Date();
-        document.getElementById("time-text").innerText = fmt(now);
-        const unixTs = Math.floor(now.getTime() / 1000);
-        radarLayer.setAnimationTime(unixTs);
-        // windLayer.setAnimationTime(unixTs);
-      }
+        if (navigator.geolocation) {
+          const userMarkerEl = document.createElement("img");
+          userMarkerEl.src = "../../images/playericon.png";
+          userMarkerEl.style.width = "28px";
+          userMarkerEl.style.height = "28px";
+          userMarkerEl.classList.add("player-marker");
 
-      // Forecast clock (based on radar animation time)
-      function tickForecast() {
-        const dRadar = radarLayer.getAnimationTimeDate();
-        document.getElementById("time-text").innerText = fmt(dRadar);
-        // const ts = radarLayer.getAnimationTime();
-        // windLayer.setAnimationTime(ts);
-      }
+          const userPopupHTML = `
+            <div class="user-popup-card">
+              <img src="../../images/playeravatar.png" alt="Player avatar">
+              <div class="body">
+                <strong>This is you</strong>
+              </div>
+            </div>
+          `;
 
-      function startLive() {
-        isForecasting = false;
-        radarLayer.animateByFactor(0);
-        // windLayer.animateByFactor(0);
+          const userPopup = new maptilersdk.Popup({
+            offset: 25,
+            closeButton: true,
+            closeOnClick: false,
+            className: "user-map-popup",
+            maxWidth: "200px",
+          }).setHTML(userPopupHTML);
 
-        clearInterval(liveTimer);
-        radarLayer.off("tick", tickForecast);
-        radarLayer.off("tick", tickLive);
-        radarLayer.on("tick", tickLive);
+          const userMarker = new maptilersdk.Marker({
+            element: userMarkerEl,
+            anchor: "center",
+          })
+            .setLngLat([0, 0])
+            .setPopup(userPopup)
+            .addTo(map);
 
-        tickLive();
-        liveTimer = setInterval(tickLive, 1000);
-      }
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const lng = position.coords.longitude;
+              const lat = position.coords.latitude;
+              userMarker.setLngLat([lng, lat]);
+              map.setCenter([lng, lat]);
+            },
+            (err) => console.warn("Location error:", err.message),
+            { enableHighAccuracy: true },
+          );
+        }
 
-      function startForecast() {
-        isForecasting = true;
-        clearInterval(liveTimer);
+        const radarLayer = new maptilerweather.RadarLayer({ opacity: 0.7 });
+        // const windLayer = new maptilerweather.WindLayer({ opacity: 0.5 });
 
-        radarLayer.off("tick", tickLive);
-        radarLayer.on("tick", tickForecast);
+        let liveTimer;
+        let isForecasting = false;
 
-        radarLayer.animateByFactor(3600); // 1s = 1h
-        // windLayer.animateByFactor(3600);
-      }
+        function fmt(d) {
+          return d.toLocaleString("nl-BE", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          });
+        }
 
-      map.on("load", () => {
-        map.addLayer(radarLayer);
-        // map.addLayer(windLayer);
-        startLive();
-      });
+        function tickLive() {
+          const now = new Date();
+          document.getElementById("time-text").innerText = fmt(now);
+          const unixTs = Math.floor(now.getTime() / 1000);
+          radarLayer.setAnimationTime(unixTs);
+          // windLayer.setAnimationTime(unixTs);
+        }
 
-      document.getElementById("fourHButton").addEventListener("click", (e) => {
-        e.preventDefault();
-        if (!isForecasting) startForecast();
-      });
+        function tickForecast() {
+          const dRadar = radarLayer.getAnimationTimeDate();
+          document.getElementById("time-text").innerText = fmt(dRadar);
+          // const ts = radarLayer.getAnimationTime();
+          // windLayer.setAnimationTime(ts);
+        }
 
-      document.getElementById("ctButton").addEventListener("click", (e) => {
-        e.preventDefault();
-        if (isForecasting) startLive();
+        function startLive() {
+          isForecasting = false;
+          radarLayer.animateByFactor(0);
+          // windLayer.animateByFactor(0);
+
+          clearInterval(liveTimer);
+          radarLayer.off("tick", tickForecast);
+          radarLayer.off("tick", tickLive);
+          radarLayer.on("tick", tickLive);
+
+          tickLive();
+          liveTimer = setInterval(tickLive, 1000);
+        }
+
+        function startForecast() {
+          isForecasting = true;
+          clearInterval(liveTimer);
+
+          radarLayer.off("tick", tickLive);
+          radarLayer.on("tick", tickForecast);
+
+          radarLayer.animateByFactor(3600);
+          // windLayer.animateByFactor(3600);
+        }
+
+        map.on("load", () => {
+          map.addLayer(radarLayer);
+          // map.addLayer(windLayer);
+          startLive();
+        });
+
+        document
+          .getElementById("fourHButton")
+          .addEventListener("click", (e) => {
+            e.preventDefault();
+            if (!isForecasting) startForecast();
+          });
+
+        document.getElementById("ctButton").addEventListener("click", (e) => {
+          e.preventDefault();
+          if (isForecasting) startLive();
+        });
       });
     </script>
   </body>
