@@ -497,6 +497,13 @@
         z-index: 0;
       }
 
+      #map,
+      #map canvas {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
       .maplibregl-control-container,
       .maplibregl-ctrl-bottom-left,
       .maplibregl-ctrl-logo,
@@ -2742,15 +2749,16 @@
         map.on("dragstart", closeAll);
 
         let longPressTimer = null;
-        let longPressStart = null;
+        let longPressPointer = null;
         let suppressNextMapClick = false;
 
-        const LONG_PRESS_MS = 560;
-        const LONG_PRESS_MOVE_TOLERANCE_PX = 12;
+        const LONG_PRESS_MS = 650;
+        const LONG_PRESS_MOVE_TOLERANCE_PX = 24;
 
         function needsLongPressForMapSearch() {
-          return window.matchMedia("(pointer: coarse), (max-width: 1024px)")
-            .matches;
+          return window.matchMedia(
+            "(pointer: coarse), (hover: none), (max-width: 1024px)",
+          ).matches;
         }
 
         function isMapOverlayTarget(target) {
@@ -2760,14 +2768,28 @@
               target.closest(".user-popup-card") ||
               target.closest(".user-map-popup") ||
               target.closest(".maplibregl-popup") ||
+              target.closest(".kova-tutorial") ||
               target.closest("nav"))
           );
         }
 
+        function normalizePoint(point) {
+          if (!point) return null;
+          if (Array.isArray(point)) return point;
+          return [point.x, point.y];
+        }
+
         function getSpotHitsAtPoint(point) {
-          return map.queryRenderedFeatures(point, {
-            layers: [LAYER_CLUSTERS_X, LAYER_CLUSTERS_COUNT, LAYER_POINTS],
-          });
+          if (!mapLoaded || !map.getLayer(LAYER_POINTS)) return [];
+
+          try {
+            return map.queryRenderedFeatures(normalizePoint(point), {
+              layers: [LAYER_CLUSTERS_X, LAYER_CLUSTERS_COUNT, LAYER_POINTS],
+            });
+          } catch (err) {
+            console.warn("Spot hit test failed:", err);
+            return [];
+          }
         }
 
         function clearMapPopupsForSearch() {
@@ -2840,6 +2862,7 @@
           showSearchPopupAt(lng, lat);
         });
 
+        const mapContainer = map.getContainer();
         const mapCanvas = map.getCanvas();
 
         function clearLongPressTimer() {
@@ -2847,83 +2870,193 @@
             window.clearTimeout(longPressTimer);
             longPressTimer = null;
           }
-          longPressStart = null;
+
+          longPressPointer = null;
         }
 
-        function getTouchPoint(touch) {
+        function getPointFromClient(clientX, clientY) {
           const rect = mapCanvas.getBoundingClientRect();
           return {
-            x: touch.clientX - rect.left,
-            y: touch.clientY - rect.top,
+            x: clientX - rect.left,
+            y: clientY - rect.top,
           };
         }
 
-        mapCanvas.addEventListener(
-          "touchstart",
-          (event) => {
-            if (!needsLongPressForMapSearch()) return;
-            if (event.touches.length !== 1) {
-              clearLongPressTimer();
-              return;
+        function pointIsInsideMap(point) {
+          if (!point) return false;
+          return (
+            point.x >= 0 &&
+            point.y >= 0 &&
+            point.x <= mapCanvas.clientWidth &&
+            point.y <= mapCanvas.clientHeight
+          );
+        }
+
+        function startLongPress(event) {
+          if (!needsLongPressForMapSearch()) return;
+          if (event.pointerType && event.pointerType === "mouse") return;
+          if (event.isPrimary === false) return;
+          if (isMapOverlayTarget(event.target)) return;
+
+          const point = getPointFromClient(event.clientX, event.clientY);
+          if (!pointIsInsideMap(point)) return;
+
+          const hits = getSpotHitsAtPoint(point);
+          if (hits && hits.length) return;
+
+          clearLongPressTimer();
+
+          longPressPointer = {
+            id: event.pointerId,
+            clientX: event.clientX,
+            clientY: event.clientY,
+            point,
+            lngLat: map.unproject([point.x, point.y]),
+          };
+
+          longPressTimer = window.setTimeout(() => {
+            if (!longPressPointer) return;
+
+            const lngLat = longPressPointer.lngLat;
+            suppressNextMapClick = true;
+
+            if (navigator.vibrate) {
+              try {
+                navigator.vibrate(10);
+              } catch (e) {}
             }
 
-            const target = event.target;
-            if (isMapOverlayTarget(target)) return;
-
-            const touch = event.touches[0];
-            const point = getTouchPoint(touch);
-            const hits = getSpotHitsAtPoint(point);
-
-            if (hits && hits.length) return;
-
+            showSearchPopupAt(lngLat.lng, lngLat.lat);
             clearLongPressTimer();
-            longPressStart = {
-              clientX: touch.clientX,
-              clientY: touch.clientY,
-              point,
-            };
 
-            longPressTimer = window.setTimeout(() => {
-              const lngLat = map.unproject([point.x, point.y]);
-              suppressNextMapClick = true;
+            window.setTimeout(() => {
+              suppressNextMapClick = false;
+            }, 900);
+          }, LONG_PRESS_MS);
+        }
 
-              window.setTimeout(() => {
-                suppressNextMapClick = false;
-              }, 700);
+        function moveLongPress(event) {
+          if (!longPressPointer) return;
+          if (event.pointerId !== longPressPointer.id) return;
 
-              showSearchPopupAt(lngLat.lng, lngLat.lat);
+          const dx = Math.abs(event.clientX - longPressPointer.clientX);
+          const dy = Math.abs(event.clientY - longPressPointer.clientY);
+
+          if (
+            dx > LONG_PRESS_MOVE_TOLERANCE_PX ||
+            dy > LONG_PRESS_MOVE_TOLERANCE_PX
+          ) {
+            clearLongPressTimer();
+          }
+        }
+
+        function endLongPress(event) {
+          if (!longPressPointer) return;
+          if (event.pointerId !== longPressPointer.id) return;
+          clearLongPressTimer();
+        }
+
+        if (window.PointerEvent) {
+          mapContainer.addEventListener("pointerdown", startLongPress, {
+            passive: true,
+            capture: true,
+          });
+
+          mapContainer.addEventListener("pointermove", moveLongPress, {
+            passive: true,
+            capture: true,
+          });
+
+          mapContainer.addEventListener("pointerup", endLongPress, {
+            passive: true,
+            capture: true,
+          });
+
+          mapContainer.addEventListener("pointercancel", endLongPress, {
+            passive: true,
+            capture: true,
+          });
+        } else {
+          mapContainer.addEventListener(
+            "touchstart",
+            (event) => {
+              if (!needsLongPressForMapSearch()) return;
+              if (event.touches.length !== 1) {
+                clearLongPressTimer();
+                return;
+              }
+
+              if (isMapOverlayTarget(event.target)) return;
+
+              const touch = event.touches[0];
+              const point = getPointFromClient(touch.clientX, touch.clientY);
+              if (!pointIsInsideMap(point)) return;
+
+              const hits = getSpotHitsAtPoint(point);
+              if (hits && hits.length) return;
+
               clearLongPressTimer();
-            }, LONG_PRESS_MS);
-          },
-          { passive: true },
-        );
 
-        mapCanvas.addEventListener(
-          "touchmove",
-          (event) => {
-            if (!longPressStart || !event.touches.length) return;
+              longPressPointer = {
+                id: "touch",
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                point,
+                lngLat: map.unproject([point.x, point.y]),
+              };
 
-            const touch = event.touches[0];
-            const dx = Math.abs(touch.clientX - longPressStart.clientX);
-            const dy = Math.abs(touch.clientY - longPressStart.clientY);
+              longPressTimer = window.setTimeout(() => {
+                if (!longPressPointer) return;
 
-            if (
-              dx > LONG_PRESS_MOVE_TOLERANCE_PX ||
-              dy > LONG_PRESS_MOVE_TOLERANCE_PX
-            ) {
-              clearLongPressTimer();
-            }
-          },
-          { passive: true },
-        );
+                const lngLat = longPressPointer.lngLat;
+                suppressNextMapClick = true;
 
-        mapCanvas.addEventListener("touchend", clearLongPressTimer, {
-          passive: true,
-        });
+                if (navigator.vibrate) {
+                  try {
+                    navigator.vibrate(10);
+                  } catch (e) {}
+                }
 
-        mapCanvas.addEventListener("touchcancel", clearLongPressTimer, {
-          passive: true,
-        });
+                showSearchPopupAt(lngLat.lng, lngLat.lat);
+                clearLongPressTimer();
+
+                window.setTimeout(() => {
+                  suppressNextMapClick = false;
+                }, 900);
+              }, LONG_PRESS_MS);
+            },
+            { passive: true, capture: true },
+          );
+
+          mapContainer.addEventListener(
+            "touchmove",
+            (event) => {
+              if (!longPressPointer || !event.touches.length) return;
+
+              const touch = event.touches[0];
+              const dx = Math.abs(touch.clientX - longPressPointer.clientX);
+              const dy = Math.abs(touch.clientY - longPressPointer.clientY);
+
+              if (
+                dx > LONG_PRESS_MOVE_TOLERANCE_PX ||
+                dy > LONG_PRESS_MOVE_TOLERANCE_PX
+              ) {
+                clearLongPressTimer();
+              }
+            },
+            { passive: true, capture: true },
+          );
+
+          mapContainer.addEventListener("touchend", clearLongPressTimer, {
+            passive: true,
+            capture: true,
+          });
+
+          mapContainer.addEventListener("touchcancel", clearLongPressTimer, {
+            passive: true,
+            capture: true,
+          });
+        }
 
         updateFooterVisibility();
       });
