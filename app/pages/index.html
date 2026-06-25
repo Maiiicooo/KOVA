@@ -1739,9 +1739,13 @@
 
         firebase.initializeApp(firebaseConfig);
 
-        firebase
-          .appCheck()
-          .activate("6LcyIDQtAAAAALBMZLpP-O-1QFJXz4X1hja0LusK", true);
+        const appCheck = firebase.appCheck();
+        appCheck.activate(
+          new firebase.appCheck.ReCaptchaEnterpriseProvider(
+            "6LcyIDQtAAAAALBMZLpP-O-1QFJXz4X1hja0LusK",
+          ),
+          true,
+        );
 
         const db = firebase.firestore();
 
