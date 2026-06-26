@@ -1,195 +1,525 @@
-<!DOCTYPE html>
-<html lang="nl">
+<!doctype html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>KOVA - About</title>
+    <link rel="manifest" href="../../manifest.json" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <link rel="apple-touch-icon" href="../../images/appicon.JPG" />
+
     <style>
       :root {
         --bg: #161515;
         --fg: #ffffff;
-        --line: rgba(255, 255, 255, 0.08);
+        --muted: rgba(255, 255, 255, 0.66);
+        --line: rgba(255, 255, 255, 0.1);
+        --accent: #8b7108;
+        --panel: rgba(10, 10, 10, 0.94);
+        --soft-panel: rgba(255, 255, 255, 0.045);
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.42);
       }
 
       * {
-        margin: 0;
-        padding: 0;
         box-sizing: border-box;
       }
 
       html,
       body {
         min-height: 100%;
-        font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+        margin: 0;
+        padding: 0;
         background: var(--bg);
         color: var(--fg);
-        /* important: GEEN overflow:hidden zodat de pagina kan scrollen */
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
         overflow-x: hidden;
       }
 
-      /* NAV */
+      body {
+        min-height: 100dvh;
+      }
+
+      a {
+        color: inherit;
+      }
+
       nav {
-        position: fixed;
-        top: 0;
-        left: 0;
         width: 100%;
-        padding: 18px 34px;
+        padding: 22px 34px;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        box-sizing: border-box;
+        position: fixed;
+        top: 0;
+        left: 0;
         background: transparent;
-        border-bottom: 1px solid var(--line);
         z-index: 1000;
+        pointer-events: none;
+      }
+
+      nav > * {
+        pointer-events: auto;
       }
 
       .nav-left {
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 0;
       }
+
       .nav-left img {
         height: 50px;
         width: auto;
+        display: block;
       }
+
       .beta {
-        padding: 2px;
-        font-size: 0.85rem;
-        background: #8b7108;
+        padding: 3px 7px;
+        font-size: 0.78rem;
+        background-color: var(--accent);
         color: white;
         letter-spacing: 0.5px;
+        white-space: nowrap;
       }
 
-      .nav-right a {
-        margin-left: 2px;
+      .beta a {
+        color: white;
         text-decoration: none;
-        color: var(--fg);
-        opacity: 0.9;
-        font-size: 0.95rem;
-      }
-      .nav-right a:hover {
-        color: #8b7108;
-        opacity: 1;
       }
 
-      /* SPLIT */
-      .split-container {
+      .nav-right {
+        position: relative;
         display: flex;
-        flex-wrap: wrap;
-        align-items: stretch;
-        /* geen fixed height: laat de container groeien zodat footer bereikbaar is */
+        align-items: center;
+        justify-content: flex-end;
+        min-width: 0;
+      }
+
+      .hamburger-toggle {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.22);
+        color: rgba(255, 255, 255, 0.9);
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+        font-family: inherit;
+        appearance: none;
+        -webkit-appearance: none;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.24);
+        transition:
+          transform 0.2s ease,
+          background 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .hamburger-toggle span {
+        width: 17px;
+        height: 2px;
+        display: block;
+        border-radius: 999px;
+        background: currentColor;
+        transition:
+          transform 0.22s ease,
+          opacity 0.18s ease,
+          width 0.2s ease;
+      }
+
+      .hamburger-toggle:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(139, 113, 8, 0.72);
+        color: var(--accent);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+      }
+
+      .hamburger-toggle:focus-visible {
+        outline: 2px solid rgba(139, 113, 8, 0.9);
+        outline-offset: 4px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(1) {
+        transform: translateY(6px) rotate(45deg);
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(2) {
+        opacity: 0;
+        width: 8px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(3) {
+        transform: translateY(-6px) rotate(-45deg);
+      }
+
+      .hamburger-menu {
+        position: absolute;
+        top: 54px;
+        right: 0;
+        width: min(230px, calc(100vw - 28px));
+        padding: 9px;
+        display: grid;
+        gap: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        background: rgba(8, 8, 8, 0.72);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 22px 58px rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+        transform-origin: top right;
+        pointer-events: none;
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .nav-right.open .hamburger-menu {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+
+      .hamburger-menu a {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 0.94rem;
+        font-weight: 520;
+        line-height: 1.2;
+        letter-spacing: 0.15px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 13px;
+        cursor: pointer;
+        padding: 12px 13px;
+        margin: 0;
+        font-family: inherit;
+        white-space: nowrap;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          color 0.18s ease;
+      }
+
+      .hamburger-menu a::after {
+        content: "→";
+        color: var(--accent);
+        opacity: 0;
+        transform: translateX(-5px);
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .hamburger-menu a:hover {
+        color: #fff;
+        background: rgba(139, 113, 8, 0.18);
+        border-color: rgba(139, 113, 8, 0.28);
+        transform: translateX(2px);
+      }
+
+      .hamburger-menu a:hover::after {
+        opacity: 0.9;
+        transform: translateX(0);
+      }
+
+      main {
+        min-height: 100dvh;
+        background:
+          radial-gradient(
+            circle at 76% 18%,
+            rgba(139, 113, 8, 0.11),
+            transparent 34%
+          ),
+          #161515;
+      }
+
+      .split-container {
+        min-height: 100dvh;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       }
 
       .about-image {
-        flex: 1 1 50%;
-        min-height: 100vh; /* zorgt dat de foto full viewport oogt */
-        background-image: url("../../images/aboutpage.jpg");
+        position: sticky;
+        top: 0;
+        min-height: 100dvh;
+        background-image:
+          linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.44)),
+          url("../../images/aboutpage.jpg");
         background-size: cover;
         background-position: center;
       }
 
+      .about-image::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.12),
+            transparent 42%,
+            rgba(22, 21, 21, 0.38)
+          ),
+          radial-gradient(
+            circle at 60% 22%,
+            rgba(139, 113, 8, 0.18),
+            transparent 38%
+          );
+        pointer-events: none;
+      }
+
       .about-text {
-        flex: 1 1 50%;
-        padding: 120px 60px 0px 60px; /* ruimte onder nav */
-        background: var(--bg);
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        padding: 132px clamp(28px, 5vw, 76px) 64px;
+        background: linear-gradient(180deg, rgba(22, 21, 21, 0.92), #161515);
       }
 
-      /* als navbar fixed is, maak voldoende top-padding op kleinere nav hoogte */
-      @media (max-width: 900px) {
-        .about-text {
-          padding-top: 110px;
-        }
+      .about-copy {
+        width: min(650px, 100%);
       }
 
-      @media (max-width: 600px) {
-        nav {
-          padding: 2px 5px;
-        }
-
-        .nav-right {
-          font-size: 10px;
-          padding-right: 10px;
-        }
-
-        .nav-sep {
-          padding-left: 3px;
-          padding-right: 3px;
-        }
-
-        .split-container {
-          display: flex;
-          flex-direction: row;
-          min-height: auto; /* niet full viewport height */
-        }
-
-        .about-image {
-          width: 50%;
-          height: auto; /* laat image natuurlijk groeien */
-        }
-
-        .about-text {
-          width: 50%;
-          padding: 60px 15px 0 15px; /* top padding blijft voor navbar */
-          font-size: 10px !important;
-          line-height: 1.4;
-          height: auto;
-          overflow: visible;
-        }
-
-        .about-text h1 {
-          font-size: 20px !important;
-          margin-bottom: 5px;
-        }
-
-        .about-text p {
-          margin-bottom: 4px;
-        }
-
-        .about-text div {
-          display: none; /* verwijder extra spacer */
-        }
-
-        footer {
-          width: 100%;
-          margin-top: 0; /* geen zwarte ruimte boven footer */
-          padding: 20px 15px; /* compacte padding */
-          background: #8b7108; /* zorg dat het volledig bruin is */
-        }
-
-        main {
-          padding-bottom: 0; /* geen extra ruimte onder footer */
-        }
+      .kicker {
+        width: max-content;
+        margin-bottom: 18px;
+        color: var(--accent);
+        font-size: 0.72rem;
+        font-weight: 760;
+        letter-spacing: 1.9px;
+        text-transform: uppercase;
       }
 
       .about-text h1 {
-        font-size: 37px;
-        margin-bottom: 24px;
+        margin: 0 0 22px;
         color: white;
-      }
-      .about-text p {
-        font-size: 16px;
-        line-height: 1.8;
-        color: white;
-        opacity: 0.95;
+        font-size: clamp(2.75rem, 6vw, 5.8rem);
+        line-height: 0.92;
+        letter-spacing: -3.2px;
       }
 
-      /* FOOTER */
+      .about-text p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.76);
+        font-size: clamp(1rem, 1.12vw, 1.08rem);
+        line-height: 1.75;
+      }
+
+      .about-text p + p {
+        margin-top: 18px;
+      }
+
+      .about-text b,
+      .about-text a {
+        color: var(--accent);
+        font-weight: 720;
+        text-decoration: none;
+      }
+
+      .about-note {
+        margin-top: 28px;
+        padding: 14px 15px;
+        border: 1px solid rgba(139, 113, 8, 0.26);
+        border-radius: 16px;
+        background: rgba(139, 113, 8, 0.075);
+        color: rgba(255, 255, 255, 0.68);
+        line-height: 1.55;
+        font-size: 0.92rem;
+      }
+
       .footer {
+        width: 100%;
+        margin: 0;
+        padding: 48px clamp(20px, 4vw, 46px);
         background: #8b7108;
         color: white;
-        padding: 50px 40px;
-        margin-top: 0px;
-        opacity: 0;
-        transform: none;
-        transition: opacity 0.4s ease, transform 0.35s ease;
       }
-      .footer-visible {
+
+      .footer-inner {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 26px;
+        align-items: start;
+      }
+
+      .footer-brand p {
+        margin: 0 0 8px;
+        font-size: 0.98rem;
+        font-weight: 720;
+      }
+
+      .footer-brand span {
+        display: block;
+        color: rgba(255, 255, 255, 0.72);
+        max-width: 38ch;
+        font-size: 0.92rem;
+        line-height: 1.5;
+      }
+
+      .footer-group {
+        display: grid;
+        gap: 8px;
+      }
+
+      .footer-group a {
+        color: white;
+        text-decoration: none;
+        opacity: 0.86;
+        font-size: 0.92rem;
+      }
+
+      .footer-group a:hover {
         opacity: 1;
-        transform: translateY(0);
+        text-decoration: underline;
+        text-underline-offset: 3px;
       }
-      .footer-inner p {
-        margin-bottom: 8px;
-        opacity: 0.95;
-        font-size: 15px;
+
+      @media (max-width: 900px) {
+        nav {
+          padding: 16px 18px;
+        }
+
+        .nav-left img {
+          height: 40px;
+        }
+
+        .beta {
+          font-size: 0.7rem;
+          padding: 2px 5px;
+        }
+
+        .hamburger-toggle {
+          width: 40px;
+          height: 40px;
+        }
+
+        .hamburger-menu {
+          top: 50px;
+          width: min(220px, calc(100vw - 28px));
+        }
+
+        .split-container {
+          min-height: auto;
+          grid-template-columns: 46% 54%;
+          align-items: stretch;
+        }
+
+        .about-image {
+          position: relative;
+          min-height: 100dvh;
+          height: auto;
+          background-position: center;
+        }
+
+        .about-text {
+          min-height: 100dvh;
+          align-items: center;
+          padding: 104px 18px 42px;
+        }
+
+        .about-text h1 {
+          font-size: clamp(1.75rem, 8.5vw, 3.2rem);
+          letter-spacing: -1.4px;
+          margin-bottom: 14px;
+        }
+
+        .about-text p {
+          font-size: 0.86rem;
+          line-height: 1.55;
+        }
+
+        .about-text p + p {
+          margin-top: 12px;
+        }
+
+        .kicker {
+          margin-bottom: 12px;
+          font-size: 0.62rem;
+          letter-spacing: 1.4px;
+        }
+
+        .footer {
+          padding: 26px 20px calc(env(safe-area-inset-bottom, 0px) + 26px);
+        }
+
+        .footer-inner {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .nav-left {
+          gap: 9px;
+        }
+
+        .split-container {
+          grid-template-columns: 48% 52%;
+        }
+
+        .about-image {
+          min-height: 100dvh;
+          height: auto;
+          background-position: center;
+        }
+
+        .about-text {
+          padding: 92px 13px 32px;
+        }
+
+        .about-text h1 {
+          font-size: clamp(1.55rem, 8vw, 2.35rem);
+          letter-spacing: -1px;
+          margin-bottom: 10px;
+        }
+
+        .about-text p {
+          font-size: 0.76rem;
+          line-height: 1.48;
+        }
+
+        .about-text p + p {
+          margin-top: 10px;
+        }
+
+        .about-note {
+          margin-top: 16px;
+          padding: 11px 12px;
+          font-size: 0.72rem;
+          line-height: 1.42;
+        }
       }
     </style>
   </head>
@@ -197,85 +527,155 @@
   <body>
     <nav>
       <div class="nav-left">
-        <a href="/index.html"
-          ><img src="../../images/kogaskeer.png" alt="Kova logo"
-        /></a>
-         <div class="beta"><a href="../../app/pages/index.html"  style="color: white;">now in alpha!</a></div>
+        <a href="../../index.html" aria-label="KOVA home">
+          <img src="../../images/kova_wit_x_png.png" alt="KOVA logo" />
+        </a>
+        <div class="beta">
+          <a href="../../app/pages/index.html">now in alpha!</a>
+        </div>
       </div>
+
       <div class="nav-right">
-        <a href="about.html">about</a>
-        <span class="nav-sep">//</span>
-        <a href="blog.html">blog</a>
-        <span class="nav-sep">//</span>
-        <a href="premium.html">premium</a>
+        <button
+          class="hamburger-toggle"
+          type="button"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="kovaMenu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="hamburger-menu" id="kovaMenu" aria-hidden="true">
+          <a href="../../app/pages/index.html">map</a>
+          <a href="../../admin.html">add spot</a>
+        </div>
       </div>
     </nav>
 
     <main>
-      <div class="split-container">
-        <div class="about-image" role="img" aria-label="about image"></div>
-        <div class="about-text">
-          <h1>About KOVA</h1>
-          <p>
-            KOVA is a digital outdoor
-            utility built for people who like being outside without overplanning
-            it. It’s about finding quiet places, overlooked corners, and hidden gems.
-            Mapped by real people, not algorithms. <br><br>
-            
-            The idea started from
-            a simple frustration: good places are hard to find unless someone
-            tells you. KOVA exists to collect those places and put them on a
-            map, without turning them into tourist traps. <br> <br>
-            
-            KOVA is intentionally
-            minimal. No feeds screaming for attention. No endless notifications.
-            Just a map, some context, and a growing community that knows when to
-            keep things low‑key. <br> <br>
-            
-            The project is currently in alpha. Features are
-            evolving, the map is growing, and some things may break — that’s
-            part of the process. <br> <br>
+      <section class="split-container">
+        <div
+          class="about-image"
+          role="img"
+          aria-label="KOVA outdoor image"
+        ></div>
 
-            Built and maintained by <a href="#" style="color: #8b7108;">@maiiicooo.</a>
-          </p>
-        </div>
-      </div>
+        <article class="about-text">
+          <div class="about-copy">
+            <div class="kicker">KOVA about</div>
+            <h1>About KOVA</h1>
+
+            <p>
+              KOVA is a digital outdoor utility built for people who like being
+              outside without overplanning it. It is about finding quiet places,
+              overlooked corners, and hidden gems. Mapped by real people, not
+              algorithms.
+            </p>
+
+            <p>
+              The idea started from a simple frustration: good places are hard
+              to find unless someone tells you. KOVA exists to collect those
+              places and put them on a map, without turning them into tourist
+              traps.
+            </p>
+
+            <p>
+              KOVA is intentionally minimal. No feeds screaming for attention.
+              No endless notifications. Just a map, some context, and a growing
+              community that knows when to keep things low-key.
+            </p>
+
+            <p>
+              The project is currently in alpha. Features are evolving, the map
+              is growing, and some things may break. That is part of the
+              process.
+            </p>
+
+            <div class="about-note">
+              Built and maintained by
+              <a
+                href="https://www.instagram.com/maiiicooo/"
+                target="_blank"
+                rel="noopener"
+                >@maiiicooo</a
+              >.
+            </div>
+          </div>
+        </article>
+      </section>
 
       <footer class="footer" id="siteFooter">
         <div class="footer-inner">
-          <p>kova corp © 2026</p>
-          <br />
-          <a href="about.html" style="color: white">About</a><br />
-          <a href="#" style="color: white">Instagram</a><br /><br />
-          <a href="#" style="color: white">Terms of use</a><br />
-          <a href="#" style="color: white">Privacy Policy</a><br />
-          <a href="#" style="color: white">Cookie Policy</a><br /><br />
-          <a href="https://www.maptiler.com/weather/#" style="color: white"
-            >Maptiler weather api</a
-          ><br />
-          <a href="https://www.maptiler.com/cloud/" style="color: white"
-            >Maptiler APIs</a
-          >
+          <div class="footer-brand">
+            <p>kova corp © 2026</p>
+            <span>Quiet maps, real spots, low-key exploring.</span>
+          </div>
+
+          <div class="footer-group">
+            <a href="../../web/pages/about.html">About</a>
+            <a
+              href="https://www.instagram.com/maiiicooo/"
+              target="_blank"
+              rel="noopener"
+              >Instagram</a
+            >
+            <a href="../../web/Contribute/contribute.html">Contribute</a>
+          </div>
+
+          <div class="footer-group">
+            <a href="#">Terms of use</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Cookie Policy</a>
+            <a
+              href="https://www.maptiler.com/cloud/"
+              target="_blank"
+              rel="noopener"
+              >MapTiler APIs</a
+            >
+          </div>
         </div>
       </footer>
     </main>
 
     <script>
-      // footer show on scroll (window-based) - werkt Desktop + Mobile
-      const footer = document.getElementById("siteFooter");
-      const showAfter = 40; // verander dit naar wens (px scroll)
+      document.addEventListener("DOMContentLoaded", () => {
+        const navRight = document.querySelector(".nav-right");
+        const menuToggle = document.querySelector(".hamburger-toggle");
+        const menuPanel = document.getElementById("kovaMenu");
 
-      function checkFooter() {
-        if (window.scrollY > showAfter) {
-          footer.classList.add("footer-visible");
-        } else {
-          footer.classList.remove("footer-visible");
+        function closeHamburgerMenu() {
+          if (!navRight || !menuToggle || !menuPanel) return;
+          navRight.classList.remove("open");
+          menuToggle.setAttribute("aria-expanded", "false");
+          menuPanel.setAttribute("aria-hidden", "true");
         }
-      }
 
-      // init check (als user opent in midden van page)
-      checkFooter();
-      window.addEventListener("scroll", checkFooter, { passive: true });
+        if (navRight && menuToggle && menuPanel) {
+          menuToggle.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isOpen = navRight.classList.toggle("open");
+            menuToggle.setAttribute("aria-expanded", String(isOpen));
+            menuPanel.setAttribute("aria-hidden", String(!isOpen));
+          });
+
+          menuPanel.addEventListener("click", (e) => {
+            if (e.target.closest("a")) closeHamburgerMenu();
+          });
+
+          document.addEventListener("click", (e) => {
+            if (!navRight.contains(e.target)) closeHamburgerMenu();
+          });
+
+          document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeHamburgerMenu();
+          });
+        }
+      });
     </script>
   </body>
 </html>
