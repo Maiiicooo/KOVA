@@ -624,6 +624,12 @@
         box-shadow: var(--shadow);
         display: flex;
         flex-direction: column;
+        transform: translateY(0);
+        transition: transform 0.24s ease;
+      }
+
+      .sheet-grabber {
+        display: none;
       }
 
       .kova-popup .hero {
@@ -1274,19 +1280,70 @@
 
         .kova-popup {
           width: 100% !important;
-          max-height: min(88dvh, 900px);
-          border-radius: 22px 22px 0 0;
+          max-height: min(94dvh, 920px);
+          border-radius: 26px 26px 0 0;
           border-left: 0;
           border-right: 0;
           border-bottom: 0;
+          transition:
+            transform 0.24s ease,
+            max-height 0.24s ease;
+        }
+
+        .kova-popup.sheet-dragging {
+          transition: none !important;
+        }
+
+        .sheet-grabber {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 28px;
+          flex: 0 0 auto;
+          cursor: grab;
+          touch-action: none;
+          background: linear-gradient(
+            180deg,
+            rgba(12, 12, 12, 0.96),
+            rgba(12, 12, 12, 0.82)
+          );
+        }
+
+        .sheet-grabber span {
+          width: 44px;
+          height: 5px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.28);
         }
 
         .kova-popup .hero {
-          height: 210px;
+          height: min(44dvh, 390px);
+          min-height: 250px;
+          touch-action: none;
+          transition: height 0.24s ease;
+        }
+
+        .kova-popup.sheet-peek .hero {
+          height: min(31dvh, 285px);
+          min-height: 200px;
+        }
+
+        .kova-popup.sheet-expanded .hero {
+          height: min(58dvh, 470px);
+          min-height: 315px;
+        }
+
+        .kova-popup.sheet-dragging .hero {
+          transition: none !important;
         }
 
         .kova-popup .body {
-          padding: 14px;
+          padding: 15px;
+          max-height: 42dvh;
+        }
+
+        .kova-popup.sheet-expanded .body {
+          max-height: 31dvh;
         }
 
         .stars-row {
@@ -1336,7 +1393,18 @@
         }
 
         .kova-popup .hero {
-          height: 190px;
+          height: min(46dvh, 390px);
+          min-height: 240px;
+        }
+
+        .kova-popup.sheet-peek .hero {
+          height: min(32dvh, 285px);
+          min-height: 200px;
+        }
+
+        .kova-popup.sheet-expanded .hero {
+          height: min(59dvh, 470px);
+          min-height: 305px;
         }
 
         .coord-popup {
@@ -1368,7 +1436,15 @@
         }
 
         .kova-popup .hero {
-          height: 176px;
+          min-height: 230px;
+        }
+
+        .kova-popup.sheet-peek .hero {
+          min-height: 190px;
+        }
+
+        .kova-popup.sheet-expanded .hero {
+          min-height: 295px;
         }
 
         .rating-summary {
@@ -1417,6 +1493,164 @@
           min-height: 40px;
           padding: 0 13px;
           font-size: 0.88rem;
+        }
+      }
+
+      /* Mobile spot sheet: compact iPhone-style overview */
+      @media (max-width: 700px) {
+        .spot-sheet-popup .maplibregl-popup-content {
+          animation: kovaSpotSheetIn 0.28s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+        }
+
+        .spot-sheet-popup .maplibregl-popup-close-button {
+          display: none !important;
+        }
+
+        .kova-popup {
+          max-height: min(82dvh, 700px) !important;
+          border-radius: 24px 24px 0 0 !important;
+        }
+
+        .kova-popup.sheet-closing {
+          transform: translateY(112%) !important;
+          transition: transform 0.22s cubic-bezier(0.4, 0, 1, 1) !important;
+        }
+
+        .sheet-grabber {
+          height: 24px !important;
+          background: linear-gradient(
+            180deg,
+            rgba(12, 12, 12, 0.98),
+            rgba(12, 12, 12, 0.86)
+          ) !important;
+        }
+
+        .sheet-grabber span {
+          width: 42px !important;
+          height: 4px !important;
+          background: rgba(255, 255, 255, 0.32) !important;
+        }
+
+        .kova-popup .hero,
+        .kova-popup.sheet-peek .hero,
+        .kova-popup.sheet-expanded .hero {
+          height: clamp(160px, 25dvh, 225px) !important;
+          min-height: 0 !important;
+        }
+
+        .kova-popup .body,
+        .kova-popup.sheet-expanded .body {
+          padding: 12px 14px 14px !important;
+          max-height: none !important;
+          overflow-y: auto !important;
+        }
+
+        .kova-popup .title {
+          margin-bottom: 5px !important;
+          font-size: clamp(1rem, 4.8vw, 1.14rem) !important;
+          line-height: 1.14 !important;
+        }
+
+        .kova-popup .desc {
+          margin-bottom: 7px !important;
+          font-size: 0.9rem !important;
+          line-height: 1.36 !important;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        .kova-popup .byline {
+          margin-bottom: 9px !important;
+          font-size: 0.78rem !important;
+        }
+
+        .spot-meta {
+          gap: 8px !important;
+          margin: 8px 0 10px 0 !important;
+        }
+
+        .spot-card-box {
+          padding: 9px 10px !important;
+          border-radius: 12px !important;
+        }
+
+        .spot-box-title {
+          margin-bottom: 6px !important;
+          font-size: 0.68rem !important;
+        }
+
+        .rating-summary {
+          font-size: 0.88rem !important;
+          line-height: 1.25 !important;
+        }
+
+        .rating-summary small {
+          font-size: 0.74rem !important;
+        }
+
+        .stars-row {
+          gap: 4px !important;
+          margin-top: 6px !important;
+        }
+
+        .star-btn {
+          min-width: 27px !important;
+          min-height: 27px !important;
+          font-size: 1.34rem !important;
+        }
+
+        .rating-note {
+          display: none !important;
+        }
+
+        .popup-status {
+          margin-top: 5px !important;
+          min-height: 14px !important;
+          font-size: 0.76rem !important;
+        }
+
+        .kova-popup .kova-btn {
+          min-height: 42px !important;
+          padding: 10px 12px !important;
+          border-radius: 13px !important;
+          font-size: 0.92rem !important;
+        }
+
+        .kova-popup .kova-btn .sub {
+          font-size: 0.7rem !important;
+          margin-top: 1px !important;
+        }
+      }
+
+      @media (max-width: 390px) {
+        .kova-popup .hero,
+        .kova-popup.sheet-peek .hero,
+        .kova-popup.sheet-expanded .hero {
+          height: clamp(145px, 23dvh, 195px) !important;
+        }
+
+        .kova-popup .body,
+        .kova-popup.sheet-expanded .body {
+          padding: 10px 12px 12px !important;
+        }
+
+        .star-btn {
+          min-width: 24px !important;
+          min-height: 24px !important;
+          font-size: 1.2rem !important;
+        }
+      }
+
+      @keyframes kovaSpotSheetIn {
+        from {
+          transform: translateY(100%);
+          opacity: 0.96;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
         }
       }
     </style>
@@ -1963,6 +2197,127 @@
           });
         }
 
+        function isMobileSpotSheet() {
+          return window.matchMedia("(max-width: 700px)").matches;
+        }
+
+        function setSpotSheetState(card, state = "expanded") {
+          if (!card) return;
+          card.classList.remove("sheet-peek", "sheet-expanded");
+          card.classList.add(
+            state === "peek" ? "sheet-peek" : "sheet-expanded",
+          );
+        }
+
+        function closeActiveSpotPopup({ animate = true } = {}) {
+          if (!activePopup) return false;
+
+          const popup = activePopup;
+          const popupEl = popup.getElement && popup.getElement();
+          const card = popupEl?.querySelector?.(".kova-popup[data-spot-id]");
+          activePopup = null;
+
+          if (animate && isMobileSpotSheet() && card) {
+            card.classList.add("sheet-closing");
+            window.setTimeout(() => {
+              try {
+                popup.remove();
+              } catch (e) {}
+              updateFooterVisibility();
+            }, 210);
+          } else {
+            popup.remove();
+            updateFooterVisibility();
+          }
+
+          return true;
+        }
+
+        function attachMobileSheetGestures(popup) {
+          requestAnimationFrame(() => {
+            if (!popup) return;
+
+            const popupEl = popup.getElement();
+            if (!popupEl) return;
+
+            const card = popupEl.querySelector(".kova-popup[data-spot-id]");
+            if (!card) return;
+
+            setSpotSheetState(card, "expanded");
+            if (card.dataset.sheetBound === "true") return;
+            card.dataset.sheetBound = "true";
+
+            const dragZones = [
+              card.querySelector("[data-sheet-grabber]"),
+              card.querySelector(".hero"),
+            ].filter(Boolean);
+
+            let startY = 0;
+            let lastY = 0;
+            let dragging = false;
+
+            function startDrag(event) {
+              if (!isMobileSpotSheet()) return;
+              if (event.pointerType && event.pointerType === "mouse") return;
+              if (event.isPrimary === false) return;
+
+              dragging = true;
+              startY = event.clientY;
+              lastY = event.clientY;
+              card.classList.add("sheet-dragging");
+
+              try {
+                event.currentTarget.setPointerCapture(event.pointerId);
+              } catch (e) {}
+            }
+
+            function moveDrag(event) {
+              if (!dragging) return;
+              lastY = event.clientY;
+
+              const dy = lastY - startY;
+              const down = Math.max(0, dy);
+              const up = Math.min(0, dy);
+              const translateY =
+                down > 0 ? Math.min(down, 220) : Math.max(up * 0.16, -18);
+
+              card.style.transform = `translateY(${translateY}px)`;
+            }
+
+            function endDrag() {
+              if (!dragging) return;
+
+              const dy = lastY - startY;
+              dragging = false;
+              card.classList.remove("sheet-dragging");
+              card.style.transform = "";
+
+              if (dy < -42) {
+                setSpotSheetState(card, "expanded");
+                return;
+              }
+
+              if (dy > 72) {
+                closeActiveSpotPopup({ animate: true });
+                return;
+              }
+
+              setSpotSheetState(card, "expanded");
+            }
+
+            dragZones.forEach((zone) => {
+              zone.addEventListener("pointerdown", startDrag, {
+                passive: true,
+              });
+              zone.addEventListener("pointermove", moveDrag, { passive: true });
+              zone.addEventListener("pointerup", endDrag, { passive: true });
+              zone.addEventListener("pointercancel", endDrag, {
+                passive: true,
+              });
+            });
+          });
+        }
+
         function attachPopupImageLoader(popup) {
           requestAnimationFrame(() => {
             if (!popup) return;
@@ -2021,9 +2376,8 @@
 
           return `
             <div class="kova-popup" data-spot-id="${escapeHTML(props.id)}">
+              <div class="sheet-grabber" data-sheet-grabber aria-hidden="true"><span></span></div>
               <div class="hero" data-photo-url="${escapeHTML(photoURL)}">
-                <div class="badge">spot</div>
-
                 <div class="kova-loading">
                   <div class="kova-spinner"></div>
                   <div class="kova-loading-text">Loading image...</div>
@@ -2066,7 +2420,7 @@
                   data-action="nav"
                   data-lat="${props.lat}"
                   data-lng="${props.lng}"
-                  style="margin-top: 14px"
+                  style="margin-top: 8px"
                 >
                   Route
                   <span class="sub">open GPS</span>
@@ -2984,7 +3338,7 @@
             closeUserPopup();
 
             if (activePopup) {
-              activePopup.remove();
+              closeActiveSpotPopup({ animate: false });
             }
 
             const coords = f.geometry.coordinates;
@@ -3009,6 +3363,7 @@
 
             activePopup = popup;
             attachPopupImageLoader(popup);
+            attachMobileSheetGestures(popup);
             updateFooterVisibility();
 
             easeToSpotWithPopupSpace(coords[0], coords[1]);
@@ -3148,6 +3503,8 @@
 
           const hits = getSpotHitsAtPoint(event.point);
           if (hits && hits.length) return;
+
+          if (activePopup && closeActiveSpotPopup({ animate: true })) return;
 
           const { lng, lat } = event.lngLat;
           showSearchPopupAt(lng, lat);
