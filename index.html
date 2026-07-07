@@ -1733,6 +1733,102 @@
         }
       }
 
+
+
+      .kova-location-gate {
+        position: fixed;
+        inset: 0;
+        z-index: 10020;
+        display: grid;
+        place-items: center;
+        padding: 22px;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(139, 113, 8, 0.18), transparent 42%),
+          rgba(0, 0, 0, 0.76);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+      }
+
+      .kova-location-card {
+        width: min(430px, calc(100vw - 28px));
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 28px;
+        background: linear-gradient(180deg, rgba(18, 18, 18, 0.98), rgba(5, 5, 5, 0.96));
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.62);
+        padding: 24px;
+        color: #fff;
+      }
+
+      .kova-location-kicker {
+        width: max-content;
+        margin-bottom: 14px;
+        color: var(--accent);
+        font-size: 0.72rem;
+        font-weight: 780;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+      }
+
+      .kova-location-card h2 {
+        margin: 0 0 10px 0;
+        font-size: clamp(1.7rem, 8vw, 2.35rem);
+        line-height: 0.98;
+        letter-spacing: -1.2px;
+      }
+
+      .kova-location-card p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.68);
+        font-size: 0.98rem;
+        line-height: 1.55;
+      }
+
+      .kova-location-steps {
+        margin: 16px 0 0 0;
+        padding: 13px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.045);
+        color: rgba(255, 255, 255, 0.74);
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .kova-location-actions {
+        display: grid;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .kova-location-actions .kova-btn {
+        min-height: 48px;
+      }
+
+      .kova-location-actions .ghost {
+        background: transparent;
+      }
+
+      .kova-location-note {
+        min-height: 18px;
+        margin-top: 12px;
+        color: rgba(255, 255, 255, 0.56);
+        font-size: 0.82rem;
+        line-height: 1.4;
+      }
+
+      @media (max-width: 600px) {
+        .kova-location-gate {
+          align-items: end;
+          padding: 14px;
+        }
+
+        .kova-location-card {
+          width: 100%;
+          border-radius: 30px;
+          padding: 22px;
+        }
+      }
+
       @keyframes kovaSpotSheetIn {
         from {
           transform: translateY(100%);
@@ -2155,6 +2251,146 @@
           el.textContent = message;
           el.classList.remove("success", "error");
           if (type) el.classList.add(type);
+        }
+
+        function getInAppBrowserName() {
+          const ua = navigator.userAgent || "";
+
+          if (/Instagram/i.test(ua)) return "Instagram";
+          if (/FBAN|FBAV|FB_IAB|FBIOS|FB4A/i.test(ua)) return "Facebook";
+          if (/TikTok/i.test(ua)) return "TikTok";
+          if (/Snapchat/i.test(ua)) return "Snapchat";
+          if (/Line\//i.test(ua)) return "LINE";
+
+          return "";
+        }
+
+        function isInAppBrowser() {
+          return Boolean(getInAppBrowserName());
+        }
+
+        function isIOSDevice() {
+          return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+            (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+        }
+
+        function isAndroidDevice() {
+          return /Android/i.test(navigator.userAgent);
+        }
+
+        async function copyCurrentKovaUrl(noteEl) {
+          const url = window.location.href;
+
+          try {
+            await navigator.clipboard.writeText(url);
+            if (noteEl) noteEl.textContent = "Link copied. Paste it in Safari or Chrome.";
+            return true;
+          } catch (e) {
+            if (noteEl) noteEl.textContent = "Copy this link manually: " + url;
+            return false;
+          }
+        }
+
+        function openKovaInExternalBrowser(noteEl) {
+          const url = window.location.href;
+
+          if (isAndroidDevice()) {
+            try {
+              const parsed = new URL(url);
+              const intentPath = `${parsed.host}${parsed.pathname}${parsed.search}${parsed.hash}`;
+              window.location.href = `intent://${intentPath}#Intent;scheme=${parsed.protocol.replace(":", "")};S.browser_fallback_url=${encodeURIComponent(url)};end`;
+              return;
+            } catch (e) {}
+          }
+
+          copyCurrentKovaUrl(noteEl);
+        }
+
+        function closeKovaLocationGate() {
+          const gate = document.querySelector(".kova-location-gate");
+          if (gate) gate.remove();
+        }
+
+        function showKovaLocationGate(reason = "in-app") {
+          closeKovaLocationGate();
+
+          const appName = getInAppBrowserName() || "this app";
+          const isProblemBrowser = isInAppBrowser();
+          const isBlocked = reason === "blocked";
+          const noSupport = reason === "unsupported";
+          const title = noSupport
+            ? "Location is not available here."
+            : isBlocked
+              ? "Location was blocked."
+              : `Open KOVA in your browser.`;
+          const body = noSupport
+            ? "This browser does not support location. You can still browse the map manually."
+            : isBlocked
+              ? "KOVA could not access your location. You can try again, open the link in your browser, or explore the map manually."
+              : `${appName}'s in-app browser can block location access. KOVA works best in Safari or Chrome.`;
+          const steps = isIOSDevice()
+            ? "iPhone: tap the three dots in Instagram, then choose Open in browser."
+            : isAndroidDevice()
+              ? "Android: tap Open in browser. If nothing happens, use the three dots and open in Chrome."
+              : "Open this link in your normal browser for the best location support.";
+          const canAskLocation = Boolean(navigator.geolocation) && !noSupport;
+          const openBrowserLabel = isAndroidDevice() ? "Open in browser" : "Copy link";
+
+          document.body.insertAdjacentHTML(
+            "beforeend",
+            `
+              <div class="kova-location-gate" role="dialog" aria-modal="true" aria-label="KOVA location help">
+                <div class="kova-location-card">
+                  <div class="kova-location-kicker">KOVA location</div>
+                  <h2>${escapeHTML(title)}</h2>
+                  <p>${escapeHTML(body)}</p>
+                  ${isProblemBrowser || isBlocked ? `<div class="kova-location-steps">${escapeHTML(steps)}</div>` : ""}
+
+                  <div class="kova-location-actions">
+                    ${isProblemBrowser || isBlocked ? `<button class="kova-btn primary" type="button" data-kova-open-browser>${escapeHTML(openBrowserLabel)}</button>` : ""}
+                    ${canAskLocation ? `<button class="kova-btn" type="button" data-kova-use-location>Use my location here</button>` : ""}
+                    <button class="kova-btn ghost" type="button" data-kova-continue>Continue without location</button>
+                  </div>
+
+                  <div class="kova-location-note" data-kova-location-note></div>
+                </div>
+              </div>
+            `,
+          );
+
+          const gate = document.querySelector(".kova-location-gate");
+          const noteEl = gate?.querySelector("[data-kova-location-note]");
+
+          gate?.querySelector("[data-kova-open-browser]")?.addEventListener("click", () => {
+            openKovaInExternalBrowser(noteEl);
+          });
+
+          gate?.querySelector("[data-kova-use-location]")?.addEventListener("click", async () => {
+            closeKovaLocationGate();
+            await requestUserLocation({ showHelpOnFail: true });
+          });
+
+          gate?.querySelector("[data-kova-continue]")?.addEventListener("click", () => {
+            closeKovaLocationGate();
+          });
+        }
+
+        function initUserLocationFlow() {
+          if (!navigator.geolocation) {
+            if (isInAppBrowser()) {
+              window.setTimeout(() => showKovaLocationGate("unsupported"), 650);
+            }
+            return;
+          }
+
+          if (isInAppBrowser()) {
+            window.setTimeout(() => showKovaLocationGate("in-app"), 650);
+            return;
+          }
+
+          window.setTimeout(() => {
+            requestUserLocation({ showHelpOnFail: true });
+          }, 250);
         }
 
         function openNavigation(lat, lng) {
@@ -3169,25 +3405,40 @@
           });
         }
 
-        function requestUserLocation() {
-          if (!navigator.geolocation) return;
+        function requestUserLocation(options = {}) {
+          const { showHelpOnFail = false } = options;
 
-          navigator.geolocation.getCurrentPosition(
-            async (pos) => {
-              userLng = pos.coords.longitude;
-              userLat = pos.coords.latitude;
-              syncUserMarker();
-              await maybeLoadInitialNearbySpots();
-            },
-            (err) => {
-              console.warn("Locatie fout:", err.message);
-            },
-            {
-              enableHighAccuracy: true,
-              timeout: 15000,
-              maximumAge: 0,
-            },
-          );
+          if (!navigator.geolocation) {
+            if (showHelpOnFail) showKovaLocationGate("unsupported");
+            return Promise.resolve(false);
+          }
+
+          return new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+              async (pos) => {
+                userLng = pos.coords.longitude;
+                userLat = pos.coords.latitude;
+                syncUserMarker();
+                await maybeLoadInitialNearbySpots();
+                closeKovaLocationGate();
+                resolve(true);
+              },
+              (err) => {
+                console.warn("Locatie fout:", err.message);
+
+                if (showHelpOnFail) {
+                  showKovaLocationGate("blocked");
+                }
+
+                resolve(false);
+              },
+              {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 60000,
+              },
+            );
+          });
         }
 
         if (navigator.geolocation) {
@@ -3216,8 +3467,9 @@
             },
           );
 
-          requestUserLocation();
         }
+
+        initUserLocationFlow();
 
         document.addEventListener("click", async (e) => {
           const navBtn = e.target.closest("[data-action='nav']");
