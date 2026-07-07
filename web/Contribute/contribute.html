@@ -1,210 +1,415 @@
 <!doctype html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Kova — contribute</title>
 
     <style>
-        :root {
-            --bg: #161515;
-            --fg: #fff;
-            --muted: rgba(255, 255, 255, 0.6);
-            --line: rgba(255, 255, 255, 0.12);
-        }
+      :root {
+        --bg: #161515;
+        --fg: #fff;
+        --muted: rgba(255, 255, 255, 0.6);
+        --line: rgba(255, 255, 255, 0.12);
+        --accent: #8b7108;
+        --shadow: 0 22px 58px rgba(0, 0, 0, 0.45);
+      }
 
-        /* BODY – 100% scherm, nooit scrollen */
-        body {
-            margin: 0;
-            background: var(--bg);
-            color: var(--fg);
-            font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-            height: 100dvh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-sizing: border-box;
-        }
+      * {
+        box-sizing: border-box;
+      }
 
-        /* NAVBAR ------------------------------------------------------ */
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* NEW KOVA HEADER */
+      nav {
+        width: 100%;
+        padding: 22px 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: transparent;
+        z-index: 50;
+        pointer-events: none;
+      }
+
+      nav > * {
+        pointer-events: auto;
+      }
+
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .nav-left img {
+        height: 50px;
+        width: auto;
+        display: block;
+      }
+
+      .nav-right {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        min-width: 0;
+      }
+
+      .hamburger-toggle {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.24);
+        color: rgba(255, 255, 255, 0.9);
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+        font-family: inherit;
+        appearance: none;
+        -webkit-appearance: none;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.24);
+        transition:
+          transform 0.2s ease,
+          background 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .hamburger-toggle span {
+        width: 17px;
+        height: 2px;
+        display: block;
+        border-radius: 999px;
+        background: currentColor;
+        transition:
+          transform 0.22s ease,
+          opacity 0.18s ease,
+          width 0.2s ease;
+      }
+
+      .hamburger-toggle:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(139, 113, 8, 0.72);
+        color: var(--accent);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(1) {
+        transform: translateY(6px) rotate(45deg);
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(2) {
+        opacity: 0;
+        width: 8px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(3) {
+        transform: translateY(-6px) rotate(-45deg);
+      }
+
+      .hamburger-menu {
+        position: absolute;
+        top: 54px;
+        right: 0;
+        width: min(230px, calc(100vw - 28px));
+        padding: 9px;
+        display: grid;
+        gap: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        background: rgba(8, 8, 8, 0.68);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: var(--shadow);
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+        transform-origin: top right;
+        pointer-events: none;
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .nav-right.open .hamburger-menu {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+
+      .hamburger-menu a {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 0.94rem;
+        font-weight: 520;
+        line-height: 1.2;
+        letter-spacing: 0.15px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 13px;
+        cursor: pointer;
+        padding: 12px 13px;
+        margin: 0;
+        font-family: inherit;
+        white-space: nowrap;
+        appearance: none;
+        -webkit-appearance: none;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          color 0.18s ease;
+      }
+
+      .hamburger-menu a::after {
+        content: "→";
+        color: var(--accent);
+        opacity: 0;
+        transform: translateX(-5px);
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .hamburger-menu a:hover {
+        color: #fff;
+        background: rgba(139, 113, 8, 0.18);
+        border-color: rgba(139, 113, 8, 0.28);
+        transform: translateX(2px);
+      }
+
+      .hamburger-menu a:hover::after {
+        opacity: 0.9;
+        transform: translateX(0);
+      }
+
+      /* CONTENT - original style kept */
+      .page-container {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        justify-content: center;
+        padding: 105px 20px 40px;
+        box-sizing: border-box;
+      }
+
+      .contribute {
+        max-width: 700px;
+        width: 100%;
+      }
+
+      .contribute h1 {
+        margin-top: 0;
+      }
+
+      .contribute p {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .contribute a {
+        color: var(--accent);
+      }
+
+      .mail-line {
+        padding-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .mail-line img {
+        max-height: 30px;
+        width: auto;
+      }
+
+      @media (max-width: 600px) {
         nav {
-            width: 100%;
-            padding: 22px 34px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--line);
-            box-sizing: border-box;
-            flex-shrink: 0;
-            /* navbar blijft altijd zichtbaar */
-        }
-
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+          padding: 14px 14px;
+          align-items: flex-start;
+          gap: 12px;
         }
 
         .nav-left img {
-            height: 35px;
-            width: auto;
+          height: 38px;
         }
 
-        .beta {
-            padding: 2px;
-            font-size: 0.85rem;
-            background-color: #8b7108;
-            color: white;
-            letter-spacing: 0.5px;
+        .hamburger-toggle {
+          width: 40px;
+          height: 40px;
         }
 
-        .nav-right a {
-            margin-left: 32px;
-            text-decoration: none;
-            color: var(--fg);
-            font-size: 0.95rem;
-            opacity: 0.8;
-            transition: opacity 0.25s;
+        .hamburger-menu {
+          top: 50px;
+          width: min(220px, calc(100vw - 28px));
         }
 
-        .navbar-seperator {
-            margin-left: 20px;
+        .hamburger-menu a {
+          font-size: 0.88rem;
+          padding: 11px 12px;
         }
 
-        .nav-right a:hover {
-            opacity: 1;
-            color: #8b7108;
-        }
-
-        /* CONTENT */
-
-        .contribute {
-            max-width: 700px;
-            width: 100%;
-        }
-
-               /* NEW — Page wrapper like Doko */
         .page-container {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            justify-content: center;
-            padding: 40px 20px;
-            box-sizing: border-box;
+          padding: 88px 20px 40px;
         }
 
-
-
-        @media (max-width: 600px) {
-            nav {
-                padding: 16px 18px;
-            }
-
-            .nav-left img {
-                height: 40px;
-            }
-
-            .nav-left .beta {
-                font-size: 0.7rem;
-                padding: 2px 5px;
-            }
-
-            .nav-right {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-
-            .nav-right a {
-                margin-left: 0;
-                font-size: 0.85rem;
-            }
-
-            .navbar-seperator {
-                margin-left: 0;
-                opacity: 0.5;
-            }
-
-            nav {
-                gap: 12px;
-            }
-
-            .main-logo {
-                width: 250px;
-            }
-
+        .main-logo {
+          width: 250px;
         }
+      }
     </style>
+  </head>
 
-</head>
-
-   <body>
-
-    <!-- NAV -->
+  <body>
     <nav>
-        <div class="nav-left">
-            <a href="../../index.html">
-                 <img src="../../images/kova_alleen_x_png.png" alt="Kova logo small">
-            </a>
-           
-             <div class="beta"><a href="#"  style="color: white;">now in alpha!</a></div>
-        </div>
+      <div class="nav-left">
+        <a href="../../index.html">
+          <img src="../../images/kova_wit_x_png.png" alt="Kova logo small" />
+        </a>
+      </div>
 
-        <div class="nav-right">
-            <a href="../pages/about.html">about</a>
-            <span class="navbar-seperator">//</span>
-            <a href="../pages/blog.html">blog</a>
+      <div class="nav-right">
+        <button
+          class="hamburger-toggle"
+          type="button"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="kovaMenu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="hamburger-menu" id="kovaMenu" aria-hidden="true">
+          <a href="../../index.html">map</a>
+          <a href="./about.html">about</a>
         </div>
+      </div>
     </nav>
 
-    <!-- CONTENT -->
-<div class="page-container">
-    <section class="contribute">
-
+    <div class="page-container">
+      <section class="contribute">
         <h1>Contribute to Kova</h1>
 
         <p>
-            Kova is still in its early alpha stage — a tiny, independent side-project built to make discovering great spots simple, real, and community-driven.
-            Right now it’s just me designing everything and writing every line of code.
+          Kova is still in its early alpha stage — a tiny, independent
+          side-project built to make discovering great spots simple, real, and
+          community-driven. Right now it’s just me designing everything and
+          writing every line of code.
         </p>
 
         <p>
-            The idea is growing faster than expected, and I genuinely need help from people who care about good spots, clean design, and honest tools.
+          The idea is growing faster than expected, and I genuinely need help
+          from people who care about good spots, clean design, and honest tools.
         </p>
 
         <h2>How you can help</h2>
 
         <h3>Share new spots</h3>
         <p>
-            The map only becomes useful when people add the places they know.
-            If you’ve got a hidden gem, a chill spot, or a must-see location - adding it helps the whole community. <br> <br>
-            <a href="contributespot.html" style="color: #8b7108;">Add your spot</a>
+          The map only becomes useful when people add the places they know. If
+          you’ve got a hidden gem, a chill spot, or a must-see location - adding
+          it helps the whole community.
         </p>
 
         <h3>Design contributions</h3>
         <p>
-            Icons, micro-animations, layout ideas, or UI refinements.  
-            Anything that pushes Kova toward a clean, outdoor-inspired vibe is deeply appreciated.
+          Icons, micro-animations, layout ideas, or UI refinements. Anything
+          that pushes Kova toward a clean, outdoor-inspired vibe is deeply
+          appreciated.
         </p>
 
         <h3>Feedback</h3>
         <p>
-            Thoughts on usability, performance, features, or what Kova should eventually evolve into.
+          Thoughts on usability, performance, features, or what Kova should
+          eventually evolve into.
         </p>
 
-        <br>
-        
-        <p style="padding-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-    <img src="../../images/peu.gif" style="max-height: 30px; width: auto;">
-    Send a mail to <a href="mailto:hello@kova.spot" style="color: #8b7108;">hello@kova.spot</a>
-</p>
-</p>
-    </section>
-</div>
-</body>
+        <br />
 
+        <p class="mail-line">
+          <img src="../../images/peu.gif" alt="" />
+          Send a mail to
+          <a href="mailto:hello@kova.spot">hello@kova.spot</a>
+        </p>
+      </section>
+    </div>
 
-</body>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const navRight = document.querySelector(".nav-right");
+        const menuToggle = document.querySelector(".hamburger-toggle");
+        const menuPanel = document.getElementById("kovaMenu");
 
+        function closeHamburgerMenu() {
+          if (!navRight || !menuToggle || !menuPanel) return;
+
+          navRight.classList.remove("open");
+          menuToggle.setAttribute("aria-expanded", "false");
+          menuPanel.setAttribute("aria-hidden", "true");
+        }
+
+        if (navRight && menuToggle && menuPanel) {
+          menuToggle.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isOpen = navRight.classList.toggle("open");
+
+            menuToggle.setAttribute("aria-expanded", String(isOpen));
+            menuPanel.setAttribute("aria-hidden", String(!isOpen));
+          });
+
+          menuPanel.addEventListener("click", (e) => {
+            if (e.target.closest("a")) closeHamburgerMenu();
+          });
+
+          document.addEventListener("click", (e) => {
+            if (!navRight.contains(e.target)) closeHamburgerMenu();
+          });
+
+          document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeHamburgerMenu();
+          });
+        }
+      });
+    </script>
+  </body>
 </html>
