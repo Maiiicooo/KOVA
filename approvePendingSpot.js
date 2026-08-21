@@ -1,18 +1,18 @@
-const admin = require("firebase-admin");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
 
 const serviceAccount = require("./serviceAccountKey.json");
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+initializeApp({
+  credential: cert(serviceAccount),
 });
 
-const db = admin.firestore();
+const db = getFirestore();
 
-// ID van de pending spot via command line
 const pendingId = process.argv[2];
 
 if (!pendingId) {
-  console.log("Gebruik: node approvePending.js <pendingSpotId>");
+  console.log("Gebruik: node approvePendingSpot.js <pendingSpotId>");
   process.exit(1);
 }
 
@@ -25,11 +25,16 @@ async function approve() {
     return;
   }
 
-  // kopiëren naar spots
+  // Spot naar definitieve collectie kopiëren
   await db.collection("spots").doc(pendingId).set(snap.data());
 
-  console.log("Spot gekopieerd naar spots");
-  console.log("Pending spot blijft bestaan (niet verwijderd)");
+  // Daarna verwijderen uit pending
+  await pendingRef.delete();
+
+  console.log("✅ Spot approved");
+  console.log("✅ Gekopieerd naar spots");
+  console.log("✅ Verwijderd uit pending_spots");
+  console.log("ID:", pendingId);
 }
 
 approve().catch(console.error);
