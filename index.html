@@ -615,6 +615,7 @@
       }
 
       .kova-popup {
+        position: relative;
         width: min(600px, calc(100vw - 28px));
         max-height: min(72vh, 760px);
         background: linear-gradient(180deg, var(--panel), rgba(0, 0, 0, 0.92));
@@ -630,6 +631,57 @@
 
       .sheet-grabber {
         display: none;
+      }
+
+      .spot-close-btn {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        z-index: 12;
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        background: rgba(8, 8, 8, 0.76);
+        color: #fff;
+        font-family: inherit;
+        font-size: 1.55rem;
+        font-weight: 400;
+        line-height: 1;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow:
+          0 10px 28px rgba(0, 0, 0, 0.42),
+          0 0 0 1px rgba(0, 0, 0, 0.18);
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        transition:
+          transform 0.16s ease,
+          background 0.16s ease,
+          border-color 0.16s ease;
+      }
+
+      .spot-close-btn:hover {
+        transform: scale(1.06);
+        background: rgba(20, 20, 20, 0.92);
+        border-color: rgba(139, 113, 8, 0.72);
+      }
+
+      .spot-close-btn:active {
+        transform: scale(0.94);
+      }
+
+      .spot-sheet-popup
+        > .maplibregl-popup-content
+        > .maplibregl-popup-close-button,
+      .spot-sheet-popup .maplibregl-popup-close-button {
+        display: none !important;
       }
 
       .kova-popup .hero {
@@ -1588,6 +1640,10 @@
 
       /* Mobile spot sheet: compact iPhone-style overview */
       @media (max-width: 700px) {
+        .spot-close-btn {
+          display: none !important;
+        }
+
         .spot-sheet-popup .maplibregl-popup-content {
           animation: kovaSpotSheetIn 0.28s cubic-bezier(0.2, 0.9, 0.2, 1) both;
         }
@@ -1604,6 +1660,14 @@
         .kova-popup.sheet-closing {
           transform: translateY(112%) !important;
           transition: transform 0.22s cubic-bezier(0.4, 0, 1, 1) !important;
+        }
+
+        .spot-close-btn {
+          top: 34px;
+          right: 14px;
+          width: 44px;
+          height: 44px;
+          font-size: 1.6rem;
         }
 
         .sheet-grabber {
@@ -1733,8 +1797,6 @@
         }
       }
 
-
-
       .kova-location-gate {
         position: fixed;
         inset: 0;
@@ -1743,7 +1805,11 @@
         place-items: center;
         padding: 22px;
         background:
-          radial-gradient(circle at 50% 0%, rgba(139, 113, 8, 0.18), transparent 42%),
+          radial-gradient(
+            circle at 50% 0%,
+            rgba(139, 113, 8, 0.18),
+            transparent 42%
+          ),
           rgba(0, 0, 0, 0.76);
         backdrop-filter: blur(14px);
         -webkit-backdrop-filter: blur(14px);
@@ -1753,7 +1819,11 @@
         width: min(430px, calc(100vw - 28px));
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 28px;
-        background: linear-gradient(180deg, rgba(18, 18, 18, 0.98), rgba(5, 5, 5, 0.96));
+        background: linear-gradient(
+          180deg,
+          rgba(18, 18, 18, 0.98),
+          rgba(5, 5, 5, 0.96)
+        );
         box-shadow: 0 28px 80px rgba(0, 0, 0, 0.62);
         padding: 24px;
         color: #fff;
@@ -1839,6 +1909,482 @@
           opacity: 1;
         }
       }
+
+      /* KOVA discover feed ------------------------------------------ */
+      .kova-feed-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 10010;
+        display: flex;
+        justify-content: flex-end;
+        padding: 14px;
+        background: rgba(0, 0, 0, 0.28);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+
+      .kova-feed-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .kova-feed-panel {
+        width: min(390px, calc(100vw - 28px));
+        height: min(720px, calc(100dvh - 28px));
+        align-self: stretch;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        border-radius: 26px;
+        background: linear-gradient(
+          180deg,
+          rgba(17, 17, 17, 0.98),
+          rgba(7, 7, 7, 0.97)
+        );
+        box-shadow: 0 26px 70px rgba(0, 0, 0, 0.58);
+        transform: translateX(18px) scale(0.985);
+        transition: transform 0.22s ease;
+      }
+
+      .kova-feed-overlay.open .kova-feed-panel {
+        transform: translateX(0) scale(1);
+      }
+
+      .kova-feed-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 22px 20px 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .kova-feed-logo {
+        width: 52px;
+        height: 52px;
+        display: block;
+        object-fit: contain;
+        margin-bottom: 12px;
+      }
+
+      .kova-feed-title {
+        margin: 0;
+        font-size: 1.7rem;
+        line-height: 1;
+        letter-spacing: -0.8px;
+      }
+
+      .kova-feed-close {
+        width: 36px;
+        height: 36px;
+        flex: 0 0 auto;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.045);
+        color: rgba(255, 255, 255, 0.76);
+        cursor: pointer;
+        font-size: 1.2rem;
+        font-family: inherit;
+      }
+
+      .kova-feed-body {
+        flex: 1;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 16px;
+      }
+
+      .kova-feed-section + .kova-feed-section {
+        margin-top: 22px;
+      }
+
+      .kova-feed-section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .kova-feed-section-title h3 {
+        margin: 0;
+        font-size: 0.8rem;
+        font-weight: 760;
+        letter-spacing: 0.9px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.78);
+      }
+
+      .kova-feed-section-title span {
+        color: rgba(255, 255, 255, 0.38);
+        font-size: 0.72rem;
+      }
+
+      .kova-pick-scroll {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(250px, 86%);
+        gap: 10px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 1px 2px 8px;
+        scroll-snap-type: x mandatory;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+
+      .kova-pick-scroll::-webkit-scrollbar {
+        display: none;
+      }
+
+      .kova-pick-card {
+        position: relative;
+        min-height: 190px;
+        overflow: hidden;
+        border: 1px solid rgba(139, 113, 8, 0.42);
+        border-radius: 20px;
+        background: #111;
+        cursor: pointer;
+        scroll-snap-align: start;
+      }
+
+      .kova-pick-card img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.84;
+      }
+
+      .kova-pick-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0.06),
+          rgba(0, 0, 0, 0.18) 38%,
+          rgba(0, 0, 0, 0.92) 100%
+        );
+      }
+
+      .kova-pick-card-content {
+        position: absolute;
+        inset: auto 0 0 0;
+        z-index: 2;
+        padding: 16px;
+      }
+
+      .kova-pick-name {
+        margin: 0;
+        font-size: 1.18rem;
+        line-height: 1.12;
+      }
+
+      .kova-pick-meta {
+        margin-top: 5px;
+        color: rgba(255, 255, 255, 0.68);
+        font-size: 0.78rem;
+      }
+
+      .kova-top-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .kova-top-item {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 34px 58px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        min-height: 68px;
+        padding: 8px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.035);
+        color: #fff;
+        text-align: left;
+        font-family: inherit;
+        cursor: pointer;
+        appearance: none;
+      }
+
+      .kova-top-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(139, 113, 8, 0.32);
+      }
+
+      .kova-top-rank {
+        color: var(--accent);
+        font-size: 0.86rem;
+        font-weight: 800;
+      }
+
+      .kova-top-thumb {
+        display: block;
+        width: 58px;
+        height: 50px;
+        border-radius: 12px;
+        object-fit: cover;
+        background: #171717;
+      }
+
+      .kova-top-copy {
+        min-width: 0;
+      }
+
+      .kova-top-name {
+        overflow: hidden;
+        color: rgba(255, 255, 255, 0.94);
+        font-size: 0.9rem;
+        font-weight: 680;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .kova-top-rating {
+        margin-top: 4px;
+        color: rgba(255, 255, 255, 0.52);
+        font-size: 0.72rem;
+      }
+
+      .kova-top-arrow {
+        color: var(--accent);
+        font-size: 1rem;
+      }
+
+      .kova-feed-empty,
+      .kova-feed-loading {
+        padding: 14px;
+        border: 1px dashed rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.82rem;
+        line-height: 1.45;
+      }
+
+      .kova-pick-carousel {
+        position: relative;
+      }
+
+      .kova-pick-nav {
+        display: none;
+      }
+
+      /* Desktop Discover: larger centered layout with 2 cards per row */
+      @media (min-width: 701px) {
+        .kova-feed-overlay {
+          align-items: center;
+          justify-content: center;
+          padding: 32px;
+          background: rgba(0, 0, 0, 0.42);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+        }
+
+        .kova-feed-panel {
+          width: min(980px, calc(100vw - 64px));
+          height: min(860px, calc(100dvh - 64px));
+          align-self: auto;
+          border-radius: 30px;
+          transform: translateY(14px) scale(0.985);
+        }
+
+        .kova-feed-overlay.open .kova-feed-panel {
+          transform: translateY(0) scale(1);
+        }
+
+        .kova-feed-head {
+          padding: 26px 28px 20px;
+        }
+
+        .kova-feed-logo {
+          width: 72px;
+          height: 72px;
+          margin-bottom: 14px;
+        }
+
+        .kova-feed-title {
+          font-size: 2.15rem;
+        }
+
+        .kova-feed-close {
+          width: 42px;
+          height: 42px;
+          font-size: 1.35rem;
+        }
+
+        .kova-feed-body {
+          padding: 24px 28px 30px;
+        }
+
+        .kova-feed-section + .kova-feed-section {
+          margin-top: 30px;
+        }
+
+        .kova-feed-section-title {
+          margin-bottom: 12px;
+        }
+
+        .kova-feed-section-title h3 {
+          font-size: 0.86rem;
+        }
+
+        /* Exactly two KOVA picks visible at once on desktop */
+        .kova-pick-carousel {
+          padding: 0 46px;
+        }
+
+        .kova-pick-scroll {
+          grid-auto-columns: calc((100% - 12px) / 2);
+          gap: 12px;
+          padding: 1px 2px 10px;
+          scroll-behavior: smooth;
+          cursor: grab;
+        }
+
+        .kova-pick-scroll:active {
+          cursor: grabbing;
+        }
+
+        .kova-pick-nav {
+          position: absolute;
+          top: 50%;
+          z-index: 5;
+          width: 36px;
+          height: 36px;
+          display: grid;
+          place-items: center;
+          padding: 0;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 999px;
+          background: rgba(9, 9, 9, 0.9);
+          color: #fff;
+          font-family: inherit;
+          font-size: 1.1rem;
+          cursor: pointer;
+          transform: translateY(-50%);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+          transition:
+            transform 0.16s ease,
+            background 0.16s ease,
+            border-color 0.16s ease,
+            opacity 0.16s ease;
+        }
+
+        .kova-pick-nav:hover {
+          background: rgba(20, 20, 20, 0.96);
+          border-color: rgba(139, 113, 8, 0.6);
+        }
+
+        .kova-pick-nav.prev {
+          left: 0;
+        }
+
+        .kova-pick-nav.next {
+          right: 0;
+        }
+
+        .kova-pick-nav:disabled {
+          opacity: 0.28;
+          cursor: default;
+          pointer-events: none;
+        }
+
+        .kova-pick-card {
+          min-height: 230px;
+          border-radius: 22px;
+        }
+
+        .kova-pick-card-content {
+          padding: 18px;
+        }
+
+        .kova-pick-name {
+          font-size: 1.28rem;
+        }
+
+        /* Weekly + all-time rankings: two cards per row */
+        .kova-top-list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+        }
+
+        .kova-top-item {
+          min-height: 76px;
+          padding: 10px 12px;
+          border-radius: 17px;
+          grid-template-columns: 34px 64px minmax(0, 1fr) auto;
+        }
+
+        .kova-top-thumb {
+          width: 64px;
+          height: 56px;
+        }
+
+        .kova-top-name {
+          font-size: 0.94rem;
+        }
+
+        .kova-top-rating {
+          font-size: 0.75rem;
+        }
+
+        .kova-feed-empty,
+        .kova-feed-loading {
+          grid-column: 1 / -1;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .kova-feed-overlay {
+          align-items: flex-end;
+          justify-content: center;
+          padding: 0;
+          background: rgba(0, 0, 0, 0.38);
+        }
+
+        .kova-feed-panel {
+          width: 100%;
+          height: min(78dvh, 720px);
+          align-self: auto;
+          border-radius: 26px 26px 0 0;
+          border-left: 0;
+          border-right: 0;
+          border-bottom: 0;
+          transform: translateY(28px);
+        }
+
+        .kova-feed-overlay.open .kova-feed-panel {
+          transform: translateY(0);
+        }
+
+        .kova-feed-head {
+          padding: 18px 17px 14px;
+        }
+
+        .kova-feed-body {
+          padding: 14px;
+        }
+
+        .kova-pick-scroll {
+          grid-auto-columns: 88%;
+          padding-bottom: 6px;
+        }
+
+        .kova-pick-card {
+          min-height: 175px;
+        }
+      }
     </style>
   </head>
 
@@ -1864,6 +2410,7 @@
         </button>
 
         <div class="hamburger-menu" id="kovaMenu" aria-hidden="true">
+          <button type="button" data-action="open-feed">discover</button>
           <button type="button" data-action="open-tutorial">intro</button>
           <a href="app/pages/addspot.html">add spot</a>
           <a href="app/pages/about.html">about</a>
@@ -1917,6 +2464,64 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="kova-feed-overlay" id="kovaFeed" aria-hidden="true">
+      <section
+        class="kova-feed-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="kovaFeedTitle"
+      >
+        <div class="kova-feed-head">
+          <div>
+            <img
+              class="kova-feed-logo"
+              src="../../images/kova_wit_x_png.png"
+              alt="KOVA"
+            />
+            <h2 class="kova-feed-title" id="kovaFeedTitle">Discover.</h2>
+          </div>
+          <button
+            class="kova-feed-close"
+            type="button"
+            data-feed-close
+            aria-label="Close discover"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="kova-feed-body">
+          <section class="kova-feed-section" data-feed-pick-section hidden>
+            <div class="kova-feed-section-title">
+              <h3>KOVA's picks</h3>
+              <span>our best spots</span>
+            </div>
+            <div data-feed-pick></div>
+          </section>
+
+          <section class="kova-feed-section">
+            <div class="kova-feed-section-title">
+              <h3>Top 5 spots this week</h3>
+              <span data-feed-week></span>
+            </div>
+            <div class="kova-top-list" data-feed-top>
+              <div class="kova-feed-loading">Loading this week's spots…</div>
+            </div>
+          </section>
+
+          <section class="kova-feed-section">
+            <div class="kova-feed-section-title">
+              <h3>Top 5 spots all time</h3>
+              <span>community favorites</span>
+            </div>
+            <div class="kova-top-list" data-feed-alltime>
+              <div class="kova-feed-loading">Loading all-time favorites…</div>
+            </div>
+          </section>
+        </div>
+      </section>
     </div>
 
     <footer id="kovaFooter">
@@ -2124,6 +2729,23 @@
         const DUPLICATE_BLOCK_RADIUS_M = 80;
         const LOCAL_RATINGS_KEY = "kova_spot_ratings_v1";
 
+        // MANUAL KOVA PICKS:
+        // Add as many Firestore spot document IDs as you want.
+        // Order here = order in the horizontal KOVA picks carousel.
+        //
+        // Example:
+        // const KOVAS_PICK_IDS = [
+        //   "aBc123...",
+        //   "xYz456...",
+        //   "kOvA789..."
+        // ];
+        const KOVAS_PICK_IDS = [
+          "2hFzsFHeeIjwKpkQa7ug",
+          "2zq8XHDJ7mmuR79Xz5nO",
+          "5TBTczxDLaFGNaghP4ey",
+          "6pqJAACvfy5B2LHuIQEe",
+        ];
+
         const map = new maptilersdk.Map({
           container: "map",
           style:
@@ -2179,6 +2801,20 @@
         let initialNearbyLoaded = false;
         let userMarkerAdded = false;
 
+        const feedOverlay = document.getElementById("kovaFeed");
+        const feedOpenBtns = document.querySelectorAll(
+          "[data-action='open-feed']",
+        );
+        const feedCloseBtn = document.querySelector("[data-feed-close]");
+        const feedPickSection = document.querySelector(
+          "[data-feed-pick-section]",
+        );
+        const feedPickEl = document.querySelector("[data-feed-pick]");
+        const feedTopEl = document.querySelector("[data-feed-top]");
+        const feedAllTimeEl = document.querySelector("[data-feed-alltime]");
+        const feedWeekEl = document.querySelector("[data-feed-week]");
+        let feedLoadedWeekKey = "";
+
         const SOURCE_ID = "spots";
         const LAYER_CLUSTERS_X = "spots-clusters-x";
         const LAYER_CLUSTERS_COUNT = "spots-clusters-count";
@@ -2186,6 +2822,532 @@
         const SEARCH_RADIUS_SOURCE_ID = "kova-search-radius-preview";
         const SEARCH_RADIUS_FILL_LAYER = "kova-search-radius-fill";
         const SEARCH_RADIUS_LINE_LAYER = "kova-search-radius-line";
+
+        function getKovaWeekKey(date = new Date()) {
+          // ISO week key, e.g. "2026-W34". Monday = start of week.
+          const d = new Date(
+            Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+          );
+          const dayNum = d.getUTCDay() || 7;
+          d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+
+          const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+          const weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+
+          return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
+        }
+
+        function formatFeedWeekLabel(weekKey) {
+          const match = String(weekKey || "").match(/^(\d{4})-W(\d{2})$/);
+          return match ? `week ${Number(match[2])}` : "this week";
+        }
+
+        function closeFeed() {
+          if (!feedOverlay) return;
+          feedOverlay.classList.remove("open");
+          feedOverlay.setAttribute("aria-hidden", "true");
+        }
+
+        async function openFeed() {
+          if (!feedOverlay) return;
+          closeHamburgerMenu();
+          closeAll();
+
+          feedOverlay.classList.add("open");
+          feedOverlay.setAttribute("aria-hidden", "false");
+
+          const weekKey = getKovaWeekKey();
+          if (feedWeekEl) {
+            feedWeekEl.textContent = formatFeedWeekLabel(weekKey);
+          }
+
+          // Refresh when a new ISO week starts. Reopening in the same week
+          // uses the already rendered content unless a rating was just saved.
+          if (feedLoadedWeekKey !== weekKey) {
+            await loadKovaFeed();
+          }
+        }
+
+        function makeFeedSpotThumb(spot) {
+          const url = safeHttpsURL(spot?.photoURL);
+          if (!url) return "";
+          return `<img class="kova-top-thumb" src="${escapeHTML(url)}" alt="" loading="lazy" decoding="async">`;
+        }
+
+        function renderKovaPicks(spots) {
+          if (!feedPickSection || !feedPickEl) return;
+
+          if (!Array.isArray(spots) || !spots.length) {
+            feedPickSection.hidden = true;
+            feedPickEl.innerHTML = "";
+            return;
+          }
+
+          feedPickSection.hidden = false;
+
+          feedPickEl.innerHTML = `
+            <div class="kova-pick-carousel">
+              <button
+                class="kova-pick-nav prev"
+                type="button"
+                data-pick-prev
+                aria-label="Previous KOVA picks"
+              >←</button>
+
+              <div class="kova-pick-scroll" aria-label="KOVA picks" data-pick-scroll>
+                ${spots
+                  .map((spot) => {
+                    const photoURL = safeHttpsURL(spot.photoURL);
+                    const rating = Number(spot.avgRating || 0).toFixed(1);
+                    const ratingCount = Number(spot.ratingCount || 0);
+
+                    return `
+                      <article
+                        class="kova-pick-card"
+                        role="button"
+                        tabindex="0"
+                        data-feed-spot-id="${escapeHTML(spot.id)}"
+                        aria-label="Open ${escapeHTML(spot.name || "KOVA pick")}"
+                      >
+                        ${photoURL ? `<img src="${escapeHTML(photoURL)}" alt="${escapeHTML(spot.name || "KOVA pick")}" loading="lazy" decoding="async">` : ""}
+                        <div class="kova-pick-card-content">
+                          <h3 class="kova-pick-name">${escapeHTML(spot.name || "Untitled spot")}</h3>
+                          <div class="kova-pick-meta">★ ${rating} · ${ratingCount} total ratings</div>
+                        </div>
+                      </article>
+                    `;
+                  })
+                  .join("")}
+              </div>
+
+              <button
+                class="kova-pick-nav next"
+                type="button"
+                data-pick-next
+                aria-label="Next KOVA picks"
+              >→</button>
+            </div>
+          `;
+
+          setupKovaPickCarousel();
+        }
+
+        function setupKovaPickCarousel() {
+          const scrollEl = feedPickEl?.querySelector("[data-pick-scroll]");
+          const prevBtn = feedPickEl?.querySelector("[data-pick-prev]");
+          const nextBtn = feedPickEl?.querySelector("[data-pick-next]");
+
+          if (!scrollEl) return;
+
+          function getStep() {
+            const firstCard = scrollEl.querySelector(".kova-pick-card");
+            if (!firstCard) return Math.max(320, scrollEl.clientWidth * 0.5);
+
+            const styles = window.getComputedStyle(scrollEl);
+            const gap = parseFloat(styles.columnGap || styles.gap || "0") || 0;
+            return firstCard.getBoundingClientRect().width + gap;
+          }
+
+          function updateButtons() {
+            const maxScroll = Math.max(
+              0,
+              scrollEl.scrollWidth - scrollEl.clientWidth,
+            );
+            const current = scrollEl.scrollLeft;
+
+            if (prevBtn) prevBtn.disabled = current <= 4;
+            if (nextBtn) nextBtn.disabled = current >= maxScroll - 4;
+          }
+
+          prevBtn?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            scrollEl.scrollBy({
+              left: -getStep(),
+              behavior: "smooth",
+            });
+          });
+
+          nextBtn?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            scrollEl.scrollBy({
+              left: getStep(),
+              behavior: "smooth",
+            });
+          });
+
+          // Normal mouse wheel on desktop becomes horizontal movement
+          // while the pointer is above the KOVA picks carousel.
+          scrollEl.addEventListener(
+            "wheel",
+            (e) => {
+              if (window.matchMedia("(max-width: 700px)").matches) return;
+              if (scrollEl.scrollWidth <= scrollEl.clientWidth + 2) return;
+
+              const delta =
+                Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+
+              if (!delta) return;
+
+              e.preventDefault();
+              scrollEl.scrollLeft += delta;
+            },
+            { passive: false },
+          );
+
+          // Mouse click-and-drag support.
+          let dragging = false;
+          let startX = 0;
+          let startScrollLeft = 0;
+          let moved = false;
+
+          scrollEl.addEventListener("pointerdown", (e) => {
+            if (window.matchMedia("(max-width: 700px)").matches) return;
+            if (e.pointerType !== "mouse") return;
+
+            dragging = true;
+            moved = false;
+            startX = e.clientX;
+            startScrollLeft = scrollEl.scrollLeft;
+
+            try {
+              scrollEl.setPointerCapture(e.pointerId);
+            } catch (err) {}
+          });
+
+          scrollEl.addEventListener("pointermove", (e) => {
+            if (!dragging) return;
+
+            const dx = e.clientX - startX;
+            if (Math.abs(dx) > 4) moved = true;
+
+            scrollEl.scrollLeft = startScrollLeft - dx;
+          });
+
+          function endDrag() {
+            dragging = false;
+          }
+
+          scrollEl.addEventListener("pointerup", endDrag);
+          scrollEl.addEventListener("pointercancel", endDrag);
+
+          // Prevent opening a spot after a real drag gesture.
+          scrollEl.addEventListener(
+            "click",
+            (e) => {
+              if (!moved) return;
+              e.preventDefault();
+              e.stopPropagation();
+              moved = false;
+            },
+            true,
+          );
+
+          scrollEl.addEventListener("scroll", updateButtons, { passive: true });
+          window.addEventListener("resize", updateButtons, { passive: true });
+
+          requestAnimationFrame(updateButtons);
+        }
+
+        function renderWeeklyTopSpots(spots) {
+          if (!feedTopEl) return;
+
+          if (!spots.length) {
+            feedTopEl.innerHTML = `
+              <div class="kova-feed-empty">
+                No ratings yet this week. As soon as people rate spots, the weekly top 5 appears here.
+              </div>
+            `;
+            return;
+          }
+
+          feedTopEl.innerHTML = spots
+            .map((spot, index) => {
+              const weeklyAvg = Number(spot.weeklyAvgRating || 0).toFixed(1);
+              const weeklyCount = Number(spot.weeklyRatingCount || 0);
+
+              return `
+                <button
+                  class="kova-top-item"
+                  type="button"
+                  data-feed-spot-id="${escapeHTML(spot.id)}"
+                >
+                  <span class="kova-top-rank">#${index + 1}</span>
+                  ${makeFeedSpotThumb(spot) || `<span class="kova-top-thumb"></span>`}
+                  <span class="kova-top-copy">
+                    <span class="kova-top-name">${escapeHTML(spot.name || "Untitled spot")}</span>
+                    <span class="kova-top-rating">★ ${weeklyAvg} · ${weeklyCount} rating${weeklyCount === 1 ? "" : "s"} this week</span>
+                  </span>
+                  <span class="kova-top-arrow">→</span>
+                </button>
+              `;
+            })
+            .join("");
+        }
+
+        function renderAllTimeTopSpots(spots) {
+          if (!feedAllTimeEl) return;
+
+          if (!spots.length) {
+            feedAllTimeEl.innerHTML = `
+              <div class="kova-feed-empty">
+                No rated spots yet. Once spots receive ratings, the all-time top 5 appears here.
+              </div>
+            `;
+            return;
+          }
+
+          feedAllTimeEl.innerHTML = spots
+            .map((spot, index) => {
+              const avg = Number(spot.avgRating || 0).toFixed(1);
+              const count = Number(spot.ratingCount || 0);
+
+              return `
+                <button
+                  class="kova-top-item"
+                  type="button"
+                  data-feed-spot-id="${escapeHTML(spot.id)}"
+                >
+                  <span class="kova-top-rank">#${index + 1}</span>
+                  ${makeFeedSpotThumb(spot) || `<span class="kova-top-thumb"></span>`}
+                  <span class="kova-top-copy">
+                    <span class="kova-top-name">${escapeHTML(spot.name || "Untitled spot")}</span>
+                    <span class="kova-top-rating">★ ${avg} · ${count} total rating${count === 1 ? "" : "s"}</span>
+                  </span>
+                  <span class="kova-top-arrow">→</span>
+                </button>
+              `;
+            })
+            .join("");
+        }
+
+        async function loadKovaFeed({ force = false } = {}) {
+          const weekKey = getKovaWeekKey();
+
+          if (!force && feedLoadedWeekKey === weekKey) return;
+
+          if (feedTopEl) {
+            feedTopEl.innerHTML =
+              '<div class="kova-feed-loading">Loading this week\'s spots…</div>';
+          }
+
+          if (feedAllTimeEl) {
+            feedAllTimeEl.innerHTML =
+              '<div class="kova-feed-loading">Loading all-time favorites…</div>';
+          }
+
+          try {
+            const jobs = [];
+
+            if (Array.isArray(KOVAS_PICK_IDS) && KOVAS_PICK_IDS.length) {
+              jobs.push(
+                Promise.all(
+                  KOVAS_PICK_IDS.map((spotId) =>
+                    db
+                      .collection("spots")
+                      .doc(spotId)
+                      .get()
+                      .then((snap) =>
+                        snap.exists ? { id: snap.id, ...snap.data() } : null,
+                      ),
+                  ),
+                ).then((spots) => spots.filter(Boolean)),
+              );
+            } else {
+              jobs.push(Promise.resolve([]));
+            }
+
+            jobs.push(
+              db
+                .collection("spots")
+                .where("weeklyKey", "==", weekKey)
+                .get()
+                .then((snap) => {
+                  const spots = [];
+                  snap.forEach((doc) => {
+                    const data = doc.data() || {};
+                    spots.push({ id: doc.id, ...data });
+                  });
+                  return spots;
+                }),
+            );
+
+            // Existing total rating fields are enough for the all-time ranking.
+            // Pull a small pool with the highest average rating, then use
+            // ratingCount as the tie-breaker client-side.
+            jobs.push(
+              db
+                .collection("spots")
+                .orderBy("avgRating", "desc")
+                .limit(25)
+                .get()
+                .then((snap) => {
+                  const spots = [];
+                  snap.forEach((doc) => {
+                    const data = doc.data() || {};
+                    spots.push({ id: doc.id, ...data });
+                  });
+                  return spots;
+                }),
+            );
+
+            const [picks, weeklySpots, allTimeSpots] = await Promise.all(jobs);
+
+            const topFive = weeklySpots
+              .filter(
+                (spot) =>
+                  Number(spot.weeklyRatingCount || 0) > 0 &&
+                  Number.isFinite(Number(spot.weeklyAvgRating || 0)),
+              )
+              .sort((a, b) => {
+                const ratingDiff =
+                  Number(b.weeklyAvgRating || 0) -
+                  Number(a.weeklyAvgRating || 0);
+
+                if (ratingDiff !== 0) return ratingDiff;
+
+                return (
+                  Number(b.weeklyRatingCount || 0) -
+                  Number(a.weeklyRatingCount || 0)
+                );
+              })
+              .slice(0, 5);
+
+            const allTimeTopFive = allTimeSpots
+              .filter(
+                (spot) =>
+                  Number(spot.ratingCount || 0) > 0 &&
+                  Number.isFinite(Number(spot.avgRating || 0)),
+              )
+              .sort((a, b) => {
+                const ratingDiff =
+                  Number(b.avgRating || 0) - Number(a.avgRating || 0);
+
+                if (ratingDiff !== 0) return ratingDiff;
+
+                return Number(b.ratingCount || 0) - Number(a.ratingCount || 0);
+              })
+              .slice(0, 5);
+
+            renderKovaPicks(picks);
+            renderWeeklyTopSpots(topFive);
+            renderAllTimeTopSpots(allTimeTopFive);
+            feedLoadedWeekKey = weekKey;
+          } catch (err) {
+            console.error("KOVA feed error:", err);
+
+            if (feedTopEl) {
+              feedTopEl.innerHTML =
+                '<div class="kova-feed-empty">Could not load the weekly feed.</div>';
+            }
+
+            if (feedAllTimeEl) {
+              feedAllTimeEl.innerHTML =
+                '<div class="kova-feed-empty">Could not load the all-time ranking.</div>';
+            }
+          }
+        }
+
+        async function openSpotFromFeed(spotId) {
+          if (!spotId) return;
+
+          try {
+            const snap = await db.collection("spots").doc(spotId).get();
+            if (!snap.exists) return;
+
+            const spot = { id: snap.id, ...snap.data() };
+            const lat = Number(spot.lat);
+            const lng = Number(spot.lng);
+
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+            closeFeed();
+
+            if (activePopup) {
+              closeActiveSpotPopup({ animate: false });
+            }
+            closeCoordPopup();
+            closeUserPopup();
+
+            // Load all nearby spots around the selected Discover spot.
+            // They remain visible after the selected spot popup is closed.
+            await fetchSpotsInRadius(lat, lng, SEARCH_RADIUS_KM, {
+              recenter: false,
+              showEmptyPopup: false,
+            });
+
+            const props = {
+              ...spot,
+              id: snap.id,
+              lat,
+              lng,
+              avgRating: Number(spot.avgRating || 0),
+              ratingCount: Number(spot.ratingCount || 0),
+            };
+
+            const popup = new maptilersdk.Popup({
+              offset: 18,
+              maxWidth: "620px",
+              closeButton: true,
+              closeOnClick: false,
+              className: "spot-sheet-popup",
+            })
+              .setLngLat([lng, lat])
+              .setHTML(makeSpotPopupHTML(props))
+              .addTo(map);
+
+            activePopup = popup;
+            attachPopupImageLoader(popup);
+            attachMobileSheetGestures(popup);
+            updateFooterVisibility();
+            easeToSpotWithPopupSpace(lng, lat);
+            await hydratePopupData(popup, props);
+
+            popup.once("close", () => {
+              if (activePopup === popup) activePopup = null;
+              updateFooterVisibility();
+            });
+          } catch (err) {
+            console.error("Open feed spot error:", err);
+          }
+        }
+
+        feedOpenBtns.forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openFeed();
+          });
+        });
+
+        feedCloseBtn?.addEventListener("click", closeFeed);
+
+        feedOverlay?.addEventListener("click", (e) => {
+          if (e.target === feedOverlay) closeFeed();
+        });
+
+        document.addEventListener("click", (e) => {
+          const item = e.target.closest("[data-feed-spot-id]");
+          if (!item) return;
+
+          const spotId = item.getAttribute("data-feed-spot-id");
+          openSpotFromFeed(spotId);
+        });
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && feedOverlay?.classList.contains("open")) {
+            closeFeed();
+          }
+
+          if (
+            (e.key === "Enter" || e.key === " ") &&
+            e.target?.matches?.(".kova-pick-card[data-feed-spot-id]")
+          ) {
+            e.preventDefault();
+            openSpotFromFeed(e.target.getAttribute("data-feed-spot-id"));
+          }
+        });
 
         function getLocalRatings() {
           try {
@@ -2270,8 +3432,10 @@
         }
 
         function isIOSDevice() {
-          return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-            (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+          return (
+            /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+            (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+          );
         }
 
         function isAndroidDevice() {
@@ -2283,7 +3447,8 @@
 
           try {
             await navigator.clipboard.writeText(url);
-            if (noteEl) noteEl.textContent = "Link copied. Paste it in Safari or Chrome.";
+            if (noteEl)
+              noteEl.textContent = "Link copied. Paste it in Safari or Chrome.";
             return true;
           } catch (e) {
             if (noteEl) noteEl.textContent = "Copy this link manually: " + url;
@@ -2334,7 +3499,9 @@
               ? "Android: tap Open in browser. If nothing happens, use the three dots and open in Chrome."
               : "Open this link in your normal browser for the best location support.";
           const canAskLocation = Boolean(navigator.geolocation) && !noSupport;
-          const openBrowserLabel = isAndroidDevice() ? "Open in browser" : "Copy link";
+          const openBrowserLabel = isAndroidDevice()
+            ? "Open in browser"
+            : "Copy link";
 
           document.body.insertAdjacentHTML(
             "beforeend",
@@ -2361,18 +3528,24 @@
           const gate = document.querySelector(".kova-location-gate");
           const noteEl = gate?.querySelector("[data-kova-location-note]");
 
-          gate?.querySelector("[data-kova-open-browser]")?.addEventListener("click", () => {
-            openKovaInExternalBrowser(noteEl);
-          });
+          gate
+            ?.querySelector("[data-kova-open-browser]")
+            ?.addEventListener("click", () => {
+              openKovaInExternalBrowser(noteEl);
+            });
 
-          gate?.querySelector("[data-kova-use-location]")?.addEventListener("click", async () => {
-            closeKovaLocationGate();
-            await requestUserLocation({ showHelpOnFail: true });
-          });
+          gate
+            ?.querySelector("[data-kova-use-location]")
+            ?.addEventListener("click", async () => {
+              closeKovaLocationGate();
+              await requestUserLocation({ showHelpOnFail: true });
+            });
 
-          gate?.querySelector("[data-kova-continue]")?.addEventListener("click", () => {
-            closeKovaLocationGate();
-          });
+          gate
+            ?.querySelector("[data-kova-continue]")
+            ?.addEventListener("click", () => {
+              closeKovaLocationGate();
+            });
         }
 
         function initUserLocationFlow() {
@@ -2703,6 +3876,12 @@
           return `
             <div class="kova-popup" data-spot-id="${escapeHTML(props.id)}">
               <div class="sheet-grabber" data-sheet-grabber aria-hidden="true"><span></span></div>
+              <button
+                class="spot-close-btn"
+                type="button"
+                data-action="close-spot"
+                aria-label="Close spot"
+              >×</button>
               <div class="hero" data-photo-url="${escapeHTML(photoURL)}">
                 <div class="kova-loading">
                   <div class="kova-spinner"></div>
@@ -2893,18 +4072,44 @@
 
             const avgRating = ratingCount > 0 ? ratingSum / ratingCount : 0;
 
+            const currentWeekKey = getKovaWeekKey();
+            const sameWeek = spotData.weeklyKey === currentWeekKey;
+            let weeklyRatingSum = sameWeek
+              ? Number(spotData.weeklyRatingSum || 0)
+              : 0;
+            let weeklyRatingCount = sameWeek
+              ? Number(spotData.weeklyRatingCount || 0)
+              : 0;
+
+            weeklyRatingSum += newRating;
+            weeklyRatingCount += 1;
+
+            const weeklyAvgRating =
+              weeklyRatingCount > 0 ? weeklyRatingSum / weeklyRatingCount : 0;
+
             transaction.set(
               spotRef,
               {
                 ratingSum: Math.round(ratingSum),
                 ratingCount: Math.round(ratingCount),
                 avgRating: Number(avgRating.toFixed(2)),
+
+                // Weekly discover feed
+                weeklyKey: currentWeekKey,
+                weeklyRatingSum: Math.round(weeklyRatingSum),
+                weeklyRatingCount: Math.round(weeklyRatingCount),
+                weeklyAvgRating: Number(weeklyAvgRating.toFixed(2)),
+                weeklyUpdatedAt:
+                  firebase.firestore.FieldValue.serverTimestamp(),
               },
               { merge: true },
             );
           });
 
           setLocalRating(spotId, newRating);
+
+          // If discover is opened again after a rating, refresh its ranking.
+          feedLoadedWeekKey = "";
         }
 
         async function getSpotDocData(spotId) {
@@ -3466,12 +4671,19 @@
               );
             },
           );
-
         }
 
         initUserLocationFlow();
 
         document.addEventListener("click", async (e) => {
+          const closeSpotBtn = e.target.closest("[data-action='close-spot']");
+          if (closeSpotBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeActiveSpotPopup({ animate: true });
+            return;
+          }
+
           const navBtn = e.target.closest("[data-action='nav']");
           if (navBtn) {
             e.preventDefault();
