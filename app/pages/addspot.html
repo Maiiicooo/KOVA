@@ -296,7 +296,7 @@
 
       .layout {
         display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+        grid-template-columns: minmax(0, 1.18fr) minmax(300px, 0.82fr);
         gap: 18px;
         align-items: start;
       }
@@ -421,7 +421,7 @@
 
       .mini-map {
         width: 100%;
-        height: 390px;
+        height: 330px;
         border-radius: 20px;
         overflow: hidden;
         border: 1px solid rgba(255, 255, 255, 0.14);
@@ -517,13 +517,183 @@
         color: #fff;
       }
 
+      .flow-step {
+        padding: 16px 0 4px;
+      }
+
+      .flow-step:first-of-type {
+        padding-top: 4px;
+      }
+
+      .flow-step + .flow-step {
+        margin-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .step-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .step-number {
+        width: 28px;
+        height: 28px;
+        flex: 0 0 auto;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        border: 1px solid rgba(139, 113, 8, 0.55);
+        background: rgba(139, 113, 8, 0.16);
+        color: #fff;
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .step-copy h3 {
+        margin: 0;
+        font-size: 0.98rem;
+        line-height: 1.2;
+      }
+
+      .step-copy p {
+        margin: 3px 0 0;
+        color: rgba(255, 255, 255, 0.48);
+        font-size: 0.8rem;
+        line-height: 1.4;
+      }
+
+      .map-wrap {
+        margin-top: 12px;
+      }
+
+      .map-help {
+        margin-top: 8px;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.8rem;
+        line-height: 1.45;
+      }
+
+      .coords-details {
+        margin-top: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.035);
+        overflow: hidden;
+      }
+
+      .coords-details summary {
+        cursor: pointer;
+        list-style: none;
+        padding: 12px 14px;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 0.84rem;
+        font-weight: 650;
+        user-select: none;
+      }
+
+      .coords-details summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .coords-details summary::after {
+        content: "+";
+        float: right;
+        color: var(--accent);
+        font-size: 1rem;
+        line-height: 1;
+      }
+
+      .coords-details[open] summary::after {
+        content: "−";
+      }
+
+      .coords-inner {
+        padding: 0 14px 14px;
+      }
+
+      .submit-block {
+        margin-top: 12px;
+        padding: 14px;
+        border: 1px solid rgba(139, 113, 8, 0.25);
+        border-radius: 17px;
+        background: rgba(139, 113, 8, 0.07);
+      }
+
+      .submit-block .btn {
+        margin-top: 0;
+      }
+
+      .review-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .review-item {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .review-icon {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border-radius: 9px;
+        background: rgba(139, 113, 8, 0.15);
+        color: var(--accent);
+        font-weight: 800;
+        font-size: 0.82rem;
+      }
+
+      .review-item b {
+        display: block;
+        margin-bottom: 3px;
+        color: #fff;
+        font-size: 0.88rem;
+      }
+
+      .review-item span {
+        color: rgba(255, 255, 255, 0.55);
+        font-size: 0.8rem;
+        line-height: 1.4;
+      }
+
+      .side-card {
+        position: sticky;
+        top: 100px;
+      }
+
+      .side-note {
+        margin-top: 14px;
+        padding: 12px 13px;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px dashed rgba(255, 255, 255, 0.09);
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.8rem;
+        line-height: 1.45;
+      }
+
       @media (max-width: 860px) {
         .layout {
           grid-template-columns: 1fr;
         }
 
         .mini-map {
-          height: 300px;
+          height: 290px;
+        }
+
+        .side-card {
+          position: static;
         }
       }
 
@@ -574,6 +744,22 @@
           height: 245px;
         }
 
+        .flow-step {
+          padding: 14px 0 2px;
+        }
+
+        .step-head {
+          align-items: flex-start;
+        }
+
+        .coords-details summary {
+          padding: 12px;
+        }
+
+        .coords-inner {
+          padding: 0 12px 12px;
+        }
+
         .section-title {
           align-items: flex-start;
           flex-direction: column;
@@ -616,78 +802,145 @@
         <div class="eyebrow">KOVA submit</div>
         <h1>Add a spot.</h1>
         <p>
-          Drop a location, add a photo and send it to pending spots. New spots
-          stay offline until they are reviewed.
+          Four quick steps: choose the exact location, add a clear photo,
+          describe the spot, then send it for review.
         </p>
       </section>
 
       <form id="spotForm" class="layout">
         <section class="card">
           <div class="section-title">
-            <h2>Spot details</h2>
+            <h2>Add your spot</h2>
             <span class="pill">pending review</span>
           </div>
 
-          <button class="btn secondary" type="button" id="gpsBtn">
-            Use current GPS location
-          </button>
-
-          <div class="grid">
-            <div>
-              <label for="lat">Latitude</label>
-              <input id="lat" required inputmode="decimal" />
+          <div class="flow-step">
+            <div class="step-head">
+              <div class="step-number">1</div>
+              <div class="step-copy">
+                <h3>Choose the location</h3>
+                <p>Use GPS first, then check the X on the map.</p>
+              </div>
             </div>
 
-            <div>
-              <label for="lng">Longitude</label>
-              <input id="lng" required inputmode="decimal" />
+            <button class="btn secondary" type="button" id="gpsBtn">
+              Use current GPS location
+            </button>
+
+            <div class="map-wrap">
+              <div id="miniMap" class="mini-map"></div>
+              <div class="map-help">
+                Tap the map or drag the X if the exact spot needs a small correction.
+              </div>
             </div>
+
+            <details class="coords-details">
+              <summary>Fine tune coordinates</summary>
+              <div class="coords-inner">
+                <div class="grid">
+                  <div>
+                    <label for="lat">Latitude</label>
+                    <input id="lat" required inputmode="decimal" />
+                  </div>
+
+                  <div>
+                    <label for="lng">Longitude</label>
+                    <input id="lng" required inputmode="decimal" />
+                  </div>
+                </div>
+              </div>
+            </details>
           </div>
 
-          <label for="photoFile">Spot photo</label>
-          <input id="photoFile" type="file" accept="image/*" required />
-          <img id="photoPreview" class="photo-preview" alt="Spot preview" />
+          <div class="flow-step">
+            <div class="step-head">
+              <div class="step-number">2</div>
+              <div class="step-copy">
+                <h3>Add a photo</h3>
+                <p>Use one clear image that shows the vibe of the spot.</p>
+              </div>
+            </div>
 
-          <label for="name">Spot name</label>
-          <input id="name" placeholder="Hidden sunset bench" required />
+            <label for="photoFile">Spot photo</label>
+            <input id="photoFile" type="file" accept="image/*" required />
+            <img id="photoPreview" class="photo-preview" alt="Spot preview" />
+          </div>
 
-          <label for="description">Description</label>
-          <textarea
-            id="description"
-            placeholder="Short vibe, access info, warnings, best time to go..."
-            required
-          ></textarea>
+          <div class="flow-step">
+            <div class="step-head">
+              <div class="step-number">3</div>
+              <div class="step-copy">
+                <h3>Describe the spot</h3>
+                <p>Keep it short, useful and easy to understand.</p>
+              </div>
+            </div>
 
-          <label for="addedBy">Added by</label>
-          <input id="addedBy" value="Maico" />
+            <label for="name">Spot name</label>
+            <input id="name" placeholder="Hidden sunset bench" required />
 
-          <button class="btn" type="submit" id="saveBtn">
-            Save to pending spots
-          </button>
+            <label for="description">Description</label>
+            <textarea
+              id="description"
+              placeholder="What is here? Why is it worth visiting? Anything useful to know?"
+              required
+            ></textarea>
 
-          <div id="status" class="status"></div>
+            <label for="addedBy">Added by</label>
+            <input id="addedBy" value="Maico" />
+          </div>
+
+          <div class="flow-step">
+            <div class="step-head">
+              <div class="step-number">4</div>
+              <div class="step-copy">
+                <h3>Send for review</h3>
+                <p>The spot stays offline until it has been approved.</p>
+              </div>
+            </div>
+
+            <div class="submit-block">
+              <button class="btn" type="submit" id="saveBtn">
+                Send spot for review
+              </button>
+              <div id="status" class="status"></div>
+            </div>
+          </div>
         </section>
 
-        <aside class="card">
+        <aside class="card side-card">
           <div class="section-title">
-            <h2>GPS check map</h2>
-            <span class="pill">tap to correct</span>
+            <h2>Before you send</h2>
+            <span class="pill">quick check</span>
           </div>
 
-          <div id="miniMap" class="mini-map"></div>
-          <div class="small">
-            Tap the mini map or drag the X marker if the location needs a small
-            correction.
+          <div class="review-list">
+            <div class="review-item">
+              <div class="review-icon">1</div>
+              <div>
+                <b>Exact location</b>
+                <span>Make sure the X points to the actual spot, not just the general area.</span>
+              </div>
+            </div>
+
+            <div class="review-item">
+              <div class="review-icon">2</div>
+              <div>
+                <b>Good photo</b>
+                <span>Choose a photo that clearly shows what someone can expect there.</span>
+              </div>
+            </div>
+
+            <div class="review-item">
+              <div class="review-icon">3</div>
+              <div>
+                <b>Useful description</b>
+                <span>Mention access, vibe, warnings or the best time to visit when relevant.</span>
+              </div>
+            </div>
           </div>
 
-          <div class="hint-list">
-            <div class="hint">
-              <b>Tip:</b> open this page from the map after searching a point.
-              Coordinates in the URL are automatically filled in.
-            </div>
-            <div class="hint">
-              <b>Photo:</b> use a clear image that shows the vibe of the spot.
-            </div>
+          <div class="side-note">
+            Opened this page from the KOVA map? The coordinates from that point are filled in automatically.
           </div>
         </aside>
       </form>
@@ -1046,7 +1299,7 @@
           }
 
           saveBtn.disabled = true;
-          status("Preparing pending spot...");
+          status("Preparing your spot...");
 
           try {
             const docRef = db.collection("pending_spots").doc();
@@ -1055,7 +1308,7 @@
             status("Uploading photo...");
             const photoURL = await uploadPhoto(file, docRef.id);
 
-            status("Saving to pending spots...");
+            status("Sending spot for review...");
 
             await docRef.set({
               name,
@@ -1075,7 +1328,7 @@
               timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             });
 
-            status("Spot saved to pending_spots. Not live yet.", "good");
+            status("Spot sent for review. It is not live yet.", "good");
 
             nameInput.value = "";
             descriptionInput.value = "";
