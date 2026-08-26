@@ -2385,6 +2385,360 @@
           min-height: 175px;
         }
       }
+
+      /* KOVA location search ---------------------------------------- */
+      .kova-search-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 10012;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: rgba(0, 0, 0, 0.44);
+        backdrop-filter: blur(7px);
+        -webkit-backdrop-filter: blur(7px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+
+      .kova-search-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .kova-search-panel {
+        width: min(760px, calc(100vw - 32px));
+        max-height: min(820px, calc(100dvh - 48px));
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        border-radius: 28px;
+        background: linear-gradient(
+          180deg,
+          rgba(18, 18, 18, 0.99),
+          rgba(7, 7, 7, 0.98)
+        );
+        box-shadow: 0 28px 78px rgba(0, 0, 0, 0.6);
+        transform: translateY(14px) scale(0.985);
+        transition: transform 0.22s ease;
+      }
+
+      .kova-search-overlay.open .kova-search-panel {
+        transform: translateY(0) scale(1);
+      }
+
+      .kova-search-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 24px 24px 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .kova-search-kicker {
+        margin-bottom: 8px;
+        color: var(--accent);
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+      }
+
+      .kova-search-title {
+        margin: 0;
+        font-size: clamp(1.8rem, 5vw, 2.4rem);
+        line-height: 1;
+        letter-spacing: -1.2px;
+      }
+
+      .kova-search-subtitle {
+        max-width: 500px;
+        margin: 9px 0 0;
+        color: rgba(255, 255, 255, 0.58);
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+
+      .kova-search-close {
+        width: 40px;
+        height: 40px;
+        flex: 0 0 auto;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.045);
+        color: rgba(255, 255, 255, 0.8);
+        cursor: pointer;
+        font: inherit;
+        font-size: 1.3rem;
+      }
+
+      .kova-search-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 20px 24px 24px;
+      }
+
+      .kova-search-field {
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      .kova-search-field input {
+        width: 100%;
+        height: 50px;
+        padding: 0 16px 0 44px;
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        border-radius: 16px;
+        outline: 0;
+        background: rgba(255, 255, 255, 0.055);
+        color: #fff;
+        font: inherit;
+        font-size: 0.95rem;
+        transition:
+          border-color 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .kova-search-field input:focus {
+        border-color: rgba(139, 113, 8, 0.72);
+        background: rgba(255, 255, 255, 0.075);
+      }
+
+      .kova-search-field input::placeholder {
+        color: rgba(255, 255, 255, 0.38);
+      }
+
+      .kova-search-field::before {
+        content: "⌕";
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        z-index: 2;
+        transform: translateY(-50%);
+        color: var(--accent);
+        font-size: 1.2rem;
+        pointer-events: none;
+      }
+
+      .kova-filter-section + .kova-filter-section {
+        margin-top: 22px;
+      }
+
+      .kova-filter-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .kova-filter-head h3 {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 0.78rem;
+        font-weight: 780;
+        letter-spacing: 0.9px;
+        text-transform: uppercase;
+      }
+
+      .kova-filter-head span {
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 0.72rem;
+      }
+
+      .kova-filter-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .kova-filter-option {
+        position: relative;
+      }
+
+      .kova-filter-option input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .kova-filter-option label {
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 11px;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.035);
+        color: rgba(255, 255, 255, 0.72);
+        cursor: pointer;
+        font-size: 0.82rem;
+        line-height: 1.2;
+        user-select: none;
+        transition:
+          background 0.16s ease,
+          border-color 0.16s ease,
+          color 0.16s ease,
+          transform 0.16s ease;
+      }
+
+      .kova-filter-option label::before {
+        content: "";
+        width: 14px;
+        height: 14px;
+        flex: 0 0 auto;
+        border: 1px solid rgba(255, 255, 255, 0.26);
+        border-radius: 4px;
+        background: rgba(0, 0, 0, 0.15);
+        box-shadow: inset 0 0 0 3px transparent;
+      }
+
+      .kova-filter-option input:checked + label {
+        border-color: rgba(139, 113, 8, 0.58);
+        background: rgba(139, 113, 8, 0.17);
+        color: #fff;
+      }
+
+      .kova-filter-option input:checked + label::before {
+        border-color: var(--accent);
+        background: var(--accent);
+        box-shadow: inset 0 0 0 3px #151515;
+      }
+
+      .kova-filter-option label:hover {
+        transform: translateY(-1px);
+        border-color: rgba(139, 113, 8, 0.38);
+      }
+
+      .kova-filter-empty {
+        width: 100%;
+        padding: 12px 13px;
+        border: 1px dashed rgba(255, 255, 255, 0.09);
+        border-radius: 13px;
+        color: rgba(255, 255, 255, 0.42);
+        font-size: 0.8rem;
+        line-height: 1.4;
+      }
+
+      .kova-search-footer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 24px calc(14px + env(safe-area-inset-bottom, 0px));
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(8, 8, 8, 0.92);
+      }
+
+      .kova-search-result-count {
+        min-width: 0;
+        flex: 1;
+        color: rgba(255, 255, 255, 0.55);
+        font-size: 0.82rem;
+        line-height: 1.35;
+      }
+
+      .kova-search-clear,
+      .kova-search-submit {
+        min-height: 44px;
+        padding: 0 16px;
+        border-radius: 13px;
+        font: inherit;
+        font-size: 0.86rem;
+        font-weight: 720;
+        cursor: pointer;
+      }
+
+      .kova-search-clear {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.045);
+        color: rgba(255, 255, 255, 0.76);
+      }
+
+      .kova-search-submit {
+        border: 1px solid rgba(139, 113, 8, 0.95);
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .kova-search-submit:disabled,
+      .kova-search-clear:disabled {
+        opacity: 0.38;
+        cursor: default;
+      }
+
+      .kova-search-status {
+        margin: -8px 0 16px;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.78rem;
+        line-height: 1.4;
+      }
+
+      .kova-search-status.error {
+        color: var(--danger);
+      }
+
+      @media (max-width: 700px) {
+        .kova-search-overlay {
+          align-items: end;
+          padding: 0;
+          background: rgba(0, 0, 0, 0.4);
+        }
+
+        .kova-search-panel {
+          width: 100%;
+          max-height: min(86dvh, 820px);
+          border-radius: 28px 28px 0 0;
+          border-left: 0;
+          border-right: 0;
+          border-bottom: 0;
+          transform: translateY(28px);
+        }
+
+        .kova-search-overlay.open .kova-search-panel {
+          transform: translateY(0);
+        }
+
+        .kova-search-head {
+          padding: 20px 17px 15px;
+        }
+
+        .kova-search-body {
+          padding: 16px 17px 18px;
+        }
+
+        .kova-search-footer {
+          padding: 12px 17px calc(12px + env(safe-area-inset-bottom, 0px));
+          flex-wrap: wrap;
+        }
+
+        .kova-search-result-count {
+          width: 100%;
+          flex-basis: 100%;
+        }
+
+        .kova-search-clear,
+        .kova-search-submit {
+          flex: 1;
+        }
+
+        .kova-filter-options {
+          gap: 7px;
+        }
+
+        .kova-filter-option label {
+          min-height: 36px;
+          padding: 7px 10px;
+          font-size: 0.8rem;
+        }
+      }
     </style>
   </head>
 
@@ -2410,6 +2764,7 @@
         </button>
 
         <div class="hamburger-menu" id="kovaMenu" aria-hidden="true">
+          <button type="button" data-action="open-search">search</button>
           <button type="button" data-action="open-feed">discover</button>
           <!-- <button type="button" data-action="open-tutorial">intro</button> -->
           <a href="app/pages/addspot.html">add spot</a>
@@ -2503,16 +2858,6 @@
 
           <section class="kova-feed-section">
             <div class="kova-feed-section-title">
-              <h3>Top 5 spots this week</h3>
-              <span data-feed-week></span>
-            </div>
-            <div class="kova-top-list" data-feed-top>
-              <div class="kova-feed-loading">Loading this week's spots…</div>
-            </div>
-          </section>
-
-          <section class="kova-feed-section">
-            <div class="kova-feed-section-title">
               <h3>Top 5 spots all time</h3>
               <span>community favorites</span>
             </div>
@@ -2520,6 +2865,97 @@
               <div class="kova-feed-loading">Loading all-time favorites…</div>
             </div>
           </section>
+        </div>
+      </section>
+    </div>
+
+    <div class="kova-search-overlay" id="kovaSearch" aria-hidden="true">
+      <section
+        class="kova-search-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="kovaSearchTitle"
+      >
+        <div class="kova-search-head">
+          <div>
+            <div class="kova-search-kicker">KOVA search</div>
+            <h2 class="kova-search-title" id="kovaSearchTitle">Find spots.</h2>
+            <p class="kova-search-subtitle">
+              Choose a country and one province or region. KOVA only loads spots
+              after a province is selected, so Search stays lightweight.
+            </p>
+          </div>
+
+          <button
+            class="kova-search-close"
+            type="button"
+            data-search-close
+            aria-label="Close search"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="kova-search-body">
+          <div class="kova-search-field">
+            <input
+              type="search"
+              data-city-search
+              placeholder="Optional: filter cities inside the selected province…"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="kova-search-status" data-search-status>
+            Open Search to load available KOVA locations.
+          </div>
+
+          <section class="kova-filter-section">
+            <div class="kova-filter-head">
+              <h3>Country</h3>
+              <span data-country-count></span>
+            </div>
+            <div class="kova-filter-options" data-country-options>
+              <div class="kova-filter-empty">Loading countries…</div>
+            </div>
+          </section>
+
+          <section class="kova-filter-section">
+            <div class="kova-filter-head">
+              <h3>Province / region · choose one</h3>
+              <span data-province-count></span>
+            </div>
+            <div class="kova-filter-options" data-province-options>
+              <div class="kova-filter-empty">Loading provinces…</div>
+            </div>
+          </section>
+
+          <section class="kova-filter-section">
+            <div class="kova-filter-head">
+              <h3>City</h3>
+              <span data-city-count></span>
+            </div>
+            <div class="kova-filter-options" data-city-options>
+              <div class="kova-filter-empty">Loading cities…</div>
+            </div>
+          </section>
+        </div>
+
+        <div class="kova-search-footer">
+          <div class="kova-search-result-count" data-search-result-count>
+            No filters selected.
+          </div>
+          <button class="kova-search-clear" type="button" data-search-clear>
+            Clear
+          </button>
+          <button
+            class="kova-search-submit"
+            type="button"
+            data-search-submit
+            disabled
+          >
+            Show spots
+          </button>
         </div>
       </section>
     </div>
@@ -2811,10 +3247,674 @@
           "[data-feed-pick-section]",
         );
         const feedPickEl = document.querySelector("[data-feed-pick]");
-        const feedTopEl = document.querySelector("[data-feed-top]");
         const feedAllTimeEl = document.querySelector("[data-feed-alltime]");
-        const feedWeekEl = document.querySelector("[data-feed-week]");
-        let feedLoadedWeekKey = "";
+        let feedLoaded = false;
+
+        // Province-first Search -------------------------------------------
+        // IMPORTANT:
+        // Search does NOT read the full `spots` collection.
+        // 1 read gets the small province index.
+        // Spot reads only happen after exactly one province/region is chosen.
+        const searchOverlay = document.getElementById("kovaSearch");
+        const searchOpenBtns = document.querySelectorAll(
+          "[data-action='open-search']",
+        );
+        const searchCloseBtn = document.querySelector("[data-search-close]");
+        const searchClearBtn = document.querySelector("[data-search-clear]");
+        const searchSubmitBtn = document.querySelector("[data-search-submit]");
+        const citySearchInput = document.querySelector("[data-city-search]");
+        const countryOptionsEl = document.querySelector(
+          "[data-country-options]",
+        );
+        const provinceOptionsEl = document.querySelector(
+          "[data-province-options]",
+        );
+        const cityOptionsEl = document.querySelector("[data-city-options]");
+        const searchStatusEl = document.querySelector("[data-search-status]");
+        const searchResultCountEl = document.querySelector(
+          "[data-search-result-count]",
+        );
+        const countryCountEl = document.querySelector("[data-country-count]");
+        const provinceCountEl = document.querySelector("[data-province-count]");
+        const cityCountEl = document.querySelector("[data-city-count]");
+
+        let searchRegionIndex = [];
+        let searchRegionIndexLoaded = false;
+        let searchRegionIndexPromise = null;
+
+        let selectedCountryKey = "";
+        let selectedProvinceKey = "";
+        let selectedProvinceName = "";
+        let provinceSpots = [];
+        let provinceSpotsLoaded = false;
+        let provinceSpotsPromise = null;
+        let selectedLocationCities = new Set();
+
+        function normalizeSearchText(value) {
+          return String(value || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .trim();
+        }
+
+        function makeSearchOption(kind, value, key, count, checked = false) {
+          const safeId =
+            `${kind}-${normalizeSearchText(key || value)}`
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-|-$/g, "") +
+            "-" +
+            Math.random().toString(36).slice(2, 7);
+
+          return `
+            <div class="kova-filter-option">
+              <input
+                id="${escapeHTML(safeId)}"
+                type="checkbox"
+                value="${escapeHTML(key || value)}"
+                data-filter-kind="${escapeHTML(kind)}"
+                data-filter-label="${escapeHTML(value)}"
+                ${checked ? "checked" : ""}
+              >
+              <label for="${escapeHTML(safeId)}">
+                ${escapeHTML(value)}
+                ${Number.isFinite(Number(count)) ? `<span style="opacity:.42">${Number(count)}</span>` : ""}
+              </label>
+            </div>
+          `;
+        }
+
+        function uniqueSorted(values) {
+          return [...new Set(values.filter(Boolean))].sort((a, b) =>
+            String(a).localeCompare(String(b), "nl", { sensitivity: "base" }),
+          );
+        }
+
+        async function loadSearchRegionIndex() {
+          if (searchRegionIndexLoaded) return searchRegionIndex;
+          if (searchRegionIndexPromise) return searchRegionIndexPromise;
+
+          searchRegionIndexPromise = (async () => {
+            if (searchStatusEl) {
+              searchStatusEl.classList.remove("error");
+              searchStatusEl.textContent = "Loading available regions…";
+            }
+
+            try {
+              // One document read, regardless of how many KOVA spots exist.
+              const snap = await db
+                .collection("search_index")
+                .doc("regions")
+                .get();
+
+              if (!snap.exists) {
+                throw new Error(
+                  "Search index missing. Run buildSearchIndex.js once.",
+                );
+              }
+
+              const data = snap.data() || {};
+              searchRegionIndex = Array.isArray(data.regions)
+                ? data.regions
+                    .filter(
+                      (region) =>
+                        region &&
+                        region.country &&
+                        region.countryKey &&
+                        region.province &&
+                        region.provinceKey &&
+                        Number(region.count || 0) > 0,
+                    )
+                    .map((region) => ({
+                      country: String(region.country),
+                      countryKey: String(region.countryKey),
+                      province: String(region.province),
+                      provinceKey: String(region.provinceKey),
+                      count: Number(region.count || 0),
+                    }))
+                : [];
+
+              searchRegionIndexLoaded = true;
+              renderSearchCountries();
+
+              if (searchStatusEl) {
+                searchStatusEl.textContent = searchRegionIndex.length
+                  ? "Choose a country, then one province or region."
+                  : "No searchable provinces with spots yet.";
+              }
+
+              return searchRegionIndex;
+            } catch (err) {
+              console.error("KOVA Search index error:", err);
+
+              if (searchStatusEl) {
+                searchStatusEl.classList.add("error");
+                searchStatusEl.textContent =
+                  err?.message || "Could not load Search.";
+              }
+
+              if (countryOptionsEl) {
+                countryOptionsEl.innerHTML =
+                  '<div class="kova-filter-empty">Search index unavailable.</div>';
+              }
+
+              if (provinceOptionsEl) {
+                provinceOptionsEl.innerHTML =
+                  '<div class="kova-filter-empty">No provinces available.</div>';
+              }
+
+              if (cityOptionsEl) {
+                cityOptionsEl.innerHTML =
+                  '<div class="kova-filter-empty">Choose a province first.</div>';
+              }
+
+              throw err;
+            } finally {
+              searchRegionIndexPromise = null;
+            }
+          })();
+
+          return searchRegionIndexPromise;
+        }
+
+        function renderSearchCountries() {
+          if (!countryOptionsEl) return;
+
+          const countriesByKey = new Map();
+
+          searchRegionIndex.forEach((region) => {
+            const current = countriesByKey.get(region.countryKey) || {
+              country: region.country,
+              countryKey: region.countryKey,
+              count: 0,
+            };
+
+            current.count += Number(region.count || 0);
+            countriesByKey.set(region.countryKey, current);
+          });
+
+          const countries = [...countriesByKey.values()].sort((a, b) =>
+            a.country.localeCompare(b.country, "nl", { sensitivity: "base" }),
+          );
+
+          if (countryCountEl) {
+            countryCountEl.textContent = countries.length
+              ? `${countries.length} available`
+              : "";
+          }
+
+          countryOptionsEl.innerHTML = countries.length
+            ? countries
+                .map((item) =>
+                  makeSearchOption(
+                    "country",
+                    item.country,
+                    item.countryKey,
+                    item.count,
+                    item.countryKey === selectedCountryKey,
+                  ),
+                )
+                .join("")
+            : '<div class="kova-filter-empty">No countries with spots found.</div>';
+
+          renderSearchProvinces();
+        }
+
+        function renderSearchProvinces() {
+          if (!provinceOptionsEl) return;
+
+          if (!selectedCountryKey) {
+            if (provinceCountEl) provinceCountEl.textContent = "";
+            provinceOptionsEl.innerHTML =
+              '<div class="kova-filter-empty">Choose a country first.</div>';
+            resetLoadedProvince();
+            renderSearchCities();
+            updateSearchResultCount();
+            return;
+          }
+
+          const provinces = searchRegionIndex
+            .filter((region) => region.countryKey === selectedCountryKey)
+            .sort((a, b) =>
+              a.province.localeCompare(b.province, "nl", {
+                sensitivity: "base",
+              }),
+            );
+
+          if (provinceCountEl) {
+            provinceCountEl.textContent = provinces.length
+              ? `${provinces.length} available`
+              : "";
+          }
+
+          provinceOptionsEl.innerHTML = provinces.length
+            ? provinces
+                .map((region) =>
+                  makeSearchOption(
+                    "province",
+                    region.province,
+                    region.provinceKey,
+                    region.count,
+                    region.provinceKey === selectedProvinceKey,
+                  ),
+                )
+                .join("")
+            : '<div class="kova-filter-empty">No provinces with spots found.</div>';
+        }
+
+        function resetLoadedProvince() {
+          provinceSpots = [];
+          provinceSpotsLoaded = false;
+          provinceSpotsPromise = null;
+          selectedLocationCities.clear();
+
+          if (citySearchInput) citySearchInput.value = "";
+        }
+
+        async function loadSelectedProvinceSpots() {
+          if (!selectedProvinceKey) {
+            resetLoadedProvince();
+            renderSearchCities();
+            updateSearchResultCount();
+            return [];
+          }
+
+          if (provinceSpotsPromise) return provinceSpotsPromise;
+
+          provinceSpotsLoaded = false;
+          provinceSpots = [];
+          selectedLocationCities.clear();
+
+          if (searchSubmitBtn) searchSubmitBtn.disabled = true;
+
+          if (cityOptionsEl) {
+            cityOptionsEl.innerHTML =
+              '<div class="kova-filter-empty">Loading cities in this province…</div>';
+          }
+
+          if (searchStatusEl) {
+            searchStatusEl.classList.remove("error");
+            searchStatusEl.textContent = `Loading spots in ${selectedProvinceName || "this province"}…`;
+          }
+
+          provinceSpotsPromise = (async () => {
+            try {
+              // This is the only spot query used by menu Search.
+              // It can never load a whole country or the whole world.
+              const snap = await db
+                .collection("spots")
+                .where("provinceKey", "==", selectedProvinceKey)
+                .get();
+
+              provinceSpots = [];
+
+              snap.forEach((doc) => {
+                const data = doc.data() || {};
+                const lat = Number(data.lat);
+                const lng = Number(data.lng);
+
+                if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+                provinceSpots.push({
+                  id: doc.id,
+                  ...data,
+                  lat,
+                  lng,
+                  avgRating: Number(data.avgRating || 0),
+                  ratingCount: Number(data.ratingCount || 0),
+                  city: String(
+                    data.city ||
+                      data.municipality ||
+                      data.town ||
+                      data.place ||
+                      "",
+                  ).trim(),
+                });
+              });
+
+              provinceSpotsLoaded = true;
+              renderSearchCities();
+              updateSearchResultCount();
+
+              if (searchStatusEl) {
+                searchStatusEl.textContent = `${provinceSpots.length} spot${provinceSpots.length === 1 ? "" : "s"} available in ${selectedProvinceName}.`;
+              }
+
+              return provinceSpots;
+            } catch (err) {
+              console.error("Province Search error:", err);
+
+              if (searchStatusEl) {
+                searchStatusEl.classList.add("error");
+                searchStatusEl.textContent = "Could not load this province.";
+              }
+
+              if (cityOptionsEl) {
+                cityOptionsEl.innerHTML =
+                  '<div class="kova-filter-empty">Could not load cities.</div>';
+              }
+
+              throw err;
+            } finally {
+              if (searchSubmitBtn) searchSubmitBtn.disabled = false;
+              provinceSpotsPromise = null;
+            }
+          })();
+
+          return provinceSpotsPromise;
+        }
+
+        function renderSearchCities() {
+          if (!cityOptionsEl) return;
+
+          if (!selectedProvinceKey) {
+            if (cityCountEl) cityCountEl.textContent = "";
+            cityOptionsEl.innerHTML =
+              '<div class="kova-filter-empty">Choose one province or region first.</div>';
+            return;
+          }
+
+          if (!provinceSpotsLoaded) return;
+
+          const query = normalizeSearchText(citySearchInput?.value || "");
+          const counts = new Map();
+
+          provinceSpots.forEach((spot) => {
+            const city = String(spot.city || "").trim();
+            if (!city) return;
+            if (query && !normalizeSearchText(city).includes(query)) return;
+
+            counts.set(city, (counts.get(city) || 0) + 1);
+          });
+
+          const cities = [...counts.entries()].sort((a, b) =>
+            a[0].localeCompare(b[0], "nl", { sensitivity: "base" }),
+          );
+
+          if (cityCountEl) {
+            cityCountEl.textContent = cities.length
+              ? `${cities.length} available`
+              : "";
+          }
+
+          cityOptionsEl.innerHTML = cities.length
+            ? cities
+                .map(([city, count]) =>
+                  makeSearchOption(
+                    "city",
+                    city,
+                    city,
+                    count,
+                    selectedLocationCities.has(city),
+                  ),
+                )
+                .join("")
+            : '<div class="kova-filter-empty">No matching cities in this province.</div>';
+        }
+
+        function getProvinceSearchMatches() {
+          if (!provinceSpotsLoaded || !selectedProvinceKey) return [];
+
+          const query = normalizeSearchText(citySearchInput?.value || "");
+
+          return provinceSpots.filter((spot) => {
+            const city = String(spot.city || "").trim();
+
+            if (selectedLocationCities.size) {
+              return selectedLocationCities.has(city);
+            }
+
+            if (query) {
+              return normalizeSearchText(city).includes(query);
+            }
+
+            return true;
+          });
+        }
+
+        function updateSearchResultCount() {
+          if (!searchResultCountEl || !searchSubmitBtn) return;
+
+          if (!selectedProvinceKey) {
+            searchResultCountEl.textContent =
+              "Select one province or region first.";
+            searchSubmitBtn.disabled = true;
+            return;
+          }
+
+          if (!provinceSpotsLoaded) {
+            searchResultCountEl.textContent = "Loading province…";
+            searchSubmitBtn.disabled = true;
+            return;
+          }
+
+          const matches = getProvinceSearchMatches();
+
+          searchResultCountEl.textContent = `${matches.length} spot${matches.length === 1 ? "" : "s"} match this province search.`;
+
+          searchSubmitBtn.disabled = matches.length === 0;
+        }
+
+        function clearProvinceSearch() {
+          selectedCountryKey = "";
+          selectedProvinceKey = "";
+          selectedProvinceName = "";
+          resetLoadedProvince();
+
+          renderSearchCountries();
+          renderSearchCities();
+          updateSearchResultCount();
+
+          if (searchStatusEl) {
+            searchStatusEl.classList.remove("error");
+            searchStatusEl.textContent =
+              "Choose a country, then one province or region.";
+          }
+        }
+
+        function closeLocationSearch() {
+          if (!searchOverlay) return;
+          searchOverlay.classList.remove("open");
+          searchOverlay.setAttribute("aria-hidden", "true");
+        }
+
+        async function openLocationSearch() {
+          if (!searchOverlay) return;
+
+          closeHamburgerMenu();
+          closeFeed();
+
+          searchOverlay.classList.add("open");
+          searchOverlay.setAttribute("aria-hidden", "false");
+
+          try {
+            await loadSearchRegionIndex();
+          } catch (e) {}
+        }
+
+        function spotToMapFeature(spot) {
+          return {
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: [Number(spot.lng), Number(spot.lat)],
+            },
+            properties: {
+              id: spot.id,
+              name: spot.name || "",
+              description: spot.description || "",
+              addedBy: spot.addedBy || "",
+              added_by: spot.added_by || "",
+              author: spot.author || "",
+              photoURL: spot.photoURL || "",
+              lat: Number(spot.lat),
+              lng: Number(spot.lng),
+              avgRating: Number(spot.avgRating || 0),
+              ratingCount: Number(spot.ratingCount || 0),
+            },
+          };
+        }
+
+        function showProvinceSearchMatchesOnMap() {
+          if (!selectedProvinceKey || !provinceSpotsLoaded) {
+            if (searchStatusEl) {
+              searchStatusEl.classList.add("error");
+              searchStatusEl.textContent =
+                "Choose one province or region first.";
+            }
+            return;
+          }
+
+          const matches = getProvinceSearchMatches();
+
+          if (!matches.length) {
+            if (searchStatusEl) {
+              searchStatusEl.classList.add("error");
+              searchStatusEl.textContent =
+                "No spots match the selected city filter.";
+            }
+            return;
+          }
+
+          closeAll();
+          setSpotsGeoJSON(matches.map(spotToMapFeature));
+          closeLocationSearch();
+
+          if (matches.length === 1) {
+            const only = matches[0];
+
+            map.easeTo({
+              center: [Number(only.lng), Number(only.lat)],
+              zoom: Math.max(map.getZoom(), 13),
+              duration: 620,
+            });
+
+            return;
+          }
+
+          const bounds = new maptilersdk.LngLatBounds();
+
+          matches.forEach((spot) => {
+            bounds.extend([Number(spot.lng), Number(spot.lat)]);
+          });
+
+          if (!bounds.isEmpty()) {
+            map.fitBounds(bounds, {
+              padding: {
+                top: 100,
+                right: 70,
+                bottom: 100,
+                left: 70,
+              },
+              maxZoom: 13,
+              duration: 700,
+            });
+          }
+        }
+
+        searchOpenBtns.forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openLocationSearch();
+          });
+        });
+
+        searchCloseBtn?.addEventListener("click", closeLocationSearch);
+        searchClearBtn?.addEventListener("click", clearProvinceSearch);
+        searchSubmitBtn?.addEventListener(
+          "click",
+          showProvinceSearchMatchesOnMap,
+        );
+
+        searchOverlay?.addEventListener("click", (e) => {
+          if (e.target === searchOverlay) closeLocationSearch();
+        });
+
+        countryOptionsEl?.addEventListener("change", async (e) => {
+          const input = e.target.closest("input[data-filter-kind='country']");
+          if (!input) return;
+
+          // Checkboxes visually, but exactly one country can be active.
+          const nextKey = input.checked ? input.value : "";
+
+          selectedCountryKey = nextKey;
+          selectedProvinceKey = "";
+          selectedProvinceName = "";
+          resetLoadedProvince();
+
+          countryOptionsEl
+            .querySelectorAll("input[data-filter-kind='country']")
+            .forEach((other) => {
+              other.checked = other === input && Boolean(nextKey);
+            });
+
+          renderSearchProvinces();
+          renderSearchCities();
+          updateSearchResultCount();
+        });
+
+        provinceOptionsEl?.addEventListener("change", async (e) => {
+          const input = e.target.closest("input[data-filter-kind='province']");
+          if (!input) return;
+
+          const nextKey = input.checked ? input.value : "";
+          const nextName = input.checked
+            ? input.getAttribute("data-filter-label") || ""
+            : "";
+
+          selectedProvinceKey = nextKey;
+          selectedProvinceName = nextName;
+          resetLoadedProvince();
+
+          provinceOptionsEl
+            .querySelectorAll("input[data-filter-kind='province']")
+            .forEach((other) => {
+              other.checked = other === input && Boolean(nextKey);
+            });
+
+          updateSearchResultCount();
+
+          if (selectedProvinceKey) {
+            try {
+              await loadSelectedProvinceSpots();
+            } catch (e) {}
+          } else {
+            renderSearchCities();
+          }
+        });
+
+        cityOptionsEl?.addEventListener("change", (e) => {
+          const input = e.target.closest("input[data-filter-kind='city']");
+          if (!input) return;
+
+          if (input.checked) selectedLocationCities.add(input.value);
+          else selectedLocationCities.delete(input.value);
+
+          updateSearchResultCount();
+        });
+
+        citySearchInput?.addEventListener("input", () => {
+          if (!provinceSpotsLoaded) return;
+          selectedLocationCities.clear();
+          renderSearchCities();
+          updateSearchResultCount();
+        });
+
+        citySearchInput?.addEventListener("keydown", (e) => {
+          if (e.key !== "Enter") return;
+          e.preventDefault();
+
+          if (!searchSubmitBtn?.disabled) {
+            showProvinceSearchMatchesOnMap();
+          }
+        });
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && searchOverlay?.classList.contains("open")) {
+            closeLocationSearch();
+          }
+        });
 
         const SOURCE_ID = "spots";
         const LAYER_CLUSTERS_X = "spots-clusters-x";
@@ -2823,25 +3923,6 @@
         const SEARCH_RADIUS_SOURCE_ID = "kova-search-radius-preview";
         const SEARCH_RADIUS_FILL_LAYER = "kova-search-radius-fill";
         const SEARCH_RADIUS_LINE_LAYER = "kova-search-radius-line";
-
-        function getKovaWeekKey(date = new Date()) {
-          // ISO week key, e.g. "2026-W34". Monday = start of week.
-          const d = new Date(
-            Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
-          );
-          const dayNum = d.getUTCDay() || 7;
-          d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-
-          const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-          const weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-
-          return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
-        }
-
-        function formatFeedWeekLabel(weekKey) {
-          const match = String(weekKey || "").match(/^(\d{4})-W(\d{2})$/);
-          return match ? `week ${Number(match[2])}` : "this week";
-        }
 
         function closeFeed() {
           if (!feedOverlay) return;
@@ -2857,14 +3938,8 @@
           feedOverlay.classList.add("open");
           feedOverlay.setAttribute("aria-hidden", "false");
 
-          const weekKey = getKovaWeekKey();
-          if (feedWeekEl) {
-            feedWeekEl.textContent = formatFeedWeekLabel(weekKey);
-          }
-
-          // Refresh when a new ISO week starts. Reopening in the same week
-          // uses the already rendered content unless a rating was just saved.
-          if (feedLoadedWeekKey !== weekKey) {
+          // Only KOVA picks + all-time top 5 are loaded.
+          if (!feedLoaded) {
             await loadKovaFeed();
           }
         }
@@ -3051,42 +4126,6 @@
           requestAnimationFrame(updateButtons);
         }
 
-        function renderWeeklyTopSpots(spots) {
-          if (!feedTopEl) return;
-
-          if (!spots.length) {
-            feedTopEl.innerHTML = `
-              <div class="kova-feed-empty">
-                No ratings yet this week. As soon as people rate spots, the weekly top 5 appears here.
-              </div>
-            `;
-            return;
-          }
-
-          feedTopEl.innerHTML = spots
-            .map((spot, index) => {
-              const weeklyAvg = Number(spot.weeklyAvgRating || 0).toFixed(1);
-              const weeklyCount = Number(spot.weeklyRatingCount || 0);
-
-              return `
-                <button
-                  class="kova-top-item"
-                  type="button"
-                  data-feed-spot-id="${escapeHTML(spot.id)}"
-                >
-                  <span class="kova-top-rank">#${index + 1}</span>
-                  ${makeFeedSpotThumb(spot) || `<span class="kova-top-thumb"></span>`}
-                  <span class="kova-top-copy">
-                    <span class="kova-top-name">${escapeHTML(spot.name || "Untitled spot")}</span>
-                    <span class="kova-top-rating">★ ${weeklyAvg} · ${weeklyCount} rating${weeklyCount === 1 ? "" : "s"} this week</span>
-                  </span>
-                  <span class="kova-top-arrow">→</span>
-                </button>
-              `;
-            })
-            .join("");
-        }
-
         function renderAllTimeTopSpots(spots) {
           if (!feedAllTimeEl) return;
 
@@ -3124,14 +4163,7 @@
         }
 
         async function loadKovaFeed({ force = false } = {}) {
-          const weekKey = getKovaWeekKey();
-
-          if (!force && feedLoadedWeekKey === weekKey) return;
-
-          if (feedTopEl) {
-            feedTopEl.innerHTML =
-              '<div class="kova-feed-loading">Loading this week\'s spots…</div>';
-          }
+          if (!force && feedLoaded) return;
 
           if (feedAllTimeEl) {
             feedAllTimeEl.innerHTML =
@@ -3139,81 +4171,39 @@
           }
 
           try {
-            const jobs = [];
+            const picksPromise =
+              Array.isArray(KOVAS_PICK_IDS) && KOVAS_PICK_IDS.length
+                ? Promise.all(
+                    KOVAS_PICK_IDS.map((spotId) =>
+                      db
+                        .collection("spots")
+                        .doc(spotId)
+                        .get()
+                        .then((snap) =>
+                          snap.exists ? { id: snap.id, ...snap.data() } : null,
+                        ),
+                    ),
+                  ).then((spots) => spots.filter(Boolean))
+                : Promise.resolve([]);
 
-            if (Array.isArray(KOVAS_PICK_IDS) && KOVAS_PICK_IDS.length) {
-              jobs.push(
-                Promise.all(
-                  KOVAS_PICK_IDS.map((spotId) =>
-                    db
-                      .collection("spots")
-                      .doc(spotId)
-                      .get()
-                      .then((snap) =>
-                        snap.exists ? { id: snap.id, ...snap.data() } : null,
-                      ),
-                  ),
-                ).then((spots) => spots.filter(Boolean)),
-              );
-            } else {
-              jobs.push(Promise.resolve([]));
-            }
+            // Only 5 spot reads for the ranking.
+            const allTimePromise = db
+              .collection("spots")
+              .orderBy("avgRating", "desc")
+              .limit(5)
+              .get()
+              .then((snap) => {
+                const spots = [];
+                snap.forEach((doc) => {
+                  spots.push({ id: doc.id, ...doc.data() });
+                });
+                return spots;
+              });
 
-            jobs.push(
-              db
-                .collection("spots")
-                .where("weeklyKey", "==", weekKey)
-                .get()
-                .then((snap) => {
-                  const spots = [];
-                  snap.forEach((doc) => {
-                    const data = doc.data() || {};
-                    spots.push({ id: doc.id, ...data });
-                  });
-                  return spots;
-                }),
-            );
-
-            // Existing total rating fields are enough for the all-time ranking.
-            // Pull a small pool with the highest average rating, then use
-            // ratingCount as the tie-breaker client-side.
-            jobs.push(
-              db
-                .collection("spots")
-                .orderBy("avgRating", "desc")
-                .limit(25)
-                .get()
-                .then((snap) => {
-                  const spots = [];
-                  snap.forEach((doc) => {
-                    const data = doc.data() || {};
-                    spots.push({ id: doc.id, ...data });
-                  });
-                  return spots;
-                }),
-            );
-
-            const [picks, weeklySpots, allTimeSpots] = await Promise.all(jobs);
-
-            const topFive = weeklySpots
-              .filter(
-                (spot) =>
-                  Number(spot.weeklyRatingCount || 0) > 0 &&
-                  Number.isFinite(Number(spot.weeklyAvgRating || 0)),
-              )
-              .sort((a, b) => {
-                const ratingDiff =
-                  Number(b.weeklyAvgRating || 0) -
-                  Number(a.weeklyAvgRating || 0);
-
-                if (ratingDiff !== 0) return ratingDiff;
-
-                return (
-                  Number(b.weeklyRatingCount || 0) -
-                  Number(a.weeklyRatingCount || 0)
-                );
-              })
-              .slice(0, 5);
+            const [picks, allTimeSpots] = await Promise.all([
+              picksPromise,
+              allTimePromise,
+            ]);
 
             const allTimeTopFive = allTimeSpots
               .filter(
@@ -3232,16 +4222,10 @@
               .slice(0, 5);
 
             renderKovaPicks(picks);
-            renderWeeklyTopSpots(topFive);
             renderAllTimeTopSpots(allTimeTopFive);
-            feedLoadedWeekKey = weekKey;
+            feedLoaded = true;
           } catch (err) {
             console.error("KOVA feed error:", err);
-
-            if (feedTopEl) {
-              feedTopEl.innerHTML =
-                '<div class="kova-feed-empty">Could not load the weekly feed.</div>';
-            }
 
             if (feedAllTimeEl) {
               feedAllTimeEl.innerHTML =
@@ -3395,9 +4379,9 @@
           return getLocalRatingRecord(spotId)?.value ?? null;
         }
 
-        function setLocalRating(spotId, value, weekKey = getKovaWeekKey()) {
+        function setLocalRating(spotId, value) {
           const ratings = getLocalRatings();
-          ratings[spotId] = { value, weekKey };
+          ratings[spotId] = { value };
           setLocalRatings(ratings);
         }
 
@@ -4068,9 +5052,7 @@
             throw new Error("Invalid rating.");
           }
 
-          const previousRecord = getLocalRatingRecord(spotId);
-          const previousRating = previousRecord?.value ?? null;
-          const currentWeekKey = getKovaWeekKey();
+          const previousRating = getLocalRating(spotId);
 
           if (previousRating === newRating) {
             return { changed: false, rating: newRating };
@@ -4093,7 +5075,6 @@
               ratingSum += newRating;
               ratingCount += 1;
             } else {
-              // Replace this device's old vote instead of adding another vote.
               ratingSum = ratingSum - previousRating + newRating;
             }
 
@@ -4102,55 +5083,19 @@
 
             const avgRating = ratingCount > 0 ? ratingSum / ratingCount : 0;
 
-            const sameFirestoreWeek = spotData.weeklyKey === currentWeekKey;
-            let weeklyRatingSum = sameFirestoreWeek
-              ? Number(spotData.weeklyRatingSum || 0)
-              : 0;
-            let weeklyRatingCount = sameFirestoreWeek
-              ? Number(spotData.weeklyRatingCount || 0)
-              : 0;
-
-            const previousRatingWasThisWeek =
-              previousRating !== null &&
-              previousRecord?.weekKey === currentWeekKey;
-
-            if (previousRating === null) {
-              weeklyRatingSum += newRating;
-              weeklyRatingCount += 1;
-            } else if (previousRatingWasThisWeek && sameFirestoreWeek) {
-              // Same weekly vote: replace value, keep count unchanged.
-              weeklyRatingSum = weeklyRatingSum - previousRating + newRating;
-            } else {
-              // Old/legacy vote: changing it now counts as this week's opinion.
-              weeklyRatingSum += newRating;
-              weeklyRatingCount += 1;
-            }
-
-            weeklyRatingSum = Math.max(0, weeklyRatingSum);
-            weeklyRatingCount = Math.max(0, weeklyRatingCount);
-
-            const weeklyAvgRating =
-              weeklyRatingCount > 0 ? weeklyRatingSum / weeklyRatingCount : 0;
-
             transaction.set(
               spotRef,
               {
                 ratingSum: Math.round(ratingSum),
                 ratingCount: Math.round(ratingCount),
                 avgRating: Number(avgRating.toFixed(2)),
-                weeklyKey: currentWeekKey,
-                weeklyRatingSum: Math.round(weeklyRatingSum),
-                weeklyRatingCount: Math.round(weeklyRatingCount),
-                weeklyAvgRating: Number(weeklyAvgRating.toFixed(2)),
-                weeklyUpdatedAt:
-                  firebase.firestore.FieldValue.serverTimestamp(),
               },
               { merge: true },
             );
           });
 
-          setLocalRating(spotId, newRating, currentWeekKey);
-          feedLoadedWeekKey = "";
+          setLocalRating(spotId, newRating);
+          feedLoaded = false;
 
           return { changed: true, rating: newRating };
         }
