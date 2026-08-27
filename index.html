@@ -225,6 +225,48 @@
           color 0.18s ease;
       }
 
+      .hamburger-item-main {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .hamburger-item-icon {
+        width: 19px;
+        height: 19px;
+        flex: 0 0 19px;
+        display: grid;
+        place-items: center;
+        color: rgba(255, 255, 255, 0.62);
+        transition:
+          color 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .hamburger-item-icon svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .hamburger-menu a:hover .hamburger-item-icon,
+      .hamburger-menu button:hover .hamburger-item-icon {
+        color: var(--accent);
+        transform: scale(1.05);
+      }
+
+      .hamburger-route-count {
+        margin-left: 3px;
+        color: rgba(255, 255, 255, 0.42);
+        font-size: 0.78rem;
+      }
+
       .hamburger-menu a::after,
       .hamburger-menu button::after {
         content: "→";
@@ -823,6 +865,354 @@
         font-size: 0.78rem;
         opacity: 0.9;
         margin-top: 2px;
+      }
+
+      .spot-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1.18fr;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .spot-action-btn {
+        min-width: 0;
+        margin: 0 !important;
+      }
+
+      .spot-action-btn.is-active {
+        border-color: rgba(139, 113, 8, 0.72);
+        background: rgba(139, 113, 8, 0.16);
+        color: #fff;
+      }
+
+      .spot-action-icon {
+        display: block;
+        margin-bottom: 2px;
+        font-size: 1rem;
+        line-height: 1;
+      }
+
+      .kova-library-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 10014;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: rgba(0, 0, 0, 0.46);
+        backdrop-filter: blur(7px);
+        -webkit-backdrop-filter: blur(7px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+
+      .kova-library-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .kova-library-panel {
+        width: min(820px, calc(100vw - 32px));
+        max-height: min(840px, calc(100dvh - 48px));
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        border-radius: 28px;
+        background: linear-gradient(
+          180deg,
+          rgba(18, 18, 18, 0.99),
+          rgba(7, 7, 7, 0.98)
+        );
+        box-shadow: 0 28px 78px rgba(0, 0, 0, 0.6);
+        transform: translateY(14px) scale(0.985);
+        transition: transform 0.22s ease;
+      }
+
+      .kova-library-overlay.open .kova-library-panel {
+        transform: translateY(0) scale(1);
+      }
+
+      .kova-library-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 22px 24px 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .kova-library-logo {
+        width: 54px;
+        height: 54px;
+        display: block;
+        object-fit: contain;
+        margin-bottom: 10px;
+      }
+      .kova-library-title {
+        margin: 0;
+        font-size: clamp(1.8rem, 5vw, 2.35rem);
+        line-height: 1;
+        letter-spacing: -1.1px;
+      }
+      .kova-library-subtitle {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, 0.52);
+        font-size: 0.84rem;
+        line-height: 1.45;
+      }
+      .kova-library-close {
+        width: 40px;
+        height: 40px;
+        flex: 0 0 auto;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.045);
+        color: rgba(255, 255, 255, 0.8);
+        cursor: pointer;
+        font: inherit;
+        font-size: 1.3rem;
+      }
+
+      .kova-library-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 20px 24px 26px;
+      }
+      .kova-library-section + .kova-library-section {
+        margin-top: 28px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .kova-library-section-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .kova-library-section-head h3 {
+        margin: 0;
+        font-size: 0.86rem;
+        font-weight: 780;
+        letter-spacing: 0.9px;
+        text-transform: uppercase;
+      }
+      .kova-library-section-head span {
+        color: rgba(255, 255, 255, 0.42);
+        font-size: 0.76rem;
+      }
+      .kova-personal-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .kova-personal-item {
+        display: grid;
+        grid-template-columns: 46px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        min-height: 62px;
+        padding: 8px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .kova-personal-thumb {
+        width: 46px;
+        height: 46px;
+        display: block;
+        border-radius: 11px;
+        object-fit: cover;
+        background: #151515;
+      }
+      .kova-personal-copy {
+        min-width: 0;
+        cursor: pointer;
+      }
+      .kova-personal-name {
+        overflow: hidden;
+        color: rgba(255, 255, 255, 0.94);
+        font-size: 0.88rem;
+        font-weight: 680;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .kova-personal-meta {
+        margin-top: 3px;
+        color: rgba(255, 255, 255, 0.46);
+        font-size: 0.72rem;
+      }
+      .kova-personal-actions {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .kova-mini-btn {
+        min-width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        padding: 0 9px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.045);
+        color: rgba(255, 255, 255, 0.76);
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.76rem;
+      }
+      .kova-mini-btn:hover {
+        border-color: rgba(139, 113, 8, 0.5);
+        background: rgba(139, 113, 8, 0.12);
+        color: #fff;
+      }
+      .kova-mini-btn:disabled {
+        opacity: 0.3;
+        cursor: default;
+      }
+
+      .kova-route-number {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        background: rgba(139, 113, 8, 0.16);
+        border: 1px solid rgba(139, 113, 8, 0.42);
+        color: #fff;
+        font-size: 0.74rem;
+        font-weight: 800;
+      }
+      .kova-route-item {
+        grid-template-columns: 28px 46px minmax(0, 1fr) auto;
+      }
+
+      .kova-route-tools {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 10px;
+        align-items: center;
+        margin-top: 14px;
+        padding: 12px;
+        border: 1px solid rgba(139, 113, 8, 0.22);
+        border-radius: 16px;
+        background: rgba(139, 113, 8, 0.07);
+      }
+
+      .kova-route-modes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .kova-route-mode {
+        min-height: 34px;
+        padding: 0 11px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.62);
+        font: inherit;
+        font-size: 0.74rem;
+        font-weight: 680;
+        cursor: pointer;
+      }
+      .kova-route-mode.active {
+        border-color: rgba(139, 113, 8, 0.64);
+        background: rgba(139, 113, 8, 0.16);
+        color: #fff;
+      }
+
+      .kova-route-open {
+        min-height: 40px;
+        padding: 0 13px;
+        border: 1px solid rgba(139, 113, 8, 0.76);
+        border-radius: 12px;
+        background: rgba(139, 113, 8, 0.92);
+        color: #fff;
+        font: inherit;
+        font-size: 0.78rem;
+        font-weight: 760;
+        cursor: pointer;
+      }
+      .kova-route-open.secondary {
+        border-color: rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.055);
+      }
+      .kova-route-open:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      .kova-library-empty {
+        padding: 14px;
+        border: 1px dashed rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        color: rgba(255, 255, 255, 0.46);
+        font-size: 0.8rem;
+        line-height: 1.45;
+      }
+
+      @media (max-width: 700px) {
+        .spot-actions {
+          grid-template-columns: 1fr 1fr;
+        }
+        .spot-actions .spot-route-primary {
+          grid-column: 1 / -1;
+        }
+        .kova-library-overlay {
+          align-items: end;
+          padding: 0;
+          background: rgba(0, 0, 0, 0.42);
+        }
+        .kova-library-panel {
+          width: 100%;
+          max-height: min(88dvh, 860px);
+          border-radius: 28px 28px 0 0;
+          border-left: 0;
+          border-right: 0;
+          border-bottom: 0;
+          transform: translateY(28px);
+        }
+        .kova-library-overlay.open .kova-library-panel {
+          transform: translateY(0);
+        }
+        .kova-library-head {
+          padding: 18px 17px 14px;
+        }
+        .kova-library-body {
+          padding: 16px 17px calc(20px + env(safe-area-inset-bottom, 0px));
+        }
+        .kova-route-tools {
+          grid-template-columns: 1fr 1fr;
+        }
+        .kova-route-modes {
+          grid-column: 1 / -1;
+        }
+        .kova-route-open {
+          width: 100%;
+        }
+        .kova-personal-item {
+          grid-template-columns: 42px minmax(0, 1fr) auto;
+        }
+        .kova-route-item {
+          grid-template-columns: 26px 42px minmax(0, 1fr);
+        }
+        .kova-route-item .kova-personal-actions {
+          grid-column: 2 / -1;
+          justify-content: flex-end;
+        }
+        .kova-personal-thumb {
+          width: 42px;
+          height: 42px;
+        }
       }
 
       .kova-fallback,
@@ -2738,11 +3128,87 @@
         </button>
 
         <div class="hamburger-menu" id="kovaMenu" aria-hidden="true">
-          <button type="button" data-action="open-search">search</button>
-          <button type="button" data-action="open-feed">discover</button>
+          <button type="button" data-action="open-search">
+            <span class="hamburger-item-main">
+              <span class="hamburger-item-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="6.5"></circle>
+                  <path d="M16 16l4 4"></path>
+                </svg>
+              </span>
+              <span>search</span>
+            </span>
+          </button>
+
+          <button type="button" data-action="open-feed">
+            <span class="hamburger-item-main">
+              <span class="hamburger-item-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M12 3l2.4 5.6L20 11l-5.6 2.4L12 19l-2.4-5.6L4 11l5.6-2.4L12 3z"
+                  ></path>
+                </svg>
+              </span>
+              <span>discover</span>
+            </span>
+          </button>
+
+          <button type="button" data-action="open-saved">
+            <span class="hamburger-item-main">
+              <span class="hamburger-item-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M6.5 4.5h11v15l-5.5-3.4-5.5 3.4v-15z"></path>
+                </svg>
+              </span>
+              <span>saved spots</span>
+            </span>
+          </button>
+
+          <button type="button" data-action="open-route">
+            <span class="hamburger-item-main">
+              <span class="hamburger-item-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="6" cy="18" r="2"></circle>
+                  <circle cx="18" cy="6" r="2"></circle>
+                  <path d="M7.5 16.5c2-4 4.5-5 9-8.5"></path>
+                </svg>
+              </span>
+              <span>
+                route builder
+                <span
+                  class="hamburger-route-count"
+                  data-route-menu-count
+                ></span>
+              </span>
+            </span>
+          </button>
+
           <!-- <button type="button" data-action="open-tutorial">intro</button> -->
-          <a href="app/pages/addspot.html">add spot</a>
-          <a href="app/pages/about.html">about</a>
+
+          <a href="app/pages/addspot.html">
+            <span class="hamburger-item-main">
+              <span class="hamburger-item-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="8"></circle>
+                  <path d="M12 8v8M8 12h8"></path>
+                </svg>
+              </span>
+              <span>add spot</span>
+            </span>
+          </a>
+
+          <a href="app/pages/about.html">
+            <span class="hamburger-item-main">
+              <span class="hamburger-item-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="8"></circle>
+                  <path d="M12 11v5"></path>
+                  <path d="M12 8h.01"></path>
+                </svg>
+              </span>
+              <span>about</span>
+            </span>
+          </a>
         </div>
       </div>
     </nav>
@@ -2921,6 +3387,99 @@
           >
             Show spots
           </button>
+        </div>
+      </section>
+    </div>
+
+    <div class="kova-library-overlay" id="kovaLibrary" aria-hidden="true">
+      <section
+        class="kova-library-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="kovaLibraryTitle"
+      >
+        <div class="kova-library-head">
+          <div>
+            <img
+              class="kova-library-logo"
+              src="../../images/kova_wit_x_png.png"
+              alt="KOVA"
+            />
+            <h2 class="kova-library-title" id="kovaLibraryTitle">
+              Your spots.
+            </h2>
+            <p class="kova-library-subtitle">
+              Saved spots stay on your KOVA map. Link up to 5 spots into one
+              route.
+            </p>
+          </div>
+          <button
+            class="kova-library-close"
+            type="button"
+            data-library-close
+            aria-label="Close saved spots"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="kova-library-body">
+          <section class="kova-library-section" data-library-saved-section>
+            <div class="kova-library-section-head">
+              <h3>Saved spots</h3>
+              <span data-saved-count>0 saved</span>
+            </div>
+            <div class="kova-personal-list" data-saved-list></div>
+          </section>
+
+          <section class="kova-library-section" data-library-route-section>
+            <div class="kova-library-section-head">
+              <h3>Route builder</h3>
+              <span data-route-count>0 / 5 spots</span>
+            </div>
+            <div class="kova-personal-list" data-route-list></div>
+            <div class="kova-route-tools">
+              <div class="kova-route-modes" aria-label="Route mode">
+                <button
+                  class="kova-route-mode active"
+                  type="button"
+                  data-route-mode="cycling"
+                >
+                  Bike
+                </button>
+                <button
+                  class="kova-route-mode"
+                  type="button"
+                  data-route-mode="driving"
+                >
+                  Drive
+                </button>
+                <button
+                  class="kova-route-mode"
+                  type="button"
+                  data-route-mode="walking"
+                >
+                  Walk
+                </button>
+              </div>
+              <button
+                class="kova-route-open secondary"
+                type="button"
+                data-route-open-apple
+                disabled
+              >
+                Apple Maps
+              </button>
+              <button
+                class="kova-route-open"
+                type="button"
+                data-route-open-google
+                disabled
+              >
+                Google Maps
+              </button>
+            </div>
+          </section>
         </div>
       </section>
     </div>
@@ -3129,6 +3688,10 @@
         const SEARCH_RADIUS_KM = 10;
         const DUPLICATE_BLOCK_RADIUS_M = 80;
         const LOCAL_RATINGS_KEY = "kova_spot_ratings_v1";
+        const KOVA_SAVED_SPOTS_KEY = "kova_saved_spots_v1";
+        const KOVA_ROUTE_SPOTS_KEY = "kova_route_spots_v1";
+        const KOVA_ROUTE_MODE_KEY = "kova_route_mode_v1";
+        const KOVA_ROUTE_MAX_SPOTS = 5;
 
         // MANUAL KOVA PICKS:
         // Add as many Firestore spot document IDs as you want.
@@ -3202,6 +3765,7 @@
         let mapLoaded = false;
         let initialNearbyLoaded = false;
         let userMarkerAdded = false;
+        let currentBaseSpotFeatures = [];
 
         const feedOverlay = document.getElementById("kovaFeed");
         const feedOpenBtns = document.querySelectorAll(
@@ -3214,6 +3778,514 @@
         const feedPickEl = document.querySelector("[data-feed-pick]");
         const feedAllTimeEl = document.querySelector("[data-feed-alltime]");
         let feedLoaded = false;
+
+        const libraryOverlay = document.getElementById("kovaLibrary");
+        const libraryCloseBtn = document.querySelector("[data-library-close]");
+        const savedOpenBtns = document.querySelectorAll(
+          "[data-action='open-saved']",
+        );
+        const routeOpenBtns = document.querySelectorAll(
+          "[data-action='open-route']",
+        );
+        const savedListEl = document.querySelector("[data-saved-list]");
+        const routeListEl = document.querySelector("[data-route-list]");
+        const savedCountEl = document.querySelector("[data-saved-count]");
+        const routeCountEl = document.querySelector("[data-route-count]");
+        const routeMenuCountEl = document.querySelector(
+          "[data-route-menu-count]",
+        );
+        const routeModeBtns = document.querySelectorAll("[data-route-mode]");
+        const routeOpenAppleBtn = document.querySelector(
+          "[data-route-open-apple]",
+        );
+        const routeOpenGoogleBtn = document.querySelector(
+          "[data-route-open-google]",
+        );
+
+        function readJSONStorage(key, fallback) {
+          try {
+            const raw = localStorage.getItem(key);
+            if (!raw) return fallback;
+            const parsed = JSON.parse(raw);
+            return parsed ?? fallback;
+          } catch (e) {
+            return fallback;
+          }
+        }
+
+        function writeJSONStorage(key, value) {
+          try {
+            localStorage.setItem(key, JSON.stringify(value));
+          } catch (e) {}
+        }
+
+        function normalizePersonalSpot(spot) {
+          if (!spot || !spot.id) return null;
+          const lat = Number(spot.lat);
+          const lng = Number(spot.lng);
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+          return {
+            id: String(spot.id),
+            name: String(spot.name || "Untitled spot"),
+            description: String(spot.description || ""),
+            addedBy: String(spot.addedBy || spot.added_by || spot.author || ""),
+            photoURL: safeHttpsURL(spot.photoURL),
+            lat,
+            lng,
+            avgRating: Number(spot.avgRating || 0),
+            ratingCount: Number(spot.ratingCount || 0),
+          };
+        }
+
+        function getSavedSpots() {
+          const stored = readJSONStorage(KOVA_SAVED_SPOTS_KEY, {});
+          return stored && typeof stored === "object" && !Array.isArray(stored)
+            ? stored
+            : {};
+        }
+
+        function setSavedSpots(spots) {
+          writeJSONStorage(KOVA_SAVED_SPOTS_KEY, spots);
+        }
+
+        function getRouteSpots() {
+          const stored = readJSONStorage(KOVA_ROUTE_SPOTS_KEY, []);
+          if (!Array.isArray(stored)) return [];
+          return stored
+            .map(normalizePersonalSpot)
+            .filter(Boolean)
+            .slice(0, KOVA_ROUTE_MAX_SPOTS);
+        }
+
+        function setRouteSpots(spots) {
+          writeJSONStorage(
+            KOVA_ROUTE_SPOTS_KEY,
+            spots
+              .map(normalizePersonalSpot)
+              .filter(Boolean)
+              .slice(0, KOVA_ROUTE_MAX_SPOTS),
+          );
+        }
+
+        function getRouteMode() {
+          try {
+            const stored = localStorage.getItem(KOVA_ROUTE_MODE_KEY);
+            return ["cycling", "driving", "walking"].includes(stored)
+              ? stored
+              : "cycling";
+          } catch (e) {
+            return "cycling";
+          }
+        }
+
+        function setRouteMode(mode) {
+          if (!["cycling", "driving", "walking"].includes(mode)) return;
+          try {
+            localStorage.setItem(KOVA_ROUTE_MODE_KEY, mode);
+          } catch (e) {}
+          updateRouteModeUI();
+        }
+
+        function isSpotSaved(spotId) {
+          return Boolean(getSavedSpots()[String(spotId)]);
+        }
+        function isSpotInRoute(spotId) {
+          return getRouteSpots().some(
+            (spot) => String(spot.id) === String(spotId),
+          );
+        }
+
+        function personalSpotToMapFeature(spot) {
+          const clean = normalizePersonalSpot(spot);
+          if (!clean) return null;
+          return {
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [clean.lng, clean.lat] },
+            properties: {
+              id: clean.id,
+              name: clean.name,
+              description: clean.description,
+              addedBy: clean.addedBy,
+              photoURL: clean.photoURL,
+              lat: clean.lat,
+              lng: clean.lng,
+              avgRating: clean.avgRating,
+              ratingCount: clean.ratingCount,
+              saved: true,
+            },
+          };
+        }
+
+        function getSpotFromPopupCard(card) {
+          if (!card) return null;
+          return normalizePersonalSpot({
+            id: card.getAttribute("data-spot-id"),
+            name: card.getAttribute("data-spot-name") || "",
+            description: card.getAttribute("data-spot-description") || "",
+            addedBy: card.getAttribute("data-spot-added-by") || "",
+            photoURL: card.getAttribute("data-spot-photo") || "",
+            lat: card.getAttribute("data-spot-lat"),
+            lng: card.getAttribute("data-spot-lng"),
+            avgRating: card.getAttribute("data-spot-rating"),
+            ratingCount: card.getAttribute("data-spot-rating-count"),
+          });
+        }
+
+        function saveSpotLocally(spot) {
+          const clean = normalizePersonalSpot(spot);
+          if (!clean) return false;
+          const saved = getSavedSpots();
+          saved[clean.id] = clean;
+          setSavedSpots(saved);
+          renderPersonalLibrary();
+          refreshCurrentMapWithSavedSpots();
+          return true;
+        }
+
+        function removeSavedSpot(spotId) {
+          const saved = getSavedSpots();
+          delete saved[String(spotId)];
+          setSavedSpots(saved);
+          renderPersonalLibrary();
+          refreshCurrentMapWithSavedSpots();
+        }
+
+        function addSpotToRoute(spot) {
+          const clean = normalizePersonalSpot(spot);
+          if (!clean) return { ok: false, reason: "invalid" };
+          const route = getRouteSpots();
+          if (route.some((item) => item.id === clean.id))
+            return { ok: true, already: true };
+          if (route.length >= KOVA_ROUTE_MAX_SPOTS)
+            return { ok: false, reason: "full" };
+          route.push(clean);
+          setRouteSpots(route);
+          renderPersonalLibrary();
+          return { ok: true, already: false };
+        }
+
+        function removeSpotFromRoute(spotId) {
+          setRouteSpots(
+            getRouteSpots().filter(
+              (spot) => String(spot.id) !== String(spotId),
+            ),
+          );
+          renderPersonalLibrary();
+        }
+
+        function moveRouteSpot(index, direction) {
+          const route = getRouteSpots();
+          const target = index + direction;
+          if (
+            index < 0 ||
+            target < 0 ||
+            index >= route.length ||
+            target >= route.length
+          )
+            return;
+          [route[index], route[target]] = [route[target], route[index]];
+          setRouteSpots(route);
+          renderPersonalLibrary();
+        }
+
+        function clearRouteSpots() {
+          setRouteSpots([]);
+          renderPersonalLibrary();
+        }
+
+        function updateRouteModeUI() {
+          const mode = getRouteMode();
+          routeModeBtns.forEach((btn) =>
+            btn.classList.toggle(
+              "active",
+              btn.getAttribute("data-route-mode") === mode,
+            ),
+          );
+        }
+
+        function renderSavedSpotItem(spot) {
+          const photo = safeHttpsURL(spot.photoURL);
+          return `
+            <div class="kova-personal-item">
+              ${photo ? `<img class="kova-personal-thumb" src="${escapeHTML(photo)}" alt="" loading="lazy" decoding="async">` : `<span class="kova-personal-thumb"></span>`}
+              <div class="kova-personal-copy" role="button" tabindex="0" data-personal-open-spot="${escapeHTML(spot.id)}">
+                <div class="kova-personal-name">${escapeHTML(spot.name)}</div>
+                <div class="kova-personal-meta">Saved on this device</div>
+              </div>
+              <div class="kova-personal-actions">
+                <button class="kova-mini-btn" type="button" data-saved-add-route="${escapeHTML(spot.id)}">＋ route</button>
+                <button class="kova-mini-btn" type="button" data-saved-remove="${escapeHTML(spot.id)}">×</button>
+              </div>
+            </div>`;
+        }
+
+        function renderRouteSpotItem(spot, index, total) {
+          const photo = safeHttpsURL(spot.photoURL);
+          const meta =
+            index === 0
+              ? "Route start"
+              : index === total - 1
+                ? "Route finish"
+                : `Stop ${index + 1}`;
+          return `
+            <div class="kova-personal-item kova-route-item">
+              <div class="kova-route-number">${index + 1}</div>
+              ${photo ? `<img class="kova-personal-thumb" src="${escapeHTML(photo)}" alt="" loading="lazy" decoding="async">` : `<span class="kova-personal-thumb"></span>`}
+              <div class="kova-personal-copy" role="button" tabindex="0" data-personal-open-spot="${escapeHTML(spot.id)}">
+                <div class="kova-personal-name">${escapeHTML(spot.name)}</div>
+                <div class="kova-personal-meta">${meta}</div>
+              </div>
+              <div class="kova-personal-actions">
+                <button class="kova-mini-btn" type="button" data-route-move-up="${index}" ${index === 0 ? "disabled" : ""}>↑</button>
+                <button class="kova-mini-btn" type="button" data-route-move-down="${index}" ${index === total - 1 ? "disabled" : ""}>↓</button>
+                <button class="kova-mini-btn" type="button" data-route-remove="${escapeHTML(spot.id)}">×</button>
+              </div>
+            </div>`;
+        }
+
+        function renderPersonalLibrary() {
+          const saved = Object.values(getSavedSpots())
+            .map(normalizePersonalSpot)
+            .filter(Boolean);
+          const route = getRouteSpots();
+          if (savedCountEl) savedCountEl.textContent = `${saved.length} saved`;
+          if (routeCountEl)
+            routeCountEl.textContent = `${route.length} / ${KOVA_ROUTE_MAX_SPOTS} spots`;
+          if (routeMenuCountEl)
+            routeMenuCountEl.textContent = route.length
+              ? `(${route.length})`
+              : "";
+
+          if (savedListEl) {
+            savedListEl.innerHTML = saved.length
+              ? saved.map(renderSavedSpotItem).join("")
+              : `<div class="kova-library-empty">No saved spots yet. Open any KOVA spot and tap <b>Save</b>.</div>`;
+          }
+
+          if (routeListEl) {
+            routeListEl.innerHTML = route.length
+              ? route
+                  .map((spot, index) =>
+                    renderRouteSpotItem(spot, index, route.length),
+                  )
+                  .join("") +
+                `<button class="kova-mini-btn" style="margin-top:4px;width:max-content;" type="button" data-route-clear>Clear route</button>`
+              : `<div class="kova-library-empty">Add 2 to 5 spots with <b>Add to route</b>. The order shown here is the route order.</div>`;
+          }
+
+          const routeReady = route.length >= 2;
+          if (routeOpenAppleBtn) routeOpenAppleBtn.disabled = !routeReady;
+          if (routeOpenGoogleBtn) routeOpenGoogleBtn.disabled = !routeReady;
+          updateRouteModeUI();
+          syncOpenPopupPersonalButtons();
+        }
+
+        function closeLibrary() {
+          if (!libraryOverlay) return;
+          libraryOverlay.classList.remove("open");
+          libraryOverlay.setAttribute("aria-hidden", "true");
+        }
+
+        function openLibrary(section = "saved") {
+          if (!libraryOverlay) return;
+          closeHamburgerMenu();
+          closeFeed();
+          closeLocationSearch();
+          renderPersonalLibrary();
+          libraryOverlay.classList.add("open");
+          libraryOverlay.setAttribute("aria-hidden", "false");
+          requestAnimationFrame(() => {
+            const target =
+              section === "route"
+                ? libraryOverlay.querySelector("[data-library-route-section]")
+                : libraryOverlay.querySelector("[data-library-saved-section]");
+            target?.scrollIntoView({ block: "start", behavior: "smooth" });
+          });
+        }
+
+        function syncOpenPopupPersonalButtons() {
+          document
+            .querySelectorAll(".kova-popup[data-spot-id]")
+            .forEach((card) => {
+              const spotId = card.getAttribute("data-spot-id");
+              if (!spotId) return;
+              const saveBtn = card.querySelector("[data-action='save-spot']");
+              const routeBtn = card.querySelector(
+                "[data-action='toggle-route-spot']",
+              );
+              const saved = isSpotSaved(spotId);
+              const inRoute = isSpotInRoute(spotId);
+              if (saveBtn) {
+                saveBtn.classList.toggle("is-active", saved);
+                const label = saveBtn.querySelector("[data-action-label]");
+                const sub = saveBtn.querySelector(".sub");
+                if (label) label.textContent = saved ? "Saved" : "Save";
+                if (sub)
+                  sub.textContent = saved ? "kept on map" : "keep this spot";
+              }
+              if (routeBtn) {
+                routeBtn.classList.toggle("is-active", inRoute);
+                const label = routeBtn.querySelector("[data-action-label]");
+                const sub = routeBtn.querySelector(".sub");
+                if (label)
+                  label.textContent = inRoute ? "In route" : "Add to route";
+                if (sub)
+                  sub.textContent = inRoute
+                    ? "tap to remove"
+                    : `link up to ${KOVA_ROUTE_MAX_SPOTS}`;
+              }
+            });
+        }
+
+        function getGoogleMultiStopUrl(route) {
+          if (!Array.isArray(route) || route.length < 2) return "";
+          const mode = getRouteMode();
+          const first = route[0];
+          const last = route[route.length - 1];
+          const middle = route.slice(1, -1);
+          const params = new URLSearchParams({
+            api: "1",
+            origin: `${first.lat},${first.lng}`,
+            destination: `${last.lat},${last.lng}`,
+            travelmode: mode === "cycling" ? "bicycling" : mode,
+          });
+          if (middle.length)
+            params.set(
+              "waypoints",
+              middle.map((spot) => `${spot.lat},${spot.lng}`).join("|"),
+            );
+          return `https://www.google.com/maps/dir/?${params.toString()}`;
+        }
+
+        function getAppleMultiStopUrl(route) {
+          if (!Array.isArray(route) || route.length < 2) return "";
+          const mode = getRouteMode();
+          const first = route[0];
+          const last = route[route.length - 1];
+          const middle = route.slice(1, -1);
+          const params = new URLSearchParams();
+          params.set("source", `${first.lat},${first.lng}`);
+          params.set("destination", `${last.lat},${last.lng}`);
+          params.set("mode", mode);
+          middle.forEach((spot) =>
+            params.append("waypoint", `${spot.lat},${spot.lng}`),
+          );
+          return `https://maps.apple.com/directions?${params.toString()}`;
+        }
+
+        function openMultiStopRoute(provider) {
+          const route = getRouteSpots();
+          if (route.length < 2) return;
+          const url =
+            provider === "apple"
+              ? getAppleMultiStopUrl(route)
+              : getGoogleMultiStopUrl(route);
+          if (url) window.open(url, "_blank");
+        }
+
+        function refreshCurrentMapWithSavedSpots() {
+          if (!mapLoaded || !map.getSource("spots")) return;
+          setSpotsGeoJSON(currentBaseSpotFeatures, { preserveBase: true });
+        }
+
+        savedOpenBtns.forEach((btn) =>
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openLibrary("saved");
+          }),
+        );
+        routeOpenBtns.forEach((btn) =>
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openLibrary("route");
+          }),
+        );
+        libraryCloseBtn?.addEventListener("click", closeLibrary);
+        libraryOverlay?.addEventListener("click", (e) => {
+          if (e.target === libraryOverlay) closeLibrary();
+        });
+        routeModeBtns.forEach((btn) =>
+          btn.addEventListener("click", () =>
+            setRouteMode(btn.getAttribute("data-route-mode")),
+          ),
+        );
+        routeOpenAppleBtn?.addEventListener("click", () =>
+          openMultiStopRoute("apple"),
+        );
+        routeOpenGoogleBtn?.addEventListener("click", () =>
+          openMultiStopRoute("google"),
+        );
+
+        libraryOverlay?.addEventListener("click", async (e) => {
+          const savedRemove = e.target.closest("[data-saved-remove]");
+          if (savedRemove) {
+            removeSavedSpot(savedRemove.getAttribute("data-saved-remove"));
+            return;
+          }
+          const savedAddRoute = e.target.closest("[data-saved-add-route]");
+          if (savedAddRoute) {
+            const spotId = savedAddRoute.getAttribute("data-saved-add-route");
+            const result = addSpotToRoute(getSavedSpots()[spotId]);
+            if (!result.ok && result.reason === "full")
+              window.alert(
+                `Your KOVA route already has ${KOVA_ROUTE_MAX_SPOTS} spots.`,
+              );
+            return;
+          }
+          const routeRemove = e.target.closest("[data-route-remove]");
+          if (routeRemove) {
+            removeSpotFromRoute(routeRemove.getAttribute("data-route-remove"));
+            return;
+          }
+          const moveUp = e.target.closest("[data-route-move-up]");
+          if (moveUp) {
+            moveRouteSpot(
+              Number(moveUp.getAttribute("data-route-move-up")),
+              -1,
+            );
+            return;
+          }
+          const moveDown = e.target.closest("[data-route-move-down]");
+          if (moveDown) {
+            moveRouteSpot(
+              Number(moveDown.getAttribute("data-route-move-down")),
+              1,
+            );
+            return;
+          }
+          const clearBtn = e.target.closest("[data-route-clear]");
+          if (clearBtn) {
+            clearRouteSpots();
+            return;
+          }
+          const openSpot = e.target.closest("[data-personal-open-spot]");
+          if (openSpot) {
+            const spotId = openSpot.getAttribute("data-personal-open-spot");
+            closeLibrary();
+            await openSpotFromFeed(spotId);
+          }
+        });
+
+        libraryOverlay?.addEventListener("keydown", async (e) => {
+          if (
+            (e.key === "Enter" || e.key === " ") &&
+            e.target?.matches?.("[data-personal-open-spot]")
+          ) {
+            e.preventDefault();
+            const spotId = e.target.getAttribute("data-personal-open-spot");
+            closeLibrary();
+            await openSpotFromFeed(spotId);
+          }
+        });
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && libraryOverlay?.classList.contains("open"))
+            closeLibrary();
+        });
+
+        renderPersonalLibrary();
 
         // Province-first Search -------------------------------------------
         // IMPORTANT:
@@ -3677,6 +4749,7 @@
 
           closeHamburgerMenu();
           closeFeed();
+          closeLibrary();
 
           searchOverlay.classList.add("open");
           searchOverlay.setAttribute("aria-hidden", "false");
@@ -3871,6 +4944,7 @@
           if (!feedOverlay) return;
           closeHamburgerMenu();
           closeAll();
+          closeLibrary();
 
           feedOverlay.classList.add("open");
           feedOverlay.setAttribute("aria-hidden", "false");
@@ -4817,7 +5891,18 @@
           const photoURL = safeHttpsURL(props.photoURL);
 
           return `
-            <div class="kova-popup" data-spot-id="${escapeHTML(props.id)}">
+            <div
+              class="kova-popup"
+              data-spot-id="${escapeHTML(props.id)}"
+              data-spot-name="${escapeHTML(props.name || "")}"
+              data-spot-description="${escapeHTML(props.description || "")}"
+              data-spot-added-by="${escapeHTML(addedByRaw || "")}"
+              data-spot-photo="${escapeHTML(photoURL)}"
+              data-spot-lat="${Number(props.lat)}"
+              data-spot-lng="${Number(props.lng)}"
+              data-spot-rating="${Number(props.avgRating || 0)}"
+              data-spot-rating-count="${Number(props.ratingCount || 0)}"
+            >
               <div class="sheet-grabber" data-sheet-grabber aria-hidden="true"><span></span></div>
               <button
                 class="spot-close-btn"
@@ -4863,16 +5948,23 @@
                   </div>
                 </div>
 
-                <button
-                  class="kova-btn primary"
-                  data-action="nav"
-                  data-lat="${props.lat}"
-                  data-lng="${props.lng}"
-                  style="margin-top: 8px"
-                >
-                  Route
-                  <span class="sub">open GPS</span>
-                </button>
+                <div class="spot-actions">
+                  <button class="kova-btn spot-action-btn ${isSpotSaved(props.id) ? "is-active" : ""}" data-action="save-spot" type="button">
+                    <span class="spot-action-icon">♡</span>
+                    <span data-action-label>${isSpotSaved(props.id) ? "Saved" : "Save"}</span>
+                    <span class="sub">${isSpotSaved(props.id) ? "kept on map" : "keep this spot"}</span>
+                  </button>
+                  <button class="kova-btn spot-action-btn ${isSpotInRoute(props.id) ? "is-active" : ""}" data-action="toggle-route-spot" type="button">
+                    <span class="spot-action-icon">＋</span>
+                    <span data-action-label>${isSpotInRoute(props.id) ? "In route" : "Add to route"}</span>
+                    <span class="sub">${isSpotInRoute(props.id) ? "tap to remove" : `link up to ${KOVA_ROUTE_MAX_SPOTS}`}</span>
+                  </button>
+                  <button class="kova-btn primary spot-action-btn spot-route-primary" data-action="nav" data-lat="${props.lat}" data-lng="${props.lng}" type="button">
+                    <span class="spot-action-icon">↗</span>
+                    Route
+                    <span class="sub">open GPS</span>
+                  </button>
+                </div>
               </div>
             </div>
           `;
@@ -4919,12 +6011,33 @@
           return { type: "FeatureCollection", features: [] };
         }
 
-        function setSpotsGeoJSON(features) {
+        function setSpotsGeoJSON(features, options = {}) {
           const src = map.getSource(SOURCE_ID);
           if (!src) return;
+
+          const cleanFeatures = Array.isArray(features) ? features : [];
+
+          if (!options.preserveBase) {
+            currentBaseSpotFeatures = cleanFeatures;
+          }
+
+          const byId = new Map();
+
+          Object.values(getSavedSpots())
+            .map(personalSpotToMapFeature)
+            .filter(Boolean)
+            .forEach((feature) => {
+              byId.set(String(feature.properties?.id || ""), feature);
+            });
+
+          currentBaseSpotFeatures.forEach((feature) => {
+            const spotId = String(feature?.properties?.id || "");
+            if (spotId) byId.set(spotId, feature);
+          });
+
           src.setData({
             type: "FeatureCollection",
-            features,
+            features: [...byId.values()],
           });
         }
 
@@ -5084,6 +6197,7 @@
             }
 
             setStatus(ratingStatusEl, "");
+            syncOpenPopupPersonalButtons();
           } catch (err) {
             console.error("Popup hydrate error:", err);
             setStatus(ratingStatusEl, "Could not load rating data.", "error");
@@ -5623,6 +6737,42 @@
             return;
           }
 
+          const saveSpotBtn = e.target.closest("[data-action='save-spot']");
+          if (saveSpotBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const spot = getSpotFromPopupCard(
+              saveSpotBtn.closest(".kova-popup[data-spot-id]"),
+            );
+            if (!spot) return;
+            if (isSpotSaved(spot.id)) removeSavedSpot(spot.id);
+            else saveSpotLocally(spot);
+            syncOpenPopupPersonalButtons();
+            return;
+          }
+
+          const routeSpotBtn = e.target.closest(
+            "[data-action='toggle-route-spot']",
+          );
+          if (routeSpotBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const spot = getSpotFromPopupCard(
+              routeSpotBtn.closest(".kova-popup[data-spot-id]"),
+            );
+            if (!spot) return;
+            if (isSpotInRoute(spot.id)) removeSpotFromRoute(spot.id);
+            else {
+              const result = addSpotToRoute(spot);
+              if (!result.ok && result.reason === "full")
+                window.alert(
+                  `Your KOVA route can contain maximum ${KOVA_ROUTE_MAX_SPOTS} spots.`,
+                );
+            }
+            syncOpenPopupPersonalButtons();
+            return;
+          }
+
           const navBtn = e.target.closest("[data-action='nav']");
           if (navBtn) {
             e.preventDefault();
@@ -5692,6 +6842,8 @@
             clusterMaxZoom: 13,
             clusterRadius: 55,
           });
+
+          setSpotsGeoJSON([]);
 
           map.addLayer({
             id: LAYER_CLUSTERS_X,
@@ -5906,6 +7058,9 @@
               target.closest(".user-map-popup") ||
               target.closest(".maplibregl-popup") ||
               target.closest(".kova-tutorial") ||
+              target.closest(".kova-library-overlay") ||
+              target.closest(".kova-feed-overlay") ||
+              target.closest(".kova-search-overlay") ||
               target.closest("nav"))
           );
         }
