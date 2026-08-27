@@ -908,7 +908,10 @@
               <div class="step-number">2</div>
               <div class="step-copy">
                 <h3>Add a photo</h3>
-                <p>Use one clear image that shows the vibe of the spot.</p>
+                <p>
+                  Use one clear image that shows the vibe of the spot. KOVA
+                  automatically optimizes it for fast loading.
+                </p>
               </div>
             </div>
 
@@ -1299,16 +1302,131 @@
           });
         }
 
-        async function uploadPhoto(file, docId) {
-          const fileName = makeSafeFileName(file.name);
-          const path = `spot_photos/${docId}/${Date.now()}-${fileName}`;
-          const ref = storage.ref().child(path);
+        function loadImageForOptimization(file) {
+          return new Promise((resolve, reject) => {
+            const objectURL = URL.createObjectURL(file);
+            const img = new Image();
 
-          const snapshot = await ref.put(file, {
-            contentType: file.type || "image/jpeg",
+            img.onload = () => {
+              URL.revokeObjectURL(objectURL);
+              resolve(img);
+            };
+
+            img.onerror = () => {
+              URL.revokeObjectURL(objectURL);
+              reject(new Error("Could not read this image."));
+            };
+
+            img.src = objectURL;
           });
+        }
 
-          return await snapshot.ref.getDownloadURL();
+        function canvasToBlob(canvas, type, quality) {
+          return new Promise((resolve) => {
+            canvas.toBlob(resolve, type, quality);
+          });
+        }
+
+        async function makeImageVariant(img, maxDimension, quality) {
+          const sourceWidth = img.naturalWidth || img.width;
+          const sourceHeight = img.naturalHeight || img.height;
+
+          if (!sourceWidth || !sourceHeight) {
+            throw new Error("Invalid image dimensions.");
+          }
+
+          const scale = Math.min(
+            1,
+            maxDimension / Math.max(sourceWidth, sourceHeight),
+          );
+          const width = Math.max(1, Math.round(sourceWidth * scale));
+          const height = Math.max(1, Math.round(sourceHeight * scale));
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d", { alpha: false });
+          if (!ctx)
+            throw new Error(
+              "Image optimization is not supported on this device.",
+            );
+
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          ctx.drawImage(img, 0, 0, width, height);
+
+          let blob = await canvasToBlob(canvas, "image/webp", quality);
+
+          // Very old browsers may not support WebP export. JPEG is a safe fallback.
+          if (!blob) {
+            blob = await canvasToBlob(
+              canvas,
+              "image/jpeg",
+              Math.min(0.9, quality + 0.05),
+            );
+          }
+
+          if (!blob) throw new Error("Could not optimize this image.");
+
+          return { blob, width, height };
+        }
+
+        async function optimizeSpotPhoto(file) {
+          if (!file || !String(file.type || "").startsWith("image/")) {
+            throw new Error("Please choose a valid image file.");
+          }
+
+          const img = await loadImageForOptimization(file);
+
+          // Full image for the spot popup.
+          const full = await makeImageVariant(img, 1600, 0.82);
+
+          // Small image used for instant loading/preloading in KOVA.
+          const thumb = await makeImageVariant(img, 640, 0.72);
+
+          return { full, thumb };
+        }
+
+        async function uploadPhotoVariants(file, docId) {
+          const optimized = await optimizeSpotPhoto(file);
+          const stamp = Date.now();
+          const cacheControl = "public,max-age=31536000,immutable";
+
+          const fullExt =
+            optimized.full.blob.type === "image/webp" ? "webp" : "jpg";
+          const thumbExt =
+            optimized.thumb.blob.type === "image/webp" ? "webp" : "jpg";
+
+          const fullRef = storage
+            .ref()
+            .child(`spot_photos/${docId}/${stamp}-full.${fullExt}`);
+          const thumbRef = storage
+            .ref()
+            .child(`spot_photos/${docId}/${stamp}-thumb.${thumbExt}`);
+
+          const [fullSnapshot, thumbSnapshot] = await Promise.all([
+            fullRef.put(optimized.full.blob, {
+              contentType: optimized.full.blob.type,
+              cacheControl,
+            }),
+            thumbRef.put(optimized.thumb.blob, {
+              contentType: optimized.thumb.blob.type,
+              cacheControl,
+            }),
+          ]);
+
+          const [photoURL, thumbURL] = await Promise.all([
+            fullSnapshot.ref.getDownloadURL(),
+            thumbSnapshot.ref.getDownloadURL(),
+          ]);
+
+          return {
+            photoURL,
+            thumbURL,
+            photoWidth: optimized.full.width,
+            photoHeight: optimized.full.height,
+          };
         }
 
         gpsBtn.addEventListener("click", () => {
@@ -1400,8 +1518,9 @@
             const docRef = db.collection("pending_spots").doc();
             const geohash = encodeGeohash(lat, lng, 9);
 
-            status("Uploading photo...");
-            const photoURL = await uploadPhoto(file, docRef.id);
+            status("Optimizing and uploading photo...");
+            const { photoURL, thumbURL, photoWidth, photoHeight } =
+              await uploadPhotoVariants(file, docRef.id);
 
             status("Sending spot for review...");
 
@@ -1409,6 +1528,9 @@
               name,
               description,
               photoURL,
+              thumbURL,
+              photoWidth,
+              photoHeight,
               addedBy,
               lat,
               lng,
