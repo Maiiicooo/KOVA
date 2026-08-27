@@ -774,6 +774,17 @@
         opacity: 1;
       }
 
+      /* Fast progressive spot images: thumbnail first, full image second. */
+      .kova-popup .hero.has-preview img {
+        filter: blur(10px) saturate(1.03) contrast(1.03);
+        transform: scale(1.055);
+      }
+
+      .kova-popup .hero.is-full img {
+        filter: saturate(1.05) contrast(1.05);
+        transform: scale(1.01);
+      }
+
       .kova-popup .hero::after {
         content: "";
         position: absolute;
@@ -1255,6 +1266,27 @@
         z-index: 1;
         flex-direction: column;
         gap: 10px;
+        overflow: hidden;
+      }
+
+      .kova-loading::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.07),
+          transparent
+        );
+        animation: kovaImageShimmer 1.15s ease-in-out infinite;
+      }
+
+      @keyframes kovaImageShimmer {
+        to {
+          transform: translateX(100%);
+        }
       }
 
       .kova-loading.hidden,
@@ -2196,108 +2228,6 @@
           min-width: 24px !important;
           min-height: 24px !important;
           font-size: 1.2rem !important;
-        }
-      }
-
-      .kova-location-gate {
-        position: fixed;
-        inset: 0;
-        z-index: 10020;
-        display: grid;
-        place-items: center;
-        padding: 22px;
-        background:
-          radial-gradient(
-            circle at 50% 0%,
-            rgba(139, 113, 8, 0.18),
-            transparent 42%
-          ),
-          rgba(0, 0, 0, 0.76);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-      }
-
-      .kova-location-card {
-        width: min(430px, calc(100vw - 28px));
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 28px;
-        background: linear-gradient(
-          180deg,
-          rgba(18, 18, 18, 0.98),
-          rgba(5, 5, 5, 0.96)
-        );
-        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.62);
-        padding: 24px;
-        color: #fff;
-      }
-
-      .kova-location-kicker {
-        width: max-content;
-        margin-bottom: 14px;
-        color: var(--accent);
-        font-size: 0.72rem;
-        font-weight: 780;
-        letter-spacing: 1.4px;
-        text-transform: uppercase;
-      }
-
-      .kova-location-card h2 {
-        margin: 0 0 10px 0;
-        font-size: clamp(1.7rem, 8vw, 2.35rem);
-        line-height: 0.98;
-        letter-spacing: -1.2px;
-      }
-
-      .kova-location-card p {
-        margin: 0;
-        color: rgba(255, 255, 255, 0.68);
-        font-size: 0.98rem;
-        line-height: 1.55;
-      }
-
-      .kova-location-steps {
-        margin: 16px 0 0 0;
-        padding: 13px 14px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 18px;
-        background: rgba(255, 255, 255, 0.045);
-        color: rgba(255, 255, 255, 0.74);
-        font-size: 0.9rem;
-        line-height: 1.5;
-      }
-
-      .kova-location-actions {
-        display: grid;
-        gap: 10px;
-        margin-top: 20px;
-      }
-
-      .kova-location-actions .kova-btn {
-        min-height: 48px;
-      }
-
-      .kova-location-actions .ghost {
-        background: transparent;
-      }
-
-      .kova-location-note {
-        min-height: 18px;
-        margin-top: 12px;
-        color: rgba(255, 255, 255, 0.56);
-        font-size: 0.82rem;
-        line-height: 1.4;
-      }
-
-      @media (max-width: 600px) {
-        .kova-location-gate {
-          align-items: end;
-          padding: 14px;
-        }
-
-        .kova-location-card {
-          width: 100%;
-          border-radius: 30px;
-          padding: 22px;
         }
       }
 
@@ -3705,6 +3635,119 @@
         const KOVA_ROUTE_MODE_KEY = "kova_route_mode_v1";
         const KOVA_ROUTE_MAX_SPOTS = 5;
 
+        // Spot image performance -----------------------------------------
+        // New spots should store a small WebP URL in `thumbURL` and the
+        // normal image in `photoURL`. Older spots without thumbURL still work.
+        const KOVA_IMAGE_PREFETCH_LIMIT = 8;
+        const kovaImagePreloadCache = new Map();
+
+        function getSpotThumbnailURL(spot) {
+          if (!spot) return "";
+          return safeHttpsURL(
+            spot.thumbURL ||
+              spot.thumbnailURL ||
+              spot.photoThumbURL ||
+              spot.photoThumbnailURL ||
+              "",
+          );
+        }
+
+        function getSpotDisplayURL(spot) {
+          return getSpotThumbnailURL(spot) || safeHttpsURL(spot?.photoURL);
+        }
+
+        function preloadKovaImage(url, priority = "low") {
+          const cleanURL = safeHttpsURL(url);
+          if (!cleanURL) return Promise.resolve(false);
+          if (kovaImagePreloadCache.has(cleanURL)) {
+            return kovaImagePreloadCache.get(cleanURL);
+          }
+
+          const promise = new Promise((resolve) => {
+            const img = new Image();
+            img.decoding = "async";
+            try {
+              img.fetchPriority = priority;
+            } catch (e) {}
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(false);
+            img.src = cleanURL;
+          });
+
+          kovaImagePreloadCache.set(cleanURL, promise);
+          return promise;
+        }
+
+        let kovaPrefetchTimer = null;
+
+        function scheduleSpotImagePrefetch(features = currentBaseSpotFeatures) {
+          if (!Array.isArray(features) || !features.length) return;
+
+          const connection =
+            navigator.connection ||
+            navigator.mozConnection ||
+            navigator.webkitConnection ||
+            null;
+
+          if (connection?.saveData) return;
+          if (/2g/i.test(String(connection?.effectiveType || ""))) return;
+
+          if (kovaPrefetchTimer) {
+            if (typeof cancelIdleCallback === "function") {
+              try {
+                cancelIdleCallback(kovaPrefetchTimer);
+              } catch (e) {}
+            } else {
+              clearTimeout(kovaPrefetchTimer);
+            }
+          }
+
+          const run = () => {
+            kovaPrefetchTimer = null;
+            let center = null;
+            try {
+              center = map.getCenter();
+            } catch (e) {}
+
+            const ranked = features
+              .map((feature) => {
+                const props = feature?.properties || {};
+                const coords = feature?.geometry?.coordinates || [];
+                const lng = Number(coords[0] ?? props.lng);
+                const lat = Number(coords[1] ?? props.lat);
+                let distance = Number.POSITIVE_INFINITY;
+
+                if (center && Number.isFinite(lat) && Number.isFinite(lng)) {
+                  distance = haversineMeters(
+                    Number(center.lat),
+                    Number(center.lng),
+                    lat,
+                    lng,
+                  );
+                }
+
+                return { props, distance };
+              })
+              .sort((a, b) => a.distance - b.distance)
+              .slice(0, KOVA_IMAGE_PREFETCH_LIMIT);
+
+            ranked.forEach(({ props }) => {
+              const thumbURL = getSpotThumbnailURL(props);
+              const photoURL = safeHttpsURL(props.photoURL);
+
+              // Prefer cheap thumbnails. For legacy spots without a thumbnail,
+              // prefetch the normal image so a marker tap still feels instant.
+              preloadKovaImage(thumbURL || photoURL, "low");
+            });
+          };
+
+          if (typeof requestIdleCallback === "function") {
+            kovaPrefetchTimer = requestIdleCallback(run, { timeout: 900 });
+          } else {
+            kovaPrefetchTimer = setTimeout(run, 250);
+          }
+        }
+
         // MANUAL KOVA PICKS:
         // Add as many Firestore spot document IDs as you want.
         // Order here = order in the horizontal KOVA picks carousel.
@@ -3842,6 +3885,7 @@
             description: String(spot.description || ""),
             addedBy: String(spot.addedBy || spot.added_by || spot.author || ""),
             photoURL: safeHttpsURL(spot.photoURL),
+            thumbURL: getSpotThumbnailURL(spot),
             lat,
             lng,
             avgRating: Number(spot.avgRating || 0),
@@ -3919,6 +3963,7 @@
               description: clean.description,
               addedBy: clean.addedBy,
               photoURL: clean.photoURL,
+              thumbURL: clean.thumbURL,
               lat: clean.lat,
               lng: clean.lng,
               avgRating: clean.avgRating,
@@ -3936,6 +3981,7 @@
             description: card.getAttribute("data-spot-description") || "",
             addedBy: card.getAttribute("data-spot-added-by") || "",
             photoURL: card.getAttribute("data-spot-photo") || "",
+            thumbURL: card.getAttribute("data-spot-thumb") || "",
             lat: card.getAttribute("data-spot-lat"),
             lng: card.getAttribute("data-spot-lng"),
             avgRating: card.getAttribute("data-spot-rating"),
@@ -4016,7 +4062,7 @@
         }
 
         function renderSavedSpotItem(spot) {
-          const photo = safeHttpsURL(spot.photoURL);
+          const photo = getSpotDisplayURL(spot);
           return `
             <div class="kova-personal-item">
               ${photo ? `<img class="kova-personal-thumb" src="${escapeHTML(photo)}" alt="" loading="lazy" decoding="async">` : `<span class="kova-personal-thumb"></span>`}
@@ -4032,7 +4078,7 @@
         }
 
         function renderRouteSpotItem(spot, index, total) {
-          const photo = safeHttpsURL(spot.photoURL);
+          const photo = getSpotDisplayURL(spot);
           const meta =
             index === 0
               ? "Route start"
@@ -4786,6 +4832,12 @@
               added_by: spot.added_by || "",
               author: spot.author || "",
               photoURL: spot.photoURL || "",
+              thumbURL:
+                spot.thumbURL ||
+                spot.thumbnailURL ||
+                spot.photoThumbURL ||
+                spot.photoThumbnailURL ||
+                "",
               lat: Number(spot.lat),
               lng: Number(spot.lng),
               avgRating: Number(spot.avgRating || 0),
@@ -4968,7 +5020,7 @@
         }
 
         function makeFeedSpotThumb(spot) {
-          const url = safeHttpsURL(spot?.photoURL);
+          const url = getSpotDisplayURL(spot);
           if (!url) return "";
           return `<img class="kova-top-thumb" src="${escapeHTML(url)}" alt="" loading="lazy" decoding="async">`;
         }
@@ -4996,7 +5048,7 @@
               <div class="kova-pick-scroll" aria-label="KOVA picks" data-pick-scroll>
                 ${spots
                   .map((spot) => {
-                    const photoURL = safeHttpsURL(spot.photoURL);
+                    const photoURL = getSpotDisplayURL(spot);
                     const rating = Number(spot.avgRating || 0).toFixed(1);
                     const ratingCount = Number(spot.ratingCount || 0);
 
@@ -5444,154 +5496,14 @@
           if (type) el.classList.add(type);
         }
 
-        function getInAppBrowserName() {
-          const ua = navigator.userAgent || "";
-
-          if (/Instagram/i.test(ua)) return "Instagram";
-          if (/FBAN|FBAV|FB_IAB|FBIOS|FB4A/i.test(ua)) return "Facebook";
-          if (/TikTok/i.test(ua)) return "TikTok";
-          if (/Snapchat/i.test(ua)) return "Snapchat";
-          if (/Line\//i.test(ua)) return "LINE";
-
-          return "";
-        }
-
-        function isInAppBrowser() {
-          return Boolean(getInAppBrowserName());
-        }
-
-        function isIOSDevice() {
-          return (
-            /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-            (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
-          );
-        }
-
-        function isAndroidDevice() {
-          return /Android/i.test(navigator.userAgent);
-        }
-
-        async function copyCurrentKovaUrl(noteEl) {
-          const url = window.location.href;
-
-          try {
-            await navigator.clipboard.writeText(url);
-            if (noteEl)
-              noteEl.textContent = "Link copied. Paste it in Safari or Chrome.";
-            return true;
-          } catch (e) {
-            if (noteEl) noteEl.textContent = "Copy this link manually: " + url;
-            return false;
-          }
-        }
-
-        function openKovaInExternalBrowser(noteEl) {
-          const url = window.location.href;
-
-          if (isAndroidDevice()) {
-            try {
-              const parsed = new URL(url);
-              const intentPath = `${parsed.host}${parsed.pathname}${parsed.search}${parsed.hash}`;
-              window.location.href = `intent://${intentPath}#Intent;scheme=${parsed.protocol.replace(":", "")};S.browser_fallback_url=${encodeURIComponent(url)};end`;
-              return;
-            } catch (e) {}
-          }
-
-          copyCurrentKovaUrl(noteEl);
-        }
-
-        function closeKovaLocationGate() {
-          const gate = document.querySelector(".kova-location-gate");
-          if (gate) gate.remove();
-        }
-
-        function showKovaLocationGate(reason = "in-app") {
-          closeKovaLocationGate();
-
-          const appName = getInAppBrowserName() || "this app";
-          const isProblemBrowser = isInAppBrowser();
-          const isBlocked = reason === "blocked";
-          const noSupport = reason === "unsupported";
-          const title = noSupport
-            ? "Location is not available here."
-            : isBlocked
-              ? "Location was blocked."
-              : `Open KOVA in your browser.`;
-          const body = noSupport
-            ? "This browser does not support location. You can still browse the map manually."
-            : isBlocked
-              ? "KOVA could not access your location. You can try again, open the link in your browser, or explore the map manually."
-              : `${appName}'s in-app browser can block location access. KOVA works best in Safari or Chrome.`;
-          const steps = isIOSDevice()
-            ? "iPhone: tap the three dots in Instagram, then choose Open in browser."
-            : isAndroidDevice()
-              ? "Android: tap Open in browser. If nothing happens, use the three dots and open in Chrome."
-              : "Open this link in your normal browser for the best location support.";
-          const canAskLocation = Boolean(navigator.geolocation) && !noSupport;
-          const openBrowserLabel = isAndroidDevice()
-            ? "Open in browser"
-            : "Copy link";
-
-          document.body.insertAdjacentHTML(
-            "beforeend",
-            `
-              <div class="kova-location-gate" role="dialog" aria-modal="true" aria-label="KOVA location help">
-                <div class="kova-location-card">
-                  <div class="kova-location-kicker">KOVA location</div>
-                  <h2>${escapeHTML(title)}</h2>
-                  <p>${escapeHTML(body)}</p>
-                  ${isProblemBrowser || isBlocked ? `<div class="kova-location-steps">${escapeHTML(steps)}</div>` : ""}
-
-                  <div class="kova-location-actions">
-                    ${isProblemBrowser || isBlocked ? `<button class="kova-btn primary" type="button" data-kova-open-browser>${escapeHTML(openBrowserLabel)}</button>` : ""}
-                    ${canAskLocation ? `<button class="kova-btn" type="button" data-kova-use-location>Use my location here</button>` : ""}
-                    <button class="kova-btn ghost" type="button" data-kova-continue>Continue without location</button>
-                  </div>
-
-                  <div class="kova-location-note" data-kova-location-note></div>
-                </div>
-              </div>
-            `,
-          );
-
-          const gate = document.querySelector(".kova-location-gate");
-          const noteEl = gate?.querySelector("[data-kova-location-note]");
-
-          gate
-            ?.querySelector("[data-kova-open-browser]")
-            ?.addEventListener("click", () => {
-              openKovaInExternalBrowser(noteEl);
-            });
-
-          gate
-            ?.querySelector("[data-kova-use-location]")
-            ?.addEventListener("click", async () => {
-              closeKovaLocationGate();
-              await requestUserLocation({ showHelpOnFail: true });
-            });
-
-          gate
-            ?.querySelector("[data-kova-continue]")
-            ?.addEventListener("click", () => {
-              closeKovaLocationGate();
-            });
-        }
-
         function initUserLocationFlow() {
           if (!navigator.geolocation) {
-            if (isInAppBrowser()) {
-              window.setTimeout(() => showKovaLocationGate("unsupported"), 650);
-            }
-            return;
-          }
-
-          if (isInAppBrowser()) {
-            window.setTimeout(() => showKovaLocationGate("in-app"), 650);
+            console.warn("Geolocation is not supported on this device.");
             return;
           }
 
           window.setTimeout(() => {
-            requestUserLocation({ showHelpOnFail: true });
+            requestUserLocation();
           }, 250);
         }
 
@@ -5856,32 +5768,67 @@
             const hero = popupEl.querySelector(".hero[data-photo-url]");
             if (!hero) return;
 
-            const photoURL = hero.getAttribute("data-photo-url") || "";
+            const photoURL = safeHttpsURL(
+              hero.getAttribute("data-photo-url") || "",
+            );
+            const thumbURL = safeHttpsURL(
+              hero.getAttribute("data-thumb-url") || "",
+            );
             const img = hero.querySelector("img[data-spot-image]");
             const loading = hero.querySelector(".kova-loading");
             const fallback = hero.querySelector(".kova-fallback");
 
-            if (!photoURL || !img) {
+            if ((!photoURL && !thumbURL) || !img) {
               if (loading) loading.classList.add("hidden");
               if (fallback) fallback.classList.remove("hidden");
               return;
             }
 
-            const preload = new Image();
+            let fullImageStarted = false;
 
-            preload.onload = () => {
-              img.src = photoURL;
+            const showLoadedImage = (url, { preview = false } = {}) => {
+              if (!url) return;
+              img.src = url;
               hero.classList.add("is-loaded");
+              hero.classList.toggle("has-preview", preview);
+              hero.classList.toggle("is-full", !preview);
               if (loading) loading.classList.add("hidden");
               if (fallback) fallback.classList.add("hidden");
             };
 
-            preload.onerror = () => {
-              if (loading) loading.classList.add("hidden");
-              if (fallback) fallback.classList.remove("hidden");
+            const loadFullImage = () => {
+              if (fullImageStarted || !photoURL) return;
+              fullImageStarted = true;
+
+              preloadKovaImage(photoURL, "high").then((ok) => {
+                if (!popup.getElement()) return;
+
+                if (ok) {
+                  showLoadedImage(photoURL, { preview: false });
+                } else if (!hero.classList.contains("is-loaded")) {
+                  if (loading) loading.classList.add("hidden");
+                  if (fallback) fallback.classList.remove("hidden");
+                }
+              });
             };
 
-            preload.src = photoURL;
+            if (thumbURL && thumbURL !== photoURL) {
+              preloadKovaImage(thumbURL, "high").then((ok) => {
+                if (!popup.getElement()) return;
+
+                if (ok && !hero.classList.contains("is-full")) {
+                  showLoadedImage(thumbURL, { preview: true });
+                }
+
+                // Start the full image immediately after the preview attempt.
+                loadFullImage();
+              });
+
+              // Do not let a slow thumbnail block the full image forever.
+              window.setTimeout(loadFullImage, 180);
+            } else {
+              loadFullImage();
+            }
           });
         }
 
@@ -5901,6 +5848,7 @@
             props.addedBy || props.added_by || props.author || "";
           const addedBy = escapeHTML(addedByRaw || "unknown");
           const photoURL = safeHttpsURL(props.photoURL);
+          const thumbURL = getSpotThumbnailURL(props);
 
           return `
             <div
@@ -5910,6 +5858,7 @@
               data-spot-description="${escapeHTML(props.description || "")}"
               data-spot-added-by="${escapeHTML(addedByRaw || "")}"
               data-spot-photo="${escapeHTML(photoURL)}"
+              data-spot-thumb="${escapeHTML(thumbURL)}"
               data-spot-lat="${Number(props.lat)}"
               data-spot-lng="${Number(props.lng)}"
               data-spot-rating="${Number(props.avgRating || 0)}"
@@ -5922,7 +5871,11 @@
                 data-action="close-spot"
                 aria-label="Close spot"
               >×</button>
-              <div class="hero" data-photo-url="${escapeHTML(photoURL)}">
+              <div
+                class="hero"
+                data-photo-url="${escapeHTML(photoURL)}"
+                data-thumb-url="${escapeHTML(thumbURL)}"
+              >
                 <div class="kova-loading">
                   <div class="kova-spinner"></div>
                   <div class="kova-loading-text">Loading image...</div>
@@ -5933,9 +5886,9 @@
                 <img
                   data-spot-image
                   alt="${name}"
-                  loading="lazy"
+                  loading="eager"
                   decoding="async"
-                  fetchpriority="low"
+                  fetchpriority="high"
                 />
               </div>
 
@@ -6047,10 +6000,14 @@
             if (spotId) byId.set(spotId, feature);
           });
 
+          const mergedFeatures = [...byId.values()];
+
           src.setData({
             type: "FeatureCollection",
-            features: [...byId.values()],
+            features: mergedFeatures,
           });
+
+          scheduleSpotImagePrefetch(mergedFeatures);
         }
 
         function toRad(x) {
@@ -6524,6 +6481,12 @@
                 added_by: spot.added_by || "",
                 author: spot.author || "",
                 photoURL: spot.photoURL || "",
+                thumbURL:
+                  spot.thumbURL ||
+                  spot.thumbnailURL ||
+                  spot.photoThumbURL ||
+                  spot.photoThumbnailURL ||
+                  "",
                 lat: spot.lat,
                 lng: spot.lng,
                 avgRating: Number(spot.avgRating || 0),
@@ -6675,11 +6638,8 @@
           });
         }
 
-        function requestUserLocation(options = {}) {
-          const { showHelpOnFail = false } = options;
-
+        function requestUserLocation() {
           if (!navigator.geolocation) {
-            if (showHelpOnFail) showKovaLocationGate("unsupported");
             return Promise.resolve(false);
           }
 
@@ -6688,18 +6648,18 @@
               async (pos) => {
                 userLng = pos.coords.longitude;
                 userLat = pos.coords.latitude;
+
+                console.log("KOVA location:", userLat, userLng);
+
                 syncUserMarker();
                 await maybeLoadInitialNearbySpots();
-                closeKovaLocationGate();
+
                 resolve(true);
               },
               (err) => {
-                console.warn("Locatie fout:", err.message);
+                console.warn("KOVA location unavailable:", err.message);
 
-                if (showHelpOnFail) {
-                  showKovaLocationGate("blocked");
-                }
-
+                // No popup: KOVA stays usable without location.
                 resolve(false);
               },
               {
@@ -7048,6 +7008,10 @@
         });
 
         map.on("dragstart", closeAll);
+
+        map.on("moveend", () => {
+          scheduleSpotImagePrefetch(currentBaseSpotFeatures);
+        });
 
         let longPressTimer = null;
         let longPressVisualTimer = null;

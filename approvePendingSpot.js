@@ -175,7 +175,6 @@ async function approve() {
   const pendingData = pendingSnap.data() || {};
 
   const lat = Number(pendingData.lat);
-
   const lng = Number(pendingData.lng);
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
@@ -195,16 +194,16 @@ async function approve() {
   const approvedData = {
     ...pendingData,
 
-    country: location.country,
+    status: "approved",
+    approvedAt: FieldValue.serverTimestamp(),
 
+    country: location.country,
     countryKey,
 
     province: location.province,
-
     provinceKey,
 
     city: location.city || "",
-
     cityKey,
   };
 
@@ -236,11 +235,9 @@ async function approve() {
         ...regions[existingIndex],
 
         country: location.country,
-
         countryKey,
 
         province: location.province,
-
         provinceKey,
 
         count: Number(regions[existingIndex].count || 0) + 1,
@@ -248,11 +245,9 @@ async function approve() {
     } else {
       regions.push({
         country: location.country,
-
         countryKey,
 
         province: location.province,
-
         provinceKey,
 
         count: 1,
@@ -299,9 +294,7 @@ async function approve() {
   );
 
   console.log("✅ Gekopieerd naar spots");
-
   console.log("✅ Verwijderd uit pending_spots");
-
   console.log("✅ Search index bijgewerkt");
 
   console.log("ID:", pendingId);
