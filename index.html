@@ -3052,10 +3052,80 @@
           font-size: 0.8rem;
         }
       }
+
+      /* KOVA startup preload ------------------------------------------- */
+      .kova-startup {
+        position: fixed;
+        inset: 0;
+        z-index: 20050;
+        display: grid;
+        place-items: center;
+        background: #0b0b0b;
+        opacity: 1;
+        visibility: visible;
+        transition:
+          opacity 0.32s ease,
+          visibility 0.32s ease;
+      }
+
+      .kova-startup.is-hiding {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      .kova-startup-inner {
+        width: min(300px, calc(100vw - 56px));
+        display: grid;
+        justify-items: center;
+        gap: 24px;
+      }
+
+      .kova-startup-logo {
+        width: min(230px, 56vw);
+        max-height: 92px;
+        display: block;
+        object-fit: contain;
+        user-select: none;
+        -webkit-user-drag: none;
+      }
+
+      .kova-startup-track {
+        width: 100%;
+        height: 3px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .kova-startup-progress {
+        width: 100%;
+        height: 100%;
+        display: block;
+        border-radius: inherit;
+        background: var(--accent);
+        transform: scaleX(0.06);
+        transform-origin: left center;
+        transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+        will-change: transform;
+      }
     </style>
   </head>
 
   <body>
+    <div id="kovaStartup" class="kova-startup" aria-label="Loading KOVA">
+      <div class="kova-startup-inner">
+        <img
+          class="kova-startup-logo"
+          src="../../images/kova_wit_x_png.png"
+          alt="KOVA"
+        />
+        <div class="kova-startup-track" aria-hidden="true">
+          <span class="kova-startup-progress" data-startup-progress></span>
+        </div>
+      </div>
+    </div>
+
     <nav>
       <div class="nav-left">
         <a href="../../index.html">
@@ -3445,6 +3515,42 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
+        const startupOverlay = document.getElementById("kovaStartup");
+        const startupProgress = document.querySelector(
+          "[data-startup-progress]",
+        );
+        const startupStartedAt = performance.now();
+        let startupFinished = false;
+
+        function wait(ms) {
+          return new Promise((resolve) => window.setTimeout(resolve, ms));
+        }
+
+        function setStartupProgress(value) {
+          if (!startupProgress) return;
+          const clean = Math.max(0.06, Math.min(1, Number(value) || 0));
+          startupProgress.style.transform = `scaleX(${clean})`;
+        }
+
+        async function finishStartupSplash() {
+          if (startupFinished) return;
+          startupFinished = true;
+          setStartupProgress(1);
+
+          const elapsed = performance.now() - startupStartedAt;
+          const remaining = Math.max(0, STARTUP_SPLASH_MIN_MS - elapsed);
+          if (remaining) await wait(remaining);
+
+          // Let the loading bar visibly reach 100% before fading away.
+          await wait(110);
+          startupOverlay?.classList.add("is-hiding");
+          window.setTimeout(() => {
+            if (startupOverlay) startupOverlay.hidden = true;
+          }, 360);
+        }
+
+        setStartupProgress(0.1);
+
         const navRight = document.querySelector(".nav-right");
         const menuToggle = document.querySelector(".hamburger-toggle");
         const menuPanel = document.getElementById("kovaMenu");
@@ -3635,6 +3741,12 @@
         const USER_START_ZOOM = 11;
 
         const SEARCH_RADIUS_KM = 10;
+        const STARTUP_PRELOAD_RADIUS_KM = 25;
+        const STARTUP_THUMB_PREFETCH_LIMIT = 20;
+        const STARTUP_SPLASH_MIN_MS = 800;
+        const STARTUP_GPS_GRACE_MS = 1200;
+        const KOVA_LAST_LOCATION_KEY = "kova_last_location_v1";
+
         const DUPLICATE_BLOCK_RADIUS_M = 80;
         const LOCAL_RATINGS_KEY = "kova_spot_ratings_v1";
         const KOVA_SAVED_SPOTS_KEY = "kova_saved_spots_v1";
@@ -3642,10 +3754,49 @@
         const KOVA_ROUTE_MODE_KEY = "kova_route_mode_v1";
         const KOVA_ROUTE_MAX_SPOTS = 5;
 
+        function readLastKovaLocation() {
+          try {
+            const raw = localStorage.getItem(KOVA_LAST_LOCATION_KEY);
+            const parsed = raw ? JSON.parse(raw) : null;
+            const lat = Number(parsed?.lat);
+            const lng = Number(parsed?.lng);
+
+            if (
+              Number.isFinite(lat) &&
+              Number.isFinite(lng) &&
+              lat >= -90 &&
+              lat <= 90 &&
+              lng >= -180 &&
+              lng <= 180
+            ) {
+              return { lat, lng };
+            }
+          } catch (e) {}
+
+          return null;
+        }
+
+        function rememberLastKovaLocation(lat, lng) {
+          try {
+            localStorage.setItem(
+              KOVA_LAST_LOCATION_KEY,
+              JSON.stringify({ lat, lng, savedAt: Date.now() }),
+            );
+          } catch (e) {}
+        }
+
+        const startupStoredLocation = readLastKovaLocation();
+        const startupMapCenter = startupStoredLocation
+          ? [startupStoredLocation.lng, startupStoredLocation.lat]
+          : DEFAULT_CENTER;
+        const startupMapZoom = startupStoredLocation
+          ? USER_START_ZOOM
+          : DEFAULT_ZOOM;
+
         // Spot image performance -----------------------------------------
         // New spots should store a small WebP URL in `thumbURL` and the
         // normal image in `photoURL`. Older spots without thumbURL still work.
-        const KOVA_IMAGE_PREFETCH_LIMIT = 8;
+        const KOVA_IMAGE_PREFETCH_LIMIT = 20;
         const kovaImagePreloadCache = new Map();
 
         function getSpotThumbnailURL(spot) {
@@ -3683,6 +3834,59 @@
 
           kovaImagePreloadCache.set(cleanURL, promise);
           return promise;
+        }
+
+        function preloadStartupSpotImages(
+          features,
+          center,
+          limit = STARTUP_THUMB_PREFETCH_LIMIT,
+        ) {
+          if (!Array.isArray(features) || !features.length) {
+            return Promise.resolve([]);
+          }
+
+          const connection =
+            navigator.connection ||
+            navigator.mozConnection ||
+            navigator.webkitConnection ||
+            null;
+
+          if (connection?.saveData) return Promise.resolve([]);
+          if (/2g/i.test(String(connection?.effectiveType || ""))) {
+            return Promise.resolve([]);
+          }
+
+          const ranked = features
+            .map((feature) => {
+              const props = feature?.properties || {};
+              const coords = feature?.geometry?.coordinates || [];
+              const lng = Number(coords[0] ?? props.lng);
+              const lat = Number(coords[1] ?? props.lat);
+              let distance = Number.POSITIVE_INFINITY;
+
+              if (
+                center &&
+                Number.isFinite(center.lat) &&
+                Number.isFinite(center.lng) &&
+                Number.isFinite(lat) &&
+                Number.isFinite(lng)
+              ) {
+                distance = haversineMeters(center.lat, center.lng, lat, lng);
+              }
+
+              return { props, distance };
+            })
+            .sort((a, b) => a.distance - b.distance)
+            .slice(0, limit);
+
+          return Promise.allSettled(
+            ranked.map(({ props }) =>
+              preloadKovaImage(
+                getSpotThumbnailURL(props) || safeHttpsURL(props.photoURL),
+                "low",
+              ),
+            ),
+          );
         }
 
         let kovaPrefetchTimer = null;
@@ -3770,8 +3974,8 @@
           container: "map",
           style:
             "https://api.maptiler.com/maps/dataviz-dark/style.json?key=7TBqy4hTdFfQeIq7oXKj",
-          center: DEFAULT_CENTER,
-          zoom: DEFAULT_ZOOM,
+          center: startupMapCenter,
+          zoom: startupMapZoom,
           minZoom: 5,
           navigationControl: false,
           projectionControl: false,
@@ -3817,8 +4021,10 @@
         let userMarkerEl = null;
         let userLat = null;
         let userLng = null;
+        let userLocationRequestPromise = null;
         let mapLoaded = false;
         let initialNearbyLoaded = false;
+        let startupRegionLoaded = false;
         let userMarkerAdded = false;
         let currentBaseSpotFeatures = [];
 
@@ -5499,12 +5705,14 @@
         function initUserLocationFlow() {
           if (!navigator.geolocation) {
             console.warn("Geolocation is not supported on this device.");
-            return;
+            return Promise.resolve(false);
           }
 
-          window.setTimeout(() => {
-            requestUserLocation();
-          }, 250);
+          if (!userLocationRequestPromise) {
+            userLocationRequestPromise = requestUserLocation();
+          }
+
+          return userLocationRequestPromise;
         }
 
         function openNavigation(lat, lng) {
@@ -6658,6 +6866,79 @@
           }
         }
 
+        async function getStartupPreloadCenter() {
+          if (typeof userLat === "number" && typeof userLng === "number") {
+            return { lat: userLat, lng: userLng, source: "live" };
+          }
+
+          if (startupStoredLocation) {
+            return {
+              lat: startupStoredLocation.lat,
+              lng: startupStoredLocation.lng,
+              source: "stored",
+            };
+          }
+
+          if (userLocationRequestPromise) {
+            await Promise.race([
+              userLocationRequestPromise.catch(() => false),
+              wait(STARTUP_GPS_GRACE_MS),
+            ]);
+          }
+
+          if (typeof userLat === "number" && typeof userLng === "number") {
+            return { lat: userLat, lng: userLng, source: "live" };
+          }
+
+          return null;
+        }
+
+        async function preloadStartupRegion() {
+          if (!mapLoaded || startupRegionLoaded) return false;
+
+          const center = await getStartupPreloadCenter();
+          if (!center) return false;
+
+          startupRegionLoaded = true;
+          setStartupProgress(0.46);
+
+          if (center.source === "live") {
+            syncUserMarker();
+            initialNearbyLoaded = true;
+          }
+
+          map.jumpTo({
+            center: [center.lng, center.lat],
+            zoom: USER_START_ZOOM,
+          });
+
+          await fetchSpotsInRadius(
+            center.lat,
+            center.lng,
+            STARTUP_PRELOAD_RADIUS_KM,
+            {
+              recenter: false,
+              showEmptyPopup: false,
+            },
+          );
+
+          setStartupProgress(0.74);
+
+          // Start warming a larger set of nearby thumbnails. We only wait
+          // briefly for them; any remaining image requests continue in cache
+          // after the splash disappears.
+          const imageWarmup = preloadStartupSpotImages(
+            currentBaseSpotFeatures,
+            center,
+            STARTUP_THUMB_PREFETCH_LIMIT,
+          );
+
+          await Promise.race([imageWarmup, wait(650)]);
+          setStartupProgress(0.92);
+
+          return true;
+        }
+
         async function maybeLoadInitialNearbySpots() {
           if (
             initialNearbyLoaded ||
@@ -6676,10 +6957,15 @@
             zoom: USER_START_ZOOM,
           });
 
-          await fetchSpotsInRadius(userLat, userLng, SEARCH_RADIUS_KM, {
-            recenter: false,
-            showEmptyPopup: false,
-          });
+          await fetchSpotsInRadius(
+            userLat,
+            userLng,
+            STARTUP_PRELOAD_RADIUS_KM,
+            {
+              recenter: false,
+              showEmptyPopup: false,
+            },
+          );
         }
 
         async function refreshNearbyUserSpots() {
@@ -6714,11 +7000,18 @@
               async (pos) => {
                 userLng = pos.coords.longitude;
                 userLat = pos.coords.latitude;
+                rememberLastKovaLocation(userLat, userLng);
 
                 console.log("KOVA location:", userLat, userLng);
 
                 syncUserMarker();
-                await maybeLoadInitialNearbySpots();
+
+                // During startup, the splash orchestration decides which
+                // region to preload. After startup, a fresh GPS fix can refine
+                // the map immediately.
+                if (startupFinished) {
+                  await maybeLoadInitialNearbySpots();
+                }
 
                 resolve(true);
               },
@@ -7069,8 +7362,33 @@
             });
           });
 
-          await maybeLoadInitialNearbySpots();
-          updateFooterVisibility();
+          setStartupProgress(0.34);
+
+          try {
+            const didPreloadRegion = await preloadStartupRegion();
+
+            if (!didPreloadRegion) {
+              setStartupProgress(0.82);
+            }
+          } catch (err) {
+            console.warn("KOVA startup preload failed:", err);
+            setStartupProgress(0.86);
+          } finally {
+            updateFooterVisibility();
+            await finishStartupSplash();
+
+            // If GPS became available while a stored region was preloading,
+            // refine to the real current region after the map is visible.
+            if (
+              !initialNearbyLoaded &&
+              typeof userLat === "number" &&
+              typeof userLng === "number"
+            ) {
+              maybeLoadInitialNearbySpots().catch((err) =>
+                console.warn("KOVA live-region refresh failed:", err),
+              );
+            }
+          }
         });
 
         map.on("dragstart", closeAll);
