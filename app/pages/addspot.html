@@ -232,6 +232,41 @@
           color 0.18s ease;
       }
 
+      .hamburger-item-main {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .hamburger-item-icon {
+        width: 19px;
+        height: 19px;
+        flex: 0 0 19px;
+        display: grid;
+        place-items: center;
+        color: rgba(255, 255, 255, 0.62);
+        transition:
+          color 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .hamburger-item-icon svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .hamburger-menu a:hover .hamburger-item-icon {
+        color: var(--accent);
+        transform: scale(1.05);
+      }
+
       .hamburger-menu a::after {
         content: "→";
         color: var(--accent);
@@ -791,8 +826,20 @@
         </button>
 
         <div class="hamburger-menu" id="kovaMenu" aria-hidden="true">
-          <a href="../../index.html">map</a>
-          <a href="../pages/about.html">about</a>
+          <a href="../../index.html">
+            <span class="hamburger-item-main">
+              <span class="hamburger-item-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M4 6.5l5-2.5 6 2.5 5-2.5v13.5l-5 2.5-6-2.5-5 2.5z"
+                  ></path>
+                  <path d="M9 4v13.5"></path>
+                  <path d="M15 6.5V20"></path>
+                </svg>
+              </span>
+              <span>back to map</span>
+            </span>
+          </a>
         </div>
       </div>
     </nav>
@@ -819,7 +866,10 @@
               <div class="step-number">1</div>
               <div class="step-copy">
                 <h3>Choose the location</h3>
-                <p>Use GPS first, then check the X on the map.</p>
+                <p>
+                  The map is ready below. Use GPS when you want to place the
+                  exact spot.
+                </p>
               </div>
             </div>
 
@@ -830,7 +880,8 @@
             <div class="map-wrap">
               <div id="miniMap" class="mini-map"></div>
               <div class="map-help">
-                Tap the map or drag the X if the exact spot needs a small correction.
+                The map is visible immediately. Your X only appears after you
+                use GPS. Once placed, you can drag it for a small correction.
               </div>
             </div>
 
@@ -918,7 +969,10 @@
               <div class="review-icon">1</div>
               <div>
                 <b>Exact location</b>
-                <span>Make sure the X points to the actual spot, not just the general area.</span>
+                <span
+                  >Make sure the X points to the actual spot, not just the
+                  general area.</span
+                >
               </div>
             </div>
 
@@ -926,7 +980,10 @@
               <div class="review-icon">2</div>
               <div>
                 <b>Good photo</b>
-                <span>Choose a photo that clearly shows what someone can expect there.</span>
+                <span
+                  >Choose a photo that clearly shows what someone can expect
+                  there.</span
+                >
               </div>
             </div>
 
@@ -934,13 +991,17 @@
               <div class="review-icon">3</div>
               <div>
                 <b>Useful description</b>
-                <span>Mention access, vibe, warnings or the best time to visit when relevant.</span>
+                <span
+                  >Mention access, vibe, warnings or the best time to visit when
+                  relevant.</span
+                >
               </div>
             </div>
           </div>
 
           <div class="side-note">
-            Opened this page from the KOVA map? The coordinates from that point are filled in automatically.
+            Opened this page from the KOVA map? The coordinates from that point
+            are filled in automatically.
           </div>
         </aside>
       </form>
@@ -1114,7 +1175,7 @@
             container: "miniMap",
             style: `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${MAPTILER_KEY}`,
             center: [4.5, 50.85],
-            zoom: 7,
+            zoom: 7.2,
             navigationControl: false,
             geolocateControl: false,
             projectionControl: false,
@@ -1123,7 +1184,21 @@
 
           if (miniMap.doubleClickZoom) miniMap.doubleClickZoom.disable();
 
+          miniMap.on("load", () => {
+            // Show the map immediately, but do not place any X yet.
+            miniMap.jumpTo({
+              center: [4.5, 50.85],
+              zoom: 7.2,
+            });
+
+            miniMap.resize();
+          });
+
+          // Once GPS has placed the X, the user may tap the map
+          // to make a small manual correction.
           miniMap.on("click", (e) => {
+            if (!spotMarker) return;
+
             const lat = e.lngLat.lat;
             const lng = e.lngLat.lng;
 
@@ -1133,9 +1208,29 @@
             });
           });
 
-          miniMap.on("load", () => {
-            applyInitialCoordsFromURL();
-          });
+          // Keep MapTiler synced to the actual responsive container size.
+          const mapContainer = document.getElementById("miniMap");
+
+          if (window.ResizeObserver && mapContainer) {
+            const resizeObserver = new ResizeObserver(() => {
+              miniMap?.resize();
+            });
+
+            resizeObserver.observe(mapContainer);
+          }
+
+          window.addEventListener(
+            "load",
+            () => {
+              miniMap?.resize();
+            },
+            { once: true },
+          );
+
+          requestAnimationFrame(() => miniMap?.resize());
+          window.setTimeout(() => miniMap?.resize(), 100);
+          window.setTimeout(() => miniMap?.resize(), 350);
+          window.setTimeout(() => miniMap?.resize(), 900);
         }
 
         function setCoordsAndMarker(lat, lng, options = {}) {

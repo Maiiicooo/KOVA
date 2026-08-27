@@ -229,6 +229,41 @@
           color 0.18s ease;
       }
 
+      .hamburger-item-main {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .hamburger-item-icon {
+        width: 19px;
+        height: 19px;
+        flex: 0 0 19px;
+        display: grid;
+        place-items: center;
+        color: rgba(255, 255, 255, 0.62);
+        transition:
+          color 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .hamburger-item-icon svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .hamburger-menu a:hover .hamburger-item-icon {
+        color: var(--accent);
+        transform: scale(1.05);
+      }
+
       .hamburger-menu a::after {
         content: "→";
         color: var(--accent);
@@ -546,8 +581,20 @@
         </button>
 
         <div class="hamburger-menu" id="kovaMenu" aria-hidden="true">
-          <a href="../../index.html">map</a>
-          <a href="../pages/addspot.html">add spot</a>
+          <a href="../../index.html">
+            <span class="hamburger-item-main">
+              <span class="hamburger-item-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M4 6.5l5-2.5 6 2.5 5-2.5v13.5l-5 2.5-6-2.5-5 2.5z"
+                  ></path>
+                  <path d="M9 4v13.5"></path>
+                  <path d="M15 6.5V20"></path>
+                </svg>
+              </span>
+              <span>back to map</span>
+            </span>
+          </a>
         </div>
       </div>
     </nav>
@@ -562,19 +609,18 @@
 
         <article class="about-text">
           <div class="about-copy">
-            <div class="kicker">KOVA about</div>
             <h1>About KOVA</h1>
 
             <p>
-              KOVA is a digital outdoor utility built for people who like being
-              outside without overplanning it. It is about finding quiet places,
+              KOVA is a digital utility built for people who like being
+              outside. It is about finding quiet places,
               overlooked corners, and hidden gems. Mapped by real people, not
               algorithms.
             </p>
 
             <p>
-              The idea started from a simple frustration: good places are hard
-              to find unless someone tells you. KOVA exists to collect those
+              The idea started from a simple frustration: <strong style="color: #8b7108;">good places are hard to find</strong> <br>
+              KOVA exists to collect those
               places and put them on a map, without turning them into tourist
               traps.
             </p>
@@ -594,27 +640,24 @@
             <div class="about-note">
               Built and maintained by
               <a
-                href="https://www.instagram.com/maiiicooo/"
+                href="https://www.instagram.com/maicowave_/"
                 target="_blank"
                 rel="noopener"
-                >@maiiicooo</a
-              >.
-              <br><br>
-               <div class="support-wrap">
+                >@MAICOWAVE</a
+              >. <br /><br />
+              <div class="support-wrap">
                 If you like what I’m building and want to support KOVA, you can
-            <a
-              class="support-btn"
-              href="https://buymeacoffee.com/maicowave"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              buy me a coffee
-            </a>
-          </div>
+                <a
+                  class="support-btn"
+                  href="https://buymeacoffee.com/maicowave"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  buy me a coffee
+                </a>
+              </div>
             </div>
-            
           </div>
-          
         </article>
       </section>
 
