@@ -9,6 +9,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
+    <link
+      rel="preconnect"
+      href="https://firebasestorage.googleapis.com"
+      crossorigin
+    />
+    <link rel="dns-prefetch" href="//firebasestorage.googleapis.com" />
+
     <!-- KOVA browser + home-screen icon -->
     <link
       rel="icon"
@@ -3693,13 +3700,8 @@
           if (/2g/i.test(String(connection?.effectiveType || ""))) return;
 
           if (kovaPrefetchTimer) {
-            if (typeof cancelIdleCallback === "function") {
-              try {
-                cancelIdleCallback(kovaPrefetchTimer);
-              } catch (e) {}
-            } else {
-              clearTimeout(kovaPrefetchTimer);
-            }
+            clearTimeout(kovaPrefetchTimer);
+            kovaPrefetchTimer = null;
           }
 
           const run = () => {
@@ -3741,11 +3743,9 @@
             });
           };
 
-          if (typeof requestIdleCallback === "function") {
-            kovaPrefetchTimer = requestIdleCallback(run, { timeout: 900 });
-          } else {
-            kovaPrefetchTimer = setTimeout(run, 250);
-          }
+          // Start warming nearby thumbnails almost immediately after spots load.
+          // Waiting for requestIdleCallback made the first spot tap feel slower.
+          kovaPrefetchTimer = setTimeout(run, 50);
         }
 
         // MANUAL KOVA PICKS:
@@ -5771,9 +5771,11 @@
             const photoURL = safeHttpsURL(
               hero.getAttribute("data-photo-url") || "",
             );
+
             const thumbURL = safeHttpsURL(
               hero.getAttribute("data-thumb-url") || "",
             );
+
             const img = hero.querySelector("img[data-spot-image]");
             const loading = hero.querySelector(".kova-loading");
             const fallback = hero.querySelector(".kova-fallback");
@@ -5784,50 +5786,112 @@
               return;
             }
 
-            let fullImageStarted = false;
+            const initialURL = thumbURL || photoURL;
+            const initialIsPreview = Boolean(thumbURL) && thumbURL !== photoURL;
 
-            const showLoadedImage = (url, { preview = false } = {}) => {
-              if (!url) return;
-              img.src = url;
+            let fullImageStarted = false;
+            let initialHandled = false;
+
+            function showLoadedImage(preview = false) {
               hero.classList.add("is-loaded");
               hero.classList.toggle("has-preview", preview);
               hero.classList.toggle("is-full", !preview);
+
               if (loading) loading.classList.add("hidden");
               if (fallback) fallback.classList.add("hidden");
-            };
+            }
 
-            const loadFullImage = () => {
-              if (fullImageStarted || !photoURL) return;
+            function loadFullImage() {
+              if (fullImageStarted || !photoURL || photoURL === initialURL) {
+                return;
+              }
+
               fullImageStarted = true;
 
-              preloadKovaImage(photoURL, "high").then((ok) => {
+              const full = new Image();
+              full.decoding = "async";
+
+              try {
+                full.fetchPriority = "low";
+              } catch (e) {}
+
+              full.onload = () => {
                 if (!popup.getElement()) return;
 
-                if (ok) {
-                  showLoadedImage(photoURL, { preview: false });
-                } else if (!hero.classList.contains("is-loaded")) {
+                img.src = photoURL;
+                hero.classList.remove("has-preview");
+                hero.classList.add("is-loaded", "is-full");
+
+                if (loading) loading.classList.add("hidden");
+                if (fallback) fallback.classList.add("hidden");
+              };
+
+              full.onerror = () => {
+                // Keep the already visible thumbnail if full-res fails.
+                if (!hero.classList.contains("is-loaded")) {
                   if (loading) loading.classList.add("hidden");
                   if (fallback) fallback.classList.remove("hidden");
                 }
-              });
-            };
+              };
 
-            if (thumbURL && thumbURL !== photoURL) {
-              preloadKovaImage(thumbURL, "high").then((ok) => {
-                if (!popup.getElement()) return;
+              full.src = photoURL;
+            }
 
-                if (ok && !hero.classList.contains("is-full")) {
-                  showLoadedImage(thumbURL, { preview: true });
-                }
+            function handleInitialLoaded() {
+              if (initialHandled) return;
+              initialHandled = true;
 
-                // Start the full image immediately after the preview attempt.
+              showLoadedImage(initialIsPreview);
+
+              if (initialIsPreview) {
                 loadFullImage();
-              });
+              }
+            }
 
-              // Do not let a slow thumbnail block the full image forever.
-              window.setTimeout(loadFullImage, 180);
-            } else {
-              loadFullImage();
+            function handleInitialError() {
+              if (initialHandled) return;
+              initialHandled = true;
+
+              // If the thumbnail ever fails, fall back to the normal image.
+              if (initialIsPreview && photoURL) {
+                const fallbackFull = new Image();
+                fallbackFull.decoding = "async";
+
+                try {
+                  fallbackFull.fetchPriority = "high";
+                } catch (e) {}
+
+                fallbackFull.onload = () => {
+                  if (!popup.getElement()) return;
+
+                  img.src = photoURL;
+                  showLoadedImage(false);
+                };
+
+                fallbackFull.onerror = () => {
+                  if (loading) loading.classList.add("hidden");
+                  if (fallback) fallback.classList.remove("hidden");
+                };
+
+                fallbackFull.src = photoURL;
+                return;
+              }
+
+              if (loading) loading.classList.add("hidden");
+              if (fallback) fallback.classList.remove("hidden");
+            }
+
+            img.addEventListener("load", handleInitialLoaded, { once: true });
+            img.addEventListener("error", handleInitialError, { once: true });
+
+            // The browser may have finished the thumbnail before the popup
+            // loader attached (especially after our nearby prefetch).
+            if (img.complete) {
+              if (img.naturalWidth > 0) {
+                handleInitialLoaded();
+              } else {
+                handleInitialError();
+              }
             }
           });
         }
@@ -5849,6 +5913,7 @@
           const addedBy = escapeHTML(addedByRaw || "unknown");
           const photoURL = safeHttpsURL(props.photoURL);
           const thumbURL = getSpotThumbnailURL(props);
+          const initialImageURL = thumbURL || photoURL;
 
           return `
             <div
@@ -5885,6 +5950,7 @@
 
                 <img
                   data-spot-image
+                  ${initialImageURL ? `src="${escapeHTML(initialImageURL)}"` : ""}
                   alt="${name}"
                   loading="eager"
                   decoding="async"
