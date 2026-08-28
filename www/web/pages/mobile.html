@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KOVA - app</title>
+
+    <link rel="manifest" href="../../manifest.json" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <link rel="apple-touch-icon" href="../../images/appicon.JPG" />
+
+    <style>
+      :root {
+        --bg: transparent;
+        --fg: #fff;
+        --muted: rgba(255, 255, 255, 0.62);
+        --accent: #8b7108;
+        --shadow: 0 22px 58px rgba(0, 0, 0, 0.45);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        background:
+          radial-gradient(
+            circle at 20% 0%,
+            rgba(139, 113, 8, 0.16),
+            transparent 34%
+          ),
+          radial-gradient(
+            circle at 85% 18%,
+            rgba(255, 255, 255, 0.06),
+            transparent 32%
+          ),
+          #161515;
+        color: var(--fg);
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        overflow-x: hidden;
+      }
+
+      nav {
+        width: 100%;
+        padding: 22px 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: var(--bg);
+        z-index: 50;
+        pointer-events: none;
+      }
+
+      nav > * {
+        pointer-events: auto;
+      }
+
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .nav-left img {
+        height: 50px;
+        width: auto;
+        display: block;
+      }
+
+      .nav-right {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        min-width: 0;
+      }
+
+      .hamburger-toggle {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.24);
+        color: rgba(255, 255, 255, 0.9);
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+        font-family: inherit;
+        appearance: none;
+        -webkit-appearance: none;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.24);
+        transition:
+          transform 0.2s ease,
+          background 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .hamburger-toggle span {
+        width: 17px;
+        height: 2px;
+        display: block;
+        border-radius: 999px;
+        background: currentColor;
+        transition:
+          transform 0.22s ease,
+          opacity 0.18s ease,
+          width 0.2s ease;
+      }
+
+      .hamburger-toggle:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(139, 113, 8, 0.72);
+        color: var(--accent);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+      }
+
+      .hamburger-toggle:focus-visible {
+        outline: 2px solid rgba(139, 113, 8, 0.9);
+        outline-offset: 4px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(1) {
+        transform: translateY(6px) rotate(45deg);
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(2) {
+        opacity: 0;
+        width: 8px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(3) {
+        transform: translateY(-6px) rotate(-45deg);
+      }
+
+      .hamburger-menu {
+        position: absolute;
+        top: 54px;
+        right: 0;
+        width: min(230px, calc(100vw - 28px));
+        padding: 9px;
+        display: grid;
+        gap: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        background: rgba(8, 8, 8, 0.68);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: var(--shadow);
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+        transform-origin: top right;
+        pointer-events: none;
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .nav-right.open .hamburger-menu {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+
+      .hamburger-menu a {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 0.94rem;
+        font-weight: 520;
+        line-height: 1.2;
+        letter-spacing: 0.15px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 13px;
+        cursor: pointer;
+        padding: 12px 13px;
+        margin: 0;
+        font-family: inherit;
+        white-space: nowrap;
+        appearance: none;
+        -webkit-appearance: none;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          color 0.18s ease;
+      }
+
+      .hamburger-menu a::after {
+        content: "→";
+        color: var(--accent);
+        opacity: 0;
+        transform: translateX(-5px);
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .hamburger-menu a:hover {
+        color: #fff;
+        background: rgba(139, 113, 8, 0.18);
+        border-color: rgba(139, 113, 8, 0.28);
+        transform: translateX(2px);
+      }
+
+      .hamburger-menu a:hover::after {
+        opacity: 0.9;
+        transform: translateX(0);
+      }
+
+      .hamburger-menu a:focus-visible {
+        outline: 2px solid rgba(139, 113, 8, 0.9);
+        outline-offset: 2px;
+      }
+
+      .page {
+        width: min(1120px, 100%);
+        min-height: 100dvh;
+        margin: 0 auto;
+        padding: 104px 24px 34px;
+        display: grid;
+        grid-template-rows: 1fr auto;
+      }
+
+      .hero-layout {
+        width: 100%;
+        min-height: calc(100dvh - 160px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .hero {
+        width: min(760px, 100%);
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .eyebrow {
+        margin-bottom: 14px;
+        color: var(--accent);
+        font-size: 0.72rem;
+        font-weight: 760;
+        letter-spacing: 1.9px;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0 0 16px;
+        max-width: 760px;
+        font-size: clamp(2.7rem, 8vw, 5.7rem);
+        line-height: 0.92;
+        letter-spacing: -3.4px;
+        text-align: center;
+      }
+
+      .hero p {
+        margin: 0;
+        max-width: 58ch;
+        color: var(--muted);
+        font-size: 1.03rem;
+        line-height: 1.6;
+        text-align: center;
+      }
+
+      .store-stack {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 32px;
+      }
+
+      .store-badge {
+        min-width: 238px;
+        min-height: 72px;
+        padding: 10px 16px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: #030303;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 14px;
+        text-decoration: none;
+        box-shadow:
+          0 18px 42px rgba(0, 0, 0, 0.36),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+        opacity: 0.94;
+        cursor: default;
+        user-select: none;
+        transition:
+          transform 0.18s ease,
+          border-color 0.18s ease,
+          opacity 0.18s ease;
+      }
+
+      .store-badge:hover {
+        transform: translateY(-2px);
+        border-color: rgba(139, 113, 8, 0.56);
+        opacity: 1;
+      }
+
+      .store-icon {
+        width: 40px;
+        height: 40px;
+        flex: 0 0 40px;
+        display: block;
+      }
+
+      .store-copy {
+        display: grid;
+        gap: 1px;
+        line-height: 1.04;
+        text-align: left;
+      }
+
+      .store-small {
+        font-size: 0.78rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.78);
+      }
+
+      .store-big {
+        font-size: 1.58rem;
+        font-weight: 760;
+        letter-spacing: -0.7px;
+      }
+
+      footer {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.46);
+        font-size: 0.84rem;
+        padding-bottom: 2px;
+      }
+
+      @media (max-width: 600px) {
+        nav {
+          padding: 14px 14px;
+          align-items: flex-start;
+          gap: 12px;
+        }
+
+        .nav-left img {
+          height: 38px;
+        }
+
+        .hamburger-toggle {
+          width: 40px;
+          height: 40px;
+        }
+
+        .hamburger-menu {
+          top: 50px;
+          width: min(220px, calc(100vw - 28px));
+        }
+
+        .hamburger-menu a {
+          font-size: 0.88rem;
+          padding: 11px 12px;
+        }
+
+        .page {
+          padding: 88px 18px 28px;
+        }
+
+        .hero-layout {
+          min-height: calc(100dvh - 126px);
+        }
+
+        h1 {
+          font-size: clamp(2.55rem, 15vw, 4.35rem);
+          letter-spacing: -2.4px;
+        }
+
+        .hero p {
+          font-size: 0.98rem;
+        }
+
+        .store-stack {
+          width: 100%;
+          margin-top: 30px;
+          gap: 12px;
+        }
+
+        .store-badge {
+          width: min(340px, 100%);
+          min-width: 0;
+          min-height: 70px;
+        }
+
+        .store-big {
+          font-size: 1.46rem;
+        }
+
+        footer {
+          font-size: 0.78rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav>
+      <div class="nav-left">
+        <a href="../../index.html">
+          <img src="../../images/kova_wit_x_png.png" alt="Kova logo small" />
+        </a>
+      </div>
+
+      <div class="nav-right">
+        <button
+          class="hamburger-toggle"
+          type="button"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="kovaMenu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="hamburger-menu" id="kovaMenu" aria-hidden="true">
+          <a href="../../index.html">map</a>
+          <a href="./addspot.html">add spot</a>
+          <a href="./about.html">about</a>
+        </div>
+      </div>
+    </nav>
+
+    <main class="page">
+      <section class="hero-layout">
+        <div class="hero">
+
+          <h1>App version coming soon.</h1>
+
+          <p>
+            We are working on an app version of KOVA for iOS and Android.
+            Soon you will be able to discover, save and add spots even faster.
+          </p>
+
+          <div class="store-stack" aria-label="App store buttons">
+            <div class="store-badge" aria-disabled="true">
+              <svg class="store-icon" viewBox="0 0 64 64" aria-hidden="true">
+                <polygon points="12,7 42,32 12,57" fill="#20d6f8" />
+                <polygon points="12,7 48,24 42,32" fill="#09ef79" />
+                <polygon points="12,57 48,40 42,32" fill="#ff4158" />
+                <polygon points="48,24 58,32 48,40 42,32" fill="#ffd21f" />
+              </svg>
+
+              <span class="store-copy">
+                <span class="store-small">Get it on</span>
+                <span class="store-big">Google Play</span>
+              </span>
+            </div>
+
+            <div class="store-badge" aria-disabled="true">
+              <svg class="store-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  fill="#ffffff"
+                  d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 8.95 7.31c1.32.07 2.24.72 3.01.78 1.15-.23 2.25-.89 3.55-.84 1.56.13 2.74.74 3.51 1.86-3.14 1.88-2.4 6.02.49 7.18-.58 1.53-1.34 3.03-2.46 3.99zM12.03 7.25c-.15-2.27 1.69-4.14 3.8-4.32.29 2.63-2.39 4.6-3.8 4.32z"
+                />
+              </svg>
+
+              <span class="store-copy">
+                <span class="store-small">Download on the</span>
+                <span class="store-big">App Store</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <span>© 2026 KOVA</span>
+      </footer>
+    </main>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const navRight = document.querySelector(".nav-right");
+        const menuToggle = document.querySelector(".hamburger-toggle");
+        const menuPanel = document.getElementById("kovaMenu");
+
+        function closeHamburgerMenu() {
+          if (!navRight || !menuToggle || !menuPanel) return;
+          navRight.classList.remove("open");
+          menuToggle.setAttribute("aria-expanded", "false");
+          menuPanel.setAttribute("aria-hidden", "true");
+        }
+
+        if (navRight && menuToggle && menuPanel) {
+          menuToggle.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isOpen = navRight.classList.toggle("open");
+            menuToggle.setAttribute("aria-expanded", String(isOpen));
+            menuPanel.setAttribute("aria-hidden", String(!isOpen));
+          });
+
+          menuPanel.addEventListener("click", (e) => {
+            if (e.target.closest("a")) closeHamburgerMenu();
+          });
+
+          document.addEventListener("click", (e) => {
+            if (!navRight.contains(e.target)) closeHamburgerMenu();
+          });
+
+          document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeHamburgerMenu();
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

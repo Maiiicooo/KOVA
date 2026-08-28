@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KOVA - wx</title>
+
+    <link rel="manifest" href="../../manifest.json" />
+    <meta name="theme-color" content="#000000" />
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <link rel="apple-touch-icon" href="../../images/appicon.JPG" />
+
+    <!-- MapTiler SDK + Weather plugin -->
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
+    <link
+      href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.maptiler.com/maptiler-weather/v3.0.1/maptiler-weather.umd.min.js"></script>
+
+    <style>
+      :root {
+        --bg: transparent;
+        --fg: #fff;
+        --muted: rgba(255, 255, 255, 0.6);
+        --line: rgba(255, 255, 255, 0.12);
+        --accent: #8b7108;
+        --panel: rgba(10, 10, 10, 0.94);
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+        --radius: 18px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        background: #161515;
+        color: var(--fg);
+        height: 100dvh;
+        overflow: hidden;
+      }
+
+      nav {
+        width: 100%;
+        padding: 22px 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-sizing: border-box;
+        position: fixed;
+        top: 0;
+        background: var(--bg);
+        z-index: 40;
+        pointer-events: none;
+      }
+
+      nav > * {
+        pointer-events: auto;
+      }
+
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .nav-left img {
+        height: 50px;
+        width: auto;
+        display: block;
+      }
+
+      .nav-right {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        min-width: 0;
+      }
+
+      .hamburger-toggle {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.2);
+        color: rgba(255, 255, 255, 0.9);
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+        font-family: inherit;
+        appearance: none;
+        -webkit-appearance: none;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.24);
+        transition:
+          transform 0.2s ease,
+          background 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .hamburger-toggle span {
+        width: 17px;
+        height: 2px;
+        display: block;
+        border-radius: 999px;
+        background: currentColor;
+        transition:
+          transform 0.22s ease,
+          opacity 0.18s ease,
+          width 0.2s ease;
+      }
+
+      .hamburger-toggle:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(139, 113, 8, 0.72);
+        color: var(--accent);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+      }
+
+      .hamburger-toggle:focus-visible {
+        outline: 2px solid rgba(139, 113, 8, 0.9);
+        outline-offset: 4px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(1) {
+        transform: translateY(6px) rotate(45deg);
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(2) {
+        opacity: 0;
+        width: 8px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(3) {
+        transform: translateY(-6px) rotate(-45deg);
+      }
+
+      .hamburger-menu {
+        position: absolute;
+        top: 54px;
+        right: 0;
+        width: min(230px, calc(100vw - 28px));
+        padding: 9px;
+        display: grid;
+        gap: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        background: rgba(8, 8, 8, 0.58);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 22px 58px rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+        transform-origin: top right;
+        pointer-events: none;
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .nav-right.open .hamburger-menu {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+
+      .hamburger-menu a,
+      .hamburger-menu button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 0.94rem;
+        font-weight: 520;
+        line-height: 1.2;
+        letter-spacing: 0.15px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 13px;
+        cursor: pointer;
+        padding: 12px 13px;
+        margin: 0;
+        font-family: inherit;
+        white-space: nowrap;
+        appearance: none;
+        -webkit-appearance: none;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          color 0.18s ease;
+      }
+
+      .hamburger-menu a::after,
+      .hamburger-menu button::after {
+        content: "→";
+        color: var(--accent);
+        opacity: 0;
+        transform: translateX(-5px);
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .hamburger-menu a:hover,
+      .hamburger-menu button:hover {
+        color: #fff;
+        background: rgba(139, 113, 8, 0.18);
+        border-color: rgba(139, 113, 8, 0.28);
+        transform: translateX(2px);
+      }
+
+      .hamburger-menu a:hover::after,
+      .hamburger-menu button:hover::after {
+        opacity: 0.9;
+        transform: translateX(0);
+      }
+
+      .hamburger-menu a:focus-visible,
+      .hamburger-menu button:focus-visible {
+        outline: 2px solid rgba(139, 113, 8, 0.9);
+        outline-offset: 2px;
+      }
+
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+        z-index: 0;
+        background: #444952;
+      }
+
+      .hud {
+        position: fixed;
+        top: 86px;
+        left: 16px;
+        z-index: 30;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: none;
+      }
+
+      .hud-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        pointer-events: auto;
+      }
+
+      .hud-chip,
+      .hud-btn {
+        min-height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(8, 8, 8, 0.42);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 999px;
+        padding: 9px 12px;
+        color: rgba(255, 255, 255, 0.88);
+        text-shadow: 0 0 8px rgba(0, 0, 0, 0.65);
+        font-size: 12px;
+        line-height: 1;
+        letter-spacing: 0.1px;
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.22);
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .hud-btn {
+        cursor: pointer;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          color 0.18s ease;
+      }
+
+      .hud-btn:hover {
+        transform: translateY(-1px);
+        color: #fff;
+        background: rgba(139, 113, 8, 0.18);
+        border-color: rgba(139, 113, 8, 0.34);
+      }
+
+      .maplibregl-control-container,
+      .maplibregl-ctrl-bottom-left,
+      .maplibregl-ctrl-logo,
+      .maplibregl-ctrl-attrib,
+      .maptiler-attribution {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+
+      .maplibregl-popup-content {
+        background: transparent !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+
+      .maplibregl-popup-tip {
+        display: none !important;
+      }
+
+      .maplibregl-popup-close-button {
+        color: rgba(255, 255, 255, 0.7) !important;
+        background: transparent !important;
+        font-size: 18px;
+        padding: 10px 12px !important;
+        z-index: 40;
+      }
+
+      .user-popup-card {
+        width: 180px;
+        text-align: center;
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: linear-gradient(180deg, var(--panel), rgba(0, 0, 0, 0.92));
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      .user-popup-card img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .user-popup-card .body {
+        padding: 12px;
+        color: white;
+        font-size: 0.92rem;
+      }
+
+      .player-marker {
+        cursor: pointer;
+        pointer-events: auto;
+      }
+
+      @media (max-width: 600px) {
+        nav {
+          padding: 14px 14px;
+          align-items: flex-start;
+          gap: 12px;
+        }
+
+        .nav-left img {
+          height: 38px;
+        }
+
+        .nav-right {
+          max-width: none;
+          flex-wrap: nowrap;
+        }
+
+        .hamburger-toggle {
+          width: 40px;
+          height: 40px;
+        }
+
+        .hamburger-menu {
+          top: 50px;
+          width: min(220px, calc(100vw - 28px));
+        }
+
+        .hamburger-menu a,
+        .hamburger-menu button {
+          font-size: 0.88rem;
+          padding: 11px 12px;
+        }
+
+        .hud {
+          top: 74px;
+          left: 12px;
+          gap: 7px;
+        }
+
+        .hud-row {
+          gap: 8px;
+        }
+
+        .hud-chip,
+        .hud-btn {
+          min-height: 32px;
+          padding: 8px 10px;
+          font-size: 11px;
+        }
+      }
+
+      @media (max-width: 420px) {
+        .hamburger-menu {
+          width: min(210px, calc(100vw - 24px));
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav>
+      <div class="nav-left">
+        <a href="../../index.html">
+          <img src="../../images/kova_wit_x_png.png" alt="Kova logo small" />
+        </a>
+      </div>
+
+      <div class="nav-right">
+        <button
+          class="hamburger-toggle"
+          type="button"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="kovaMenu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="hamburger-menu" id="kovaMenu" aria-hidden="true">
+          <a href="../../app/pages/index.html">spots</a>
+          <a href="../../web/pages/about.html">about us</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="hud">
+      <div class="hud-row">
+        <div class="hud-chip" id="time-text">Loading…</div>
+      </div>
+      <div class="hud-row">
+        <div class="hud-btn" id="fourHButton" title="Forecast mode (fast time)">
+          ▶︎ Play
+        </div>
+        <div class="hud-btn" id="ctButton" title="Live mode (real time)">
+          ◼ Stop
+        </div>
+      </div>
+    </div>
+
+    <div id="map"></div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const navRight = document.querySelector(".nav-right");
+        const menuToggle = document.querySelector(".hamburger-toggle");
+        const menuPanel = document.getElementById("kovaMenu");
+
+        function closeHamburgerMenu() {
+          if (!navRight || !menuToggle || !menuPanel) return;
+          navRight.classList.remove("open");
+          menuToggle.setAttribute("aria-expanded", "false");
+          menuPanel.setAttribute("aria-hidden", "true");
+        }
+
+        if (navRight && menuToggle && menuPanel) {
+          menuToggle.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isOpen = navRight.classList.toggle("open");
+            menuToggle.setAttribute("aria-expanded", String(isOpen));
+            menuPanel.setAttribute("aria-hidden", String(!isOpen));
+          });
+
+          menuPanel.addEventListener("click", (e) => {
+            if (e.target.closest("a")) closeHamburgerMenu();
+          });
+
+          document.addEventListener("click", (e) => {
+            if (!navRight.contains(e.target)) closeHamburgerMenu();
+          });
+
+          document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeHamburgerMenu();
+          });
+        }
+
+        maptilersdk.config.apiKey = "7TBqy4hTdFfQeIq7oXKj";
+
+        const map = new maptilersdk.Map({
+          container: "map",
+          style:
+            "https://api.maptiler.com/maps/dataviz-dark/style.json?key=7TBqy4hTdFfQeIq7oXKj",
+          zoom: 7.5,
+          center: [4.5, 50.85],
+          projection: "mercator",
+          antialias: false,
+          fadeDuration: 0,
+          hash: false,
+          minZoom: 5,
+          maxZoom: 10,
+          projectionControl: false,
+          navigationControl: false,
+          geolocateControl: false,
+        });
+
+        if (navigator.geolocation) {
+          const userMarkerEl = document.createElement("img");
+          userMarkerEl.src = "../../images/playericon.png";
+          userMarkerEl.style.width = "28px";
+          userMarkerEl.style.height = "28px";
+          userMarkerEl.classList.add("player-marker");
+
+          const userPopupHTML = `
+            <div class="user-popup-card">
+              <img src="../../images/playeravatar.png" alt="Player avatar">
+              <div class="body">
+                <strong>This is you</strong>
+              </div>
+            </div>
+          `;
+
+          const userPopup = new maptilersdk.Popup({
+            offset: 25,
+            closeButton: true,
+            closeOnClick: false,
+            className: "user-map-popup",
+            maxWidth: "200px",
+          }).setHTML(userPopupHTML);
+
+          const userMarker = new maptilersdk.Marker({
+            element: userMarkerEl,
+            anchor: "center",
+          })
+            .setLngLat([0, 0])
+            .setPopup(userPopup)
+            .addTo(map);
+
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const lng = position.coords.longitude;
+              const lat = position.coords.latitude;
+              userMarker.setLngLat([lng, lat]);
+              map.setCenter([lng, lat]);
+            },
+            (err) => console.warn("Location error:", err.message),
+            { enableHighAccuracy: true },
+          );
+        }
+
+        const radarLayer = new maptilerweather.RadarLayer({ opacity: 0.7 });
+        // const windLayer = new maptilerweather.WindLayer({ opacity: 0.5 });
+
+        let liveTimer;
+        let isForecasting = false;
+
+        function fmt(d) {
+          return d.toLocaleString("nl-BE", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          });
+        }
+
+        function tickLive() {
+          const now = new Date();
+          document.getElementById("time-text").innerText = fmt(now);
+          const unixTs = Math.floor(now.getTime() / 1000);
+          radarLayer.setAnimationTime(unixTs);
+          // windLayer.setAnimationTime(unixTs);
+        }
+
+        function tickForecast() {
+          const dRadar = radarLayer.getAnimationTimeDate();
+          document.getElementById("time-text").innerText = fmt(dRadar);
+          // const ts = radarLayer.getAnimationTime();
+          // windLayer.setAnimationTime(ts);
+        }
+
+        function startLive() {
+          isForecasting = false;
+          radarLayer.animateByFactor(0);
+          // windLayer.animateByFactor(0);
+
+          clearInterval(liveTimer);
+          radarLayer.off("tick", tickForecast);
+          radarLayer.off("tick", tickLive);
+          radarLayer.on("tick", tickLive);
+
+          tickLive();
+          liveTimer = setInterval(tickLive, 1000);
+        }
+
+        function startForecast() {
+          isForecasting = true;
+          clearInterval(liveTimer);
+
+          radarLayer.off("tick", tickLive);
+          radarLayer.on("tick", tickForecast);
+
+          radarLayer.animateByFactor(3600);
+          // windLayer.animateByFactor(3600);
+        }
+
+        map.on("load", () => {
+          map.addLayer(radarLayer);
+          // map.addLayer(windLayer);
+          startLive();
+        });
+
+        document
+          .getElementById("fourHButton")
+          .addEventListener("click", (e) => {
+            e.preventDefault();
+            if (!isForecasting) startForecast();
+          });
+
+        document.getElementById("ctButton").addEventListener("click", (e) => {
+          e.preventDefault();
+          if (isForecasting) startLive();
+        });
+      });
+    </script>
+  </body>
+</html>
