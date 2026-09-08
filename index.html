@@ -2918,6 +2918,60 @@
         box-shadow: inset 0 0 0 3px #151515;
       }
 
+      /* Spot type Search colors -------------------------------------- */
+      .kova-filter-option input[data-filter-kind="type"] + label::before {
+        border-radius: 999px;
+        box-shadow: none;
+      }
+
+      .kova-filter-option
+        input[data-filter-kind="type"][value="water"]
+        + label::before {
+        border-color: rgba(59, 130, 196, 0.72);
+        background: #3b82c4;
+      }
+
+      .kova-filter-option
+        input[data-filter-kind="type"][value="nature"]
+        + label::before {
+        border-color: rgba(78, 125, 74, 0.78);
+        background: #4e7d4a;
+      }
+
+      .kova-filter-option
+        input[data-filter-kind="type"][value="urban"]
+        + label::before {
+        border-color: rgba(139, 113, 8, 0.82);
+        background: #8b7108;
+      }
+
+      .kova-filter-option
+        input[data-filter-kind="type"][value="water"]:checked
+        + label {
+        border-color: rgba(59, 130, 196, 0.66);
+        background: rgba(59, 130, 196, 0.14);
+      }
+
+      .kova-filter-option
+        input[data-filter-kind="type"][value="nature"]:checked
+        + label {
+        border-color: rgba(78, 125, 74, 0.72);
+        background: rgba(78, 125, 74, 0.15);
+      }
+
+      .kova-filter-option
+        input[data-filter-kind="type"][value="urban"]:checked
+        + label {
+        border-color: rgba(139, 113, 8, 0.72);
+        background: rgba(139, 113, 8, 0.16);
+      }
+
+      .kova-filter-option
+        input[data-filter-kind="type"]:checked
+        + label::before {
+        box-shadow: inset 0 0 0 3px #151515;
+      }
+
       .kova-filter-option label:hover {
         transform: translateY(-1px);
         border-color: rgba(139, 113, 8, 0.38);
@@ -3387,6 +3441,44 @@
             </div>
             <div class="kova-filter-options" data-city-options>
               <div class="kova-filter-empty">Loading cities…</div>
+            </div>
+          </section>
+
+          <section class="kova-filter-section">
+            <div class="kova-filter-head">
+              <h3>Spot type</h3>
+              <span data-type-count>all types</span>
+            </div>
+            <div class="kova-filter-options" data-type-options>
+              <div class="kova-filter-option">
+                <input
+                  id="searchTypeWater"
+                  type="checkbox"
+                  value="water"
+                  data-filter-kind="type"
+                />
+                <label for="searchTypeWater">Water</label>
+              </div>
+
+              <div class="kova-filter-option">
+                <input
+                  id="searchTypeNature"
+                  type="checkbox"
+                  value="nature"
+                  data-filter-kind="type"
+                />
+                <label for="searchTypeNature">Nature</label>
+              </div>
+
+              <div class="kova-filter-option">
+                <input
+                  id="searchTypeUrban"
+                  type="checkbox"
+                  value="urban"
+                  data-filter-kind="type"
+                />
+                <label for="searchTypeUrban">Urban</label>
+              </div>
             </div>
           </section>
         </div>
@@ -4096,6 +4188,7 @@
             lng,
             avgRating: Number(spot.avgRating || 0),
             ratingCount: Number(spot.ratingCount || 0),
+            type: normalizeSpotType(spot.type),
           };
         }
 
@@ -4174,6 +4267,7 @@
               lng: clean.lng,
               avgRating: clean.avgRating,
               ratingCount: clean.ratingCount,
+              type: clean.type,
               saved: true,
             },
           };
@@ -4192,6 +4286,7 @@
             lng: card.getAttribute("data-spot-lng"),
             avgRating: card.getAttribute("data-spot-rating"),
             ratingCount: card.getAttribute("data-spot-rating-count"),
+            type: card.getAttribute("data-spot-type"),
           });
         }
 
@@ -4570,6 +4665,8 @@
           "[data-province-options]",
         );
         const cityOptionsEl = document.querySelector("[data-city-options]");
+        const spotTypeOptionsEl = document.querySelector("[data-type-options]");
+        const spotTypeCountEl = document.querySelector("[data-type-count]");
         const searchStatusEl = document.querySelector("[data-search-status]");
         const searchResultCountEl = document.querySelector(
           "[data-search-result-count]",
@@ -4589,6 +4686,7 @@
         let provinceSpotsLoaded = false;
         let provinceSpotsPromise = null;
         let selectedLocationCities = new Set();
+        let selectedSpotTypes = new Set();
 
         function normalizeSearchText(value) {
           return String(value || "")
@@ -4628,6 +4726,20 @@
           return [...new Set(values.filter(Boolean))].sort((a, b) =>
             String(a).localeCompare(String(b), "nl", { sensitivity: "base" }),
           );
+        }
+
+        function updateSearchTypeUI() {
+          if (spotTypeCountEl) {
+            spotTypeCountEl.textContent = selectedSpotTypes.size
+              ? `${selectedSpotTypes.size} selected`
+              : "all types";
+          }
+
+          spotTypeOptionsEl
+            ?.querySelectorAll("input[data-filter-kind='type']")
+            .forEach((input) => {
+              input.checked = selectedSpotTypes.has(input.value);
+            });
         }
 
         async function loadSearchRegionIndex() {
@@ -4953,9 +5065,17 @@
 
           return provinceSpots.filter((spot) => {
             const city = String(spot.city || "").trim();
+            const type = normalizeSpotType(spot.type);
 
-            if (selectedLocationCities.size) {
-              return selectedLocationCities.has(city);
+            if (
+              selectedLocationCities.size &&
+              !selectedLocationCities.has(city)
+            ) {
+              return false;
+            }
+
+            if (selectedSpotTypes.size && !selectedSpotTypes.has(type)) {
+              return false;
             }
 
             return true;
@@ -4980,7 +5100,13 @@
 
           const matches = getProvinceSearchMatches();
 
-          searchResultCountEl.textContent = `${matches.length} spot${matches.length === 1 ? "" : "s"} match this province search.`;
+          const typeText = selectedSpotTypes.size
+            ? ` · ${[...selectedSpotTypes]
+                .map((type) => type.charAt(0).toUpperCase() + type.slice(1))
+                .join(" + ")}`
+            : "";
+
+          searchResultCountEl.textContent = `${matches.length} spot${matches.length === 1 ? "" : "s"} match${typeText}.`;
 
           searchSubmitBtn.disabled = matches.length === 0;
         }
@@ -4989,8 +5115,10 @@
           selectedCountryKey = "";
           selectedProvinceKey = "";
           selectedProvinceName = "";
+          selectedSpotTypes.clear();
           resetLoadedProvince();
 
+          updateSearchTypeUI();
           renderSearchCountries();
           renderSearchCities();
           updateSearchResultCount();
@@ -5048,6 +5176,7 @@
               lng: Number(spot.lng),
               avgRating: Number(spot.avgRating || 0),
               ratingCount: Number(spot.ratingCount || 0),
+              type: normalizeSpotType(spot.type),
             },
           };
         }
@@ -5067,7 +5196,8 @@
           if (!matches.length) {
             if (searchStatusEl) {
               searchStatusEl.classList.add("error");
-              searchStatusEl.textContent = "No spots match the selected city.";
+              searchStatusEl.textContent =
+                "No spots match the selected filters.";
             }
             return;
           }
@@ -5189,6 +5319,19 @@
 
           updateSearchResultCount();
         });
+
+        spotTypeOptionsEl?.addEventListener("change", (e) => {
+          const input = e.target.closest("input[data-filter-kind='type']");
+          if (!input) return;
+
+          if (input.checked) selectedSpotTypes.add(input.value);
+          else selectedSpotTypes.delete(input.value);
+
+          updateSearchTypeUI();
+          updateSearchResultCount();
+        });
+
+        updateSearchTypeUI();
 
         document.addEventListener("keydown", (e) => {
           if (e.key === "Escape" && searchOverlay?.classList.contains("open")) {
@@ -5695,6 +5838,13 @@
           return s.startsWith("https://") ? s : "";
         }
 
+        function normalizeSpotType(type) {
+          const value = String(type || "")
+            .trim()
+            .toLowerCase();
+          return ["water", "nature", "urban"].includes(value) ? value : "urban";
+        }
+
         function setStatus(el, message = "", type = "") {
           if (!el) return;
           el.textContent = message;
@@ -6136,6 +6286,7 @@
               data-spot-lng="${Number(props.lng)}"
               data-spot-rating="${Number(props.avgRating || 0)}"
               data-spot-rating-count="${Number(props.ratingCount || 0)}"
+              data-spot-type="${escapeHTML(normalizeSpotType(props.type))}"
             >
               <div class="sheet-grabber" data-sheet-grabber aria-hidden="true"><span></span></div>
               <button
@@ -6765,6 +6916,7 @@
                 lng: spot.lng,
                 avgRating: Number(spot.avgRating || 0),
                 ratingCount: Number(spot.ratingCount || 0),
+                type: normalizeSpotType(spot.type),
               },
             });
           });
@@ -7250,7 +7402,17 @@
               "text-ignore-placement": true,
             },
             paint: {
-              "text-color": "rgba(139, 113, 8, 1)",
+              "text-color": [
+                "match",
+                ["get", "type"],
+                "water",
+                "#3B82C4",
+                "nature",
+                "#4E7D4A",
+                "urban",
+                "#8B7108",
+                "#8B7108",
+              ],
             },
           });
 
