@@ -89,15 +89,89 @@
 
       .nav-left {
         display: flex;
-        align-items: center;
-        gap: 12px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
         min-width: 0;
+        width: max-content;
+        --kova-logo-width: 118px;
       }
 
       .nav-left img {
         height: 50px;
         width: auto;
         display: block;
+      }
+
+      .nav-left a {
+        display: block;
+        width: max-content;
+      }
+
+      .kova-tagline-roll {
+        width: var(--kova-logo-width, 118px);
+        max-width: var(--kova-logo-width, 118px);
+        overflow: hidden;
+        color: rgba(255, 255, 255, 0.58);
+        font-size: 0.68rem;
+        font-weight: 560;
+        line-height: 1;
+        letter-spacing: 0.8px;
+        text-transform: lowercase;
+        white-space: nowrap;
+        mask-image: linear-gradient(
+          90deg,
+          transparent 0%,
+          #000 9%,
+          #000 91%,
+          transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+          90deg,
+          transparent 0%,
+          #000 9%,
+          #000 91%,
+          transparent 100%
+        );
+      }
+
+      .kova-tagline-current {
+        display: inline-block;
+        width: max-content;
+        white-space: nowrap;
+        transform: translateX(var(--kova-logo-width, 118px));
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+
+      .kova-tagline-current.is-running {
+        animation: kovaTaglinePass 9.5s linear forwards;
+      }
+
+      @keyframes kovaTaglinePass {
+        0% {
+          transform: translateX(var(--kova-logo-width, 118px));
+          opacity: 0;
+        }
+        7% {
+          opacity: 1;
+        }
+        93% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateX(-100%);
+          opacity: 0;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .kova-tagline-current,
+        .kova-tagline-current.is-running {
+          animation: none;
+          transform: none;
+          opacity: 1;
+        }
       }
 
       .beta {
@@ -1949,6 +2023,11 @@
           height: 38px;
         }
 
+        .kova-tagline-roll {
+          font-size: 0.58rem;
+          letter-spacing: 0.65px;
+        }
+
         .beta {
           font-size: 0.7rem;
           padding: 2px 5px;
@@ -3185,6 +3264,9 @@
         <a href="../../index.html">
           <img src="../../images/kova_wit_x_png.png" alt="Kova logo small" />
         </a>
+        <div class="kova-tagline-roll" aria-live="polite">
+          <span class="kova-tagline-current">every spot is a treasure!</span>
+        </div>
       </div>
 
       <div class="nav-right">
@@ -3646,6 +3728,67 @@
         const navRight = document.querySelector(".nav-right");
         const menuToggle = document.querySelector(".hamburger-toggle");
         const menuPanel = document.getElementById("kovaMenu");
+        const navLeft = document.querySelector(".nav-left");
+        const navLogo = document.querySelector(".nav-left img");
+        const navTagline = document.querySelector(".kova-tagline-roll");
+        const navTaglineCurrent = document.querySelector(
+          ".kova-tagline-current",
+        );
+        const navTaglinePhrases = [
+          "every spot is a treasure!",
+          "find your next escape",
+          "hidden gems. real moments.",
+        ];
+        let navTaglinePhraseIndex = 0;
+        let navTaglinePauseTimer = null;
+
+        function runNextNavTagline() {
+          if (!navTaglineCurrent) return;
+          navTaglineCurrent.textContent =
+            navTaglinePhrases[navTaglinePhraseIndex];
+          navTaglinePhraseIndex =
+            (navTaglinePhraseIndex + 1) % navTaglinePhrases.length;
+
+          navTaglineCurrent.classList.remove("is-running");
+          void navTaglineCurrent.offsetWidth;
+          navTaglineCurrent.classList.add("is-running");
+        }
+
+        if (navTaglineCurrent) {
+          navTaglineCurrent.addEventListener("animationend", () => {
+            navTaglineCurrent.classList.remove("is-running");
+            navTaglinePauseTimer = window.setTimeout(runNextNavTagline, 3000);
+          });
+
+          runNextNavTagline();
+        }
+
+        function syncNavTaglineWidth() {
+          if (!navLeft || !navLogo || !navTagline) return;
+          const logoWidth = Math.round(navLogo.getBoundingClientRect().width);
+          if (!logoWidth) return;
+          navLeft.style.setProperty("--kova-logo-width", `${logoWidth}px`);
+          navTagline.style.width = `${logoWidth}px`;
+          navTagline.style.maxWidth = `${logoWidth}px`;
+        }
+
+        if (navLogo && navTagline) {
+          if (navLogo.complete) syncNavTaglineWidth();
+          else {
+            navLogo.addEventListener("load", syncNavTaglineWidth, {
+              once: true,
+            });
+          }
+
+          window.addEventListener("resize", syncNavTaglineWidth);
+
+          if (typeof ResizeObserver === "function") {
+            const navLogoResizeObserver = new ResizeObserver(() => {
+              syncNavTaglineWidth();
+            });
+            navLogoResizeObserver.observe(navLogo);
+          }
+        }
 
         function closeHamburgerMenu() {
           if (!navRight || !menuToggle || !menuPanel) return;
