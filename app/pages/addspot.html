@@ -1072,7 +1072,7 @@
             ></textarea>
 
             <label for="addedBy">Added by</label>
-            <input id="addedBy" value="Maico" />
+            <input id="addedBy" placeholder="Your name" required />
           </div>
 
           <div class="flow-step">
@@ -1665,7 +1665,7 @@
 
           const name = nameInput.value.trim();
           const description = descriptionInput.value.trim();
-          const addedBy = addedByInput.value.trim() || "Maico";
+          const addedBy = addedByInput.value.trim();
           const type = getSelectedSpotType();
 
           if (!type || !SPOT_TYPE_COLORS[type]) {
@@ -1673,8 +1673,8 @@
             return;
           }
 
-          if (!name || !description) {
-            status("Name and description are required.", "bad");
+          if (!name || !description || !addedBy) {
+            status("Name, description and added by are required.", "bad");
             return;
           }
 
@@ -1717,6 +1717,7 @@
 
             nameInput.value = "";
             descriptionInput.value = "";
+            addedByInput.value = "";
             spotTypeInputs.forEach((input) => {
               input.checked = false;
             });
