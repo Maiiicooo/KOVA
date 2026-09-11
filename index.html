@@ -29,9 +29,9 @@
     />
     <link rel="apple-touch-icon" href="../../images/kova_alleen_x_png.png" />
 
-    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.umd.min.js"></script>
     <link
-      href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css"
+      href="https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.css"
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/geofire-common@6.0.0/dist/geofire-common/geofire-common.min.js"></script>
@@ -391,6 +391,31 @@
         outline-offset: 2px;
       }
 
+      .hamburger-version {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin: 5px 4px 1px;
+        padding: 10px 8px 4px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 0.66rem;
+        font-weight: 650;
+        letter-spacing: 1.1px;
+        text-transform: uppercase;
+        user-select: none;
+        pointer-events: none;
+      }
+
+      .hamburger-version-dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 999px;
+        background: var(--accent);
+        opacity: 0.8;
+      }
+
       .kova-tutorial {
         position: fixed;
         inset: 0;
@@ -635,6 +660,41 @@
         -webkit-touch-callout: none;
         -webkit-user-select: none;
         user-select: none;
+      }
+
+      /* KOVA performance mode: while the map is moving, temporarily suspend
+         decorative compositor work. The normal visual styling returns as soon
+         as the camera settles. This is especially useful in mobile WebViews. */
+      body.kova-map-moving .kova-tagline-current {
+        animation-play-state: paused !important;
+      }
+
+      body.kova-map-moving .hamburger-toggle,
+      body.kova-map-moving .hamburger-menu {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+      }
+
+      @media (pointer: coarse), (max-width: 900px) {
+        /* Full-screen blur is expensive in Chromium/WebView. Keep KOVA's
+           glass look on desktop, but use lightweight translucency on mobile. */
+        .kova-library-overlay,
+        .kova-search-overlay,
+        .kova-feed-overlay {
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+        }
+
+        .hamburger-toggle {
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+        }
+
+        .nav-right.open .hamburger-menu {
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+        }
       }
 
       .maplibregl-control-container,
@@ -3364,6 +3424,12 @@
               <span>about</span>
             </span>
           </a>
+
+          <div class="hamburger-version" aria-label="KOVA version 4.1">
+            <span>KOVA</span>
+            <span class="hamburger-version-dot" aria-hidden="true"></span>
+            <span>v4.1</span>
+          </div>
         </div>
       </div>
     </nav>
@@ -3975,9 +4041,13 @@
         const DEFAULT_ZOOM = 7.5;
         const USER_START_ZOOM = 11;
 
+        const KOVA_MOBILE_LIKE = window.matchMedia(
+          "(pointer: coarse), (max-width: 900px)",
+        ).matches;
+
         const SEARCH_RADIUS_KM = 10;
         const STARTUP_PRELOAD_RADIUS_KM = 25;
-        const STARTUP_THUMB_PREFETCH_LIMIT = 20;
+        const STARTUP_THUMB_PREFETCH_LIMIT = KOVA_MOBILE_LIKE ? 8 : 16;
         const STARTUP_SPLASH_MIN_MS = 800;
         const STARTUP_GPS_GRACE_MS = 1200;
         const KOVA_LAST_LOCATION_KEY = "kova_last_location_v1";
@@ -4031,7 +4101,7 @@
         // Spot image performance -----------------------------------------
         // New spots should store a small WebP URL in `thumbURL` and the
         // normal image in `photoURL`. Older spots without thumbURL still work.
-        const KOVA_IMAGE_PREFETCH_LIMIT = 20;
+        const KOVA_IMAGE_PREFETCH_LIMIT = KOVA_MOBILE_LIKE ? 8 : 16;
         const kovaImagePreloadCache = new Map();
 
         function getSpotThumbnailURL(spot) {
@@ -4125,6 +4195,22 @@
         }
 
         let kovaPrefetchTimer = null;
+        let kovaPrefetchIdleHandle = null;
+
+        function cancelScheduledSpotImagePrefetch() {
+          if (kovaPrefetchTimer) {
+            clearTimeout(kovaPrefetchTimer);
+            kovaPrefetchTimer = null;
+          }
+
+          if (
+            kovaPrefetchIdleHandle !== null &&
+            typeof window.cancelIdleCallback === "function"
+          ) {
+            window.cancelIdleCallback(kovaPrefetchIdleHandle);
+          }
+          kovaPrefetchIdleHandle = null;
+        }
 
         function scheduleSpotImagePrefetch(features = currentBaseSpotFeatures) {
           if (!Array.isArray(features) || !features.length) return;
@@ -4138,13 +4224,16 @@
           if (connection?.saveData) return;
           if (/2g/i.test(String(connection?.effectiveType || ""))) return;
 
-          if (kovaPrefetchTimer) {
-            clearTimeout(kovaPrefetchTimer);
-            kovaPrefetchTimer = null;
-          }
+          cancelScheduledSpotImagePrefetch();
 
           const run = () => {
             kovaPrefetchTimer = null;
+            kovaPrefetchIdleHandle = null;
+
+            // Never decode/prefetch images while the user is actively moving
+            // the map. moveend will schedule us again once the camera settles.
+            if (typeof map?.isMoving === "function" && map.isMoving()) return;
+
             let center = null;
             try {
               center = map.getCenter();
@@ -4175,16 +4264,25 @@
             ranked.forEach(({ props }) => {
               const thumbURL = getSpotThumbnailURL(props);
               const photoURL = safeHttpsURL(props.photoURL);
-
-              // Prefer cheap thumbnails. For legacy spots without a thumbnail,
-              // prefetch the normal image so a marker tap still feels instant.
               preloadKovaImage(thumbURL || photoURL, "low");
             });
           };
 
-          // Start warming nearby thumbnails almost immediately after spots load.
-          // Waiting for requestIdleCallback made the first spot tap feel slower.
-          kovaPrefetchTimer = setTimeout(run, 50);
+          // On modern browsers, use idle time so image decoding cannot steal
+          // frames from a gesture/camera animation. Fallback remains quick.
+          kovaPrefetchTimer = window.setTimeout(
+            () => {
+              kovaPrefetchTimer = null;
+              if (typeof window.requestIdleCallback === "function") {
+                kovaPrefetchIdleHandle = window.requestIdleCallback(run, {
+                  timeout: 550,
+                });
+              } else {
+                run();
+              }
+            },
+            KOVA_MOBILE_LIKE ? 180 : 90,
+          );
         }
 
         // MANUAL KOVA PICKS:
@@ -4205,6 +4303,13 @@
           "29fp2fidsHLpMwGtHY25",
         ];
 
+        // Cap very high-density phone screens at 2x. A DPR 3 phone otherwise
+        // asks WebGL to shade more than twice as many pixels as DPR 2.
+        const KOVA_MAP_PIXEL_RATIO = Math.min(
+          Number(window.devicePixelRatio) || 1,
+          2,
+        );
+
         const map = new maptilersdk.Map({
           container: "map",
           style:
@@ -4216,6 +4321,20 @@
           projectionControl: false,
           geolocateControl: false,
           doubleClickZoom: false,
+
+          // KOVA is a flat discovery map: disable unused 3D/rotation work and
+          // keep rendering focused on pan + pinch zoom.
+          dragRotate: false,
+          touchPitch: false,
+          pitchWithRotate: false,
+          maxPitch: 0,
+          renderWorldCopies: false,
+
+          // Shorter symbol collision fades feel more immediate and do less
+          // compositing after a camera movement.
+          fadeDuration: 140,
+          pixelRatio: KOVA_MAP_PIXEL_RATIO,
+          validateStyle: false,
         });
 
         if (map.doubleClickZoom) map.doubleClickZoom.disable();
@@ -7228,7 +7347,7 @@
             STARTUP_THUMB_PREFETCH_LIMIT,
           );
 
-          await Promise.race([imageWarmup, wait(650)]);
+          await Promise.race([imageWarmup, wait(KOVA_MOBILE_LIKE ? 320 : 500)]);
           setStartupProgress(0.92);
 
           return true;
@@ -7698,7 +7817,13 @@
 
         map.on("dragstart", closeAll);
 
+        map.on("movestart", () => {
+          document.body.classList.add("kova-map-moving");
+          cancelScheduledSpotImagePrefetch();
+        });
+
         map.on("moveend", () => {
+          document.body.classList.remove("kova-map-moving");
           scheduleSpotImagePrefetch(currentBaseSpotFeatures);
         });
 
@@ -7913,7 +8038,7 @@
           centerLng,
           centerLat,
           radiusKm,
-          steps = 128,
+          steps = KOVA_MOBILE_LIKE ? 64 : 96,
         ) {
           if (!Number.isFinite(centerLng) || !Number.isFinite(centerLat)) {
             return emptyGeoJSON();
@@ -7977,9 +8102,18 @@
           const targetRadiusKm = Number(radiusKm) || SEARCH_RADIUS_KM;
           const duration = 560;
           const start = performance.now();
+          const minFrameInterval = KOVA_MOBILE_LIKE ? 32 : 16;
+          let lastDrawAt = 0;
 
           function frame(now) {
             const progress = Math.min(1, (now - start) / duration);
+
+            if (progress < 1 && now - lastDrawAt < minFrameInterval) {
+              searchRadiusAnimationFrame = window.requestAnimationFrame(frame);
+              return;
+            }
+
+            lastDrawAt = now;
             const animatedRadiusKm = Math.max(
               0.08,
               targetRadiusKm * easeOutCubic(progress),
