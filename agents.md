@@ -1,5 +1,16 @@
 # AGENTS.md — KOVA
 
+Keep KOVA simple.
+
+Do not create new scripts, config files, abstractions or folders unless absolutely necessary.
+
+For normal feature work:
+- edit the existing source files
+- do not edit www manually
+- do not modify Android native files unless the task truly requires native changes
+
+Always prefer the simplest working solution.
+
 ## 1. Project identity
 
 KOVA is a map-first discovery app for finding genuinely good outdoor, chill, water, nature and urban spots.
