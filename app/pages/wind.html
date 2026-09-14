@@ -6,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wind View</title>
   <!-- PWA manifest -->
-  <link rel="manifest" href="/KOVA/manifest.json">
+  <link rel="manifest" href="../../manifest.json">
   <meta name="theme-color" content="#000000">
 
   <!-- Apple-web-app -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="/KOVA/images/appicon.JPG">
+  <link rel="apple-touch-icon" href="../../images/kova_alleen_x_png.png?v=kova-x-original-1" />
 
   <!-- MapTiler SDK + Weather-plugin -->
   <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
@@ -145,7 +145,7 @@
       <div class="navbar-items">
         <a href="#" id="fourHButton">▶︎</a>
         <a href="#" id="ctButton">◼</a>
-        <a href="../pages/index.html" id="backButton">NV</a>
+        <a href="../../index.html" id="backButton">NV</a>
         <a href="../pages/about.html" id="aboutButton">ABOUT</a>
       </div>
     </div>
@@ -179,7 +179,7 @@
     // GEOLOCATIE
     if (navigator.geolocation) {
       const userMarkerEl = document.createElement("img");
-      userMarkerEl.src = "images/playericon.png";
+      userMarkerEl.src = "../../images/playericon.png";
       userMarkerEl.style.width = "28px";
       userMarkerEl.style.height = "28px";
       userMarkerEl.style.transform = "translate(-50%, -50%)";
@@ -188,7 +188,7 @@
 
       const userPopupHTML = `
           <div style="width:150px; text-align:center; font-family:sans-serif;">
-            <img src="images/playeravatar.png" style="width:100%; height:auto; border-radius:6px; margin-bottom:6px;">
+            <img src="../../images/playeravatar.png" style="width:100%; height:auto; border-radius:6px; margin-bottom:6px;">
             <strong>This is you</strong><br>
           </div>
         `;
@@ -247,8 +247,8 @@
 
     // // Logo hover
     // const logo = document.getElementById('mainLogo');
-    // logo.addEventListener('mouseenter', () => logo.src = 'images/logohover.png');
-    // logo.addEventListener('mouseleave', () => logo.src = 'images/testje.png');
+    // logo.addEventListener('mouseenter', () => logo.src = '../../images/logohover.png');
+    // logo.addEventListener('mouseleave', () => logo.src = '../../images/testje.png');
 
   </script>
 </body>

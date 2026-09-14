@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KOVA Admin Add Pending Spot</title>
+
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
+    <link
+      href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css"
+      rel="stylesheet"
+    />
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        background: #0b0b0b;
+        color: white;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        padding: 16px;
+      }
+
+      .wrap {
+        width: min(560px, 100%);
+        margin: 0 auto;
+      }
+
+      h1 {
+        margin: 0 0 6px;
+        font-size: 1.5rem;
+      }
+
+      p {
+        margin: 0 0 18px;
+        color: rgba(255, 255, 255, 0.65);
+      }
+
+      .card {
+        background: #141414;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        padding: 16px;
+      }
+
+      label {
+        display: block;
+        margin: 14px 0 6px;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 0.9rem;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 13px;
+        border-radius: 13px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: #0c0c0c;
+        color: white;
+        font: inherit;
+      }
+
+      textarea {
+        min-height: 110px;
+        resize: vertical;
+      }
+
+      button {
+        width: 100%;
+        margin-top: 12px;
+        padding: 14px;
+        border: 0;
+        border-radius: 13px;
+        background: #8b7108;
+        color: white;
+        font: inherit;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        opacity: 0.5;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .mini-map {
+        width: 100%;
+        height: 240px;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: #080808;
+      }
+
+      .map-marker {
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        background: #8b7108;
+        border: 3px solid white;
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.6);
+      }
+
+      .maplibregl-control-container,
+      .maplibregl-ctrl-bottom-left,
+      .maplibregl-ctrl-logo,
+      .maplibregl-ctrl-attrib,
+      .maptiler-attribution {
+        display: none !important;
+      }
+
+      .photo-preview {
+        width: 100%;
+        max-height: 260px;
+        object-fit: cover;
+        border-radius: 14px;
+        margin-top: 10px;
+        display: none;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+      }
+
+      .status {
+        margin-top: 14px;
+        padding: 12px;
+        border-radius: 13px;
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.75);
+        display: none;
+        line-height: 1.4;
+      }
+
+      .status.show {
+        display: block;
+      }
+
+      .status.good {
+        color: #a8ee9d;
+      }
+
+      .status.bad {
+        color: #ff9f9f;
+      }
+
+      .small {
+        margin-top: 7px;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.82rem;
+        line-height: 1.4;
+      }
+
+      @media (max-width: 480px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .mini-map {
+          height: 220px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="wrap">
+      <h1>ADD SPOT</h1>
+
+      <form id="spotForm" class="card">
+        <button type="button" id="gpsBtn">Use current GPS location</button>
+
+        <div class="grid">
+          <div>
+            <label for="lat">Latitude</label>
+            <input id="lat" required />
+          </div>
+
+          <div>
+            <label for="lng">Longitude</label>
+            <input id="lng" required />
+          </div>
+        </div>
+
+        <label>GPS check map</label>
+        <div id="miniMap" class="mini-map"></div>
+        <div class="small">
+          Tik op de map als je de marker iets wilt corrigeren.
+        </div>
+
+        <label for="photoFile">Spot photo</label>
+        <input id="photoFile" type="file" accept="image/*" required />
+        <div class="small">
+        </div>
+        <img id="photoPreview" class="photo-preview" alt="Spot preview" />
+
+        <label for="name">Spot name</label>
+        <input id="name" placeholder="bv. Hidden sunset bench" required />
+
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          placeholder="Korte vibe/info..."
+          required
+        ></textarea>
+
+        <label for="addedBy">Added by</label>
+        <input id="addedBy" value="Maico" />
+
+        <button type="submit" id="saveBtn">Save to pending spots</button>
+
+        <div id="status" class="status"></div>
+      </form>
+    </main>
+
+    <script>
+      const MAPTILER_KEY = "7TBqy4hTdFfQeIq7oXKj";
+
+      maptilersdk.config.apiKey = MAPTILER_KEY;
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyARxFI9HyJxrINfzDazhxFHKSrGLX8KoBk",
+        authDomain: "kova-6052a.firebaseapp.com",
+        projectId: "kova-6052a",
+        storageBucket: "kova-6052a.firebasestorage.app",
+        messagingSenderId: "873689812978",
+        appId: "1:873689812978:web:e0581f3df823e51239656b",
+        measurementId: "G-VM5224Z3K6",
+      };
+
+      firebase.initializeApp(firebaseConfig);
+
+      const db = firebase.firestore();
+      const storage = firebase.storage();
+
+      const form = document.getElementById("spotForm");
+      const gpsBtn = document.getElementById("gpsBtn");
+      const saveBtn = document.getElementById("saveBtn");
+      const statusEl = document.getElementById("status");
+
+      const latInput = document.getElementById("lat");
+      const lngInput = document.getElementById("lng");
+      const photoFileInput = document.getElementById("photoFile");
+      const photoPreview = document.getElementById("photoPreview");
+      const nameInput = document.getElementById("name");
+      const descriptionInput = document.getElementById("description");
+      const addedByInput = document.getElementById("addedBy");
+
+      let miniMap = null;
+      let spotMarker = null;
+
+      function status(message, type = "") {
+        statusEl.textContent = message;
+        statusEl.className = "status show";
+
+        if (type === "good") statusEl.classList.add("good");
+        if (type === "bad") statusEl.classList.add("bad");
+      }
+
+      function makeSafeFileName(name) {
+        return String(name || "spot.jpg")
+          .toLowerCase()
+          .replace(/[^a-z0-9._-]/g, "-")
+          .slice(0, 80);
+      }
+
+      function encodeGeohash(latitude, longitude, precision = 9) {
+        const base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
+
+        let idx = 0;
+        let bit = 0;
+        let evenBit = true;
+        let geohash = "";
+
+        let latMin = -90;
+        let latMax = 90;
+        let lonMin = -180;
+        let lonMax = 180;
+
+        while (geohash.length < precision) {
+          if (evenBit) {
+            const lonMid = (lonMin + lonMax) / 2;
+
+            if (longitude >= lonMid) {
+              idx = idx * 2 + 1;
+              lonMin = lonMid;
+            } else {
+              idx = idx * 2;
+              lonMax = lonMid;
+            }
+          } else {
+            const latMid = (latMin + latMax) / 2;
+
+            if (latitude >= latMid) {
+              idx = idx * 2 + 1;
+              latMin = latMid;
+            } else {
+              idx = idx * 2;
+              latMax = latMid;
+            }
+          }
+
+          evenBit = !evenBit;
+
+          if (++bit === 5) {
+            geohash += base32.charAt(idx);
+            bit = 0;
+            idx = 0;
+          }
+        }
+
+        return geohash;
+      }
+
+      function initMiniMap() {
+        miniMap = new maptilersdk.Map({
+          container: "miniMap",
+          style: `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${MAPTILER_KEY}`,
+          center: [4.5, 50.85],
+          zoom: 7,
+          navigationControl: false,
+          geolocateControl: false,
+          projectionControl: false,
+        });
+
+        miniMap.on("click", (e) => {
+          const lat = e.lngLat.lat;
+          const lng = e.lngLat.lng;
+
+          setCoordsAndMarker(lat, lng, {
+            zoom: Math.max(miniMap.getZoom(), 16),
+            message: "Marker manually corrected on map.",
+          });
+        });
+      }
+
+      function setCoordsAndMarker(lat, lng, options = {}) {
+        const zoom = options.zoom || 16;
+        const message = options.message || "";
+
+        latInput.value = Number(lat).toFixed(6);
+        lngInput.value = Number(lng).toFixed(6);
+
+        if (!spotMarker) {
+          const markerEl = document.createElement("div");
+          markerEl.className = "map-marker";
+
+          spotMarker = new maptilersdk.Marker({
+            element: markerEl,
+            anchor: "center",
+            draggable: true,
+          })
+            .setLngLat([lng, lat])
+            .addTo(miniMap);
+
+          spotMarker.on("dragend", () => {
+            const pos = spotMarker.getLngLat();
+            latInput.value = pos.lat.toFixed(6);
+            lngInput.value = pos.lng.toFixed(6);
+            status("Marker dragged. Coords updated.", "good");
+          });
+        } else {
+          spotMarker.setLngLat([lng, lat]);
+        }
+
+        miniMap.easeTo({
+          center: [lng, lat],
+          zoom,
+          duration: 450,
+        });
+
+        if (message) {
+          status(message, "good");
+        }
+      }
+
+      function updateMarkerFromInputs() {
+        const lat = Number(latInput.value.replace(",", "."));
+        const lng = Number(lngInput.value.replace(",", "."));
+
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+
+        setCoordsAndMarker(lat, lng, {
+          zoom: Math.max(miniMap.getZoom(), 15),
+          message: "Coords changed. Map updated.",
+        });
+      }
+
+      async function uploadPhoto(file, docId) {
+        const fileName = makeSafeFileName(file.name);
+        const path = `spot_photos/${docId}/${Date.now()}-${fileName}`;
+        const ref = storage.ref().child(path);
+
+        const snapshot = await ref.put(file, {
+          contentType: file.type || "image/jpeg",
+        });
+
+        return await snapshot.ref.getDownloadURL();
+      }
+
+      gpsBtn.addEventListener("click", () => {
+        if (!navigator.geolocation) {
+          status("GPS not supported on this device.", "bad");
+          return;
+        }
+
+        gpsBtn.disabled = true;
+        status("Getting location...");
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            const accuracy = Math.round(pos.coords.accuracy || 0);
+
+            setCoordsAndMarker(lat, lng, {
+              zoom: 17,
+              message: `GPS locked. Accuracy: ±${accuracy}m.`,
+            });
+
+            gpsBtn.disabled = false;
+          },
+          (err) => {
+            status(err.message || "Could not get location.", "bad");
+            gpsBtn.disabled = false;
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0,
+          },
+        );
+      });
+
+      latInput.addEventListener("change", updateMarkerFromInputs);
+      lngInput.addEventListener("change", updateMarkerFromInputs);
+
+      photoFileInput.addEventListener("change", () => {
+        const file = photoFileInput.files && photoFileInput.files[0];
+
+        if (!file) {
+          photoPreview.style.display = "none";
+          photoPreview.removeAttribute("src");
+          return;
+        }
+
+        const previewURL = URL.createObjectURL(file);
+        photoPreview.src = previewURL;
+        photoPreview.style.display = "block";
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const lat = Number(latInput.value.replace(",", "."));
+        const lng = Number(lngInput.value.replace(",", "."));
+        const file = photoFileInput.files && photoFileInput.files[0];
+
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+          status("Invalid coordinates.", "bad");
+          return;
+        }
+
+        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+          status("Coordinates out of range.", "bad");
+          return;
+        }
+
+        if (!file) {
+          status("Choose or take a photo first.", "bad");
+          return;
+        }
+
+        const name = nameInput.value.trim();
+        const description = descriptionInput.value.trim();
+        const addedBy = addedByInput.value.trim() || "Maico";
+
+        if (!name || !description) {
+          status("Name and description are required.", "bad");
+          return;
+        }
+
+        saveBtn.disabled = true;
+        status("Preparing pending spot...");
+
+        try {
+          const docRef = db.collection("pending_spots").doc();
+          const geohash = encodeGeohash(lat, lng, 9);
+
+          status("Uploading photo...");
+          const photoURL = await uploadPhoto(file, docRef.id);
+
+          status("Saving to pending spots...");
+
+          await docRef.set({
+            name,
+            description,
+            photoURL,
+            addedBy,
+            lat,
+            lng,
+            geohash,
+
+            status: "pending",
+
+            ratingSum: 0,
+            ratingCount: 0,
+            avgRating: 0,
+
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+
+          status("Spot saved to pending_spots. Not live yet.");
+
+          nameInput.value = "";
+          descriptionInput.value = "";
+          photoFileInput.value = "";
+          photoPreview.style.display = "none";
+          photoPreview.removeAttribute("src");
+        } catch (err) {
+          console.error(err);
+          status(err.message || "Could not save pending spot.", "bad");
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+
+      initMiniMap();
+    </script>
+  </body>
+</html>
