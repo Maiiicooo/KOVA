@@ -22,6 +22,10 @@ KOVA aims to make outdoor experiences more accessible. Not just following routes
 
 ## Mappenstructuur
 
+Android-setup, testcommando's en resterende releasecontroles: [Android-audit](docs/android-audit.md).
+Gebruik na webwijzigingen `npm run cap:sync` en open daarna Android Studio met `npm run android:open`.
+De bronbestanden staan buiten `www`; `www` wordt bijgewerkt door `npm run build`.
+
 ```text
 KOVA/
 |-- index.html          Website-startpagina

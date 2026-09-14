@@ -898,6 +898,8 @@
         }
       }
     </style>
+  <link rel="stylesheet" href="../../assets/css/device.css" />
+    <script src="../../assets/js/device.js"></script>
   </head>
 
   <body>
@@ -1587,7 +1589,7 @@
         }
 
         gpsBtn.addEventListener("click", () => {
-          if (!navigator.geolocation) {
+          if (!window.KovaDevice.geolocation) {
             status("GPS not supported on this device.", "bad");
             return;
           }
@@ -1595,7 +1597,7 @@
           gpsBtn.disabled = true;
           status("Getting location...");
 
-          navigator.geolocation.getCurrentPosition(
+          window.KovaDevice.geolocation.getCurrentPosition(
             (pos) => {
               const lat = pos.coords.latitude;
               const lng = pos.coords.longitude;

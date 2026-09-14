@@ -9,6 +9,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
+    <link
+      rel="preconnect"
+      href="https://firebasestorage.googleapis.com"
+      crossorigin
+    />
+    <link rel="dns-prefetch" href="//firebasestorage.googleapis.com" />
+
     <!-- KOVA browser + home-screen icon -->
     <link
       rel="icon"
@@ -22,21 +29,39 @@
     />
     <link rel="apple-touch-icon" href="images/kova_alleen_x_png.png?v=kova-x-original-1" />
 
-    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
+    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.umd.min.js"></script>
     <link
-      href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css"
+      href="https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.css"
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/geofire-common@6.0.0/dist/geofire-common/geofire-common.min.js"></script>
     <link rel="stylesheet" href="./assets/css/index.css" />
+  <link rel="stylesheet" href="assets/css/device.css" />
+    <script src="assets/js/device.js"></script>
   </head>
 
   <body>
+    <div id="kovaStartup" class="kova-startup" aria-label="Loading KOVA">
+      <div class="kova-startup-inner">
+        <img
+          class="kova-startup-logo"
+          src="./images/kova_wit_x_png.png"
+          alt="KOVA"
+        />
+        <div class="kova-startup-track" aria-hidden="true">
+          <span class="kova-startup-progress" data-startup-progress></span>
+        </div>
+      </div>
+    </div>
+
     <nav>
       <div class="nav-left">
         <a href="./index.html">
           <img src="./images/kova_wit_x_png.png" alt="Kova logo small" />
         </a>
+        <div class="kova-tagline-roll" aria-live="polite">
+          <span class="kova-tagline-current">every spot is a treasure!</span>
+        </div>
       </div>
 
       <div class="nav-right">
@@ -134,6 +159,12 @@
               <span>about</span>
             </span>
           </a>
+
+          <div class="hamburger-version" aria-label="KOVA version 4.1">
+            <span>KOVA</span>
+            <span class="hamburger-version-dot" aria-hidden="true"></span>
+            <span>v4.1</span>
+          </div>
         </div>
       </div>
     </nav>
@@ -293,6 +324,44 @@
             </div>
             <div class="kova-filter-options" data-city-options>
               <div class="kova-filter-empty">Loading cities…</div>
+            </div>
+          </section>
+
+          <section class="kova-filter-section">
+            <div class="kova-filter-head">
+              <h3>Spot type</h3>
+              <span data-type-count>all types</span>
+            </div>
+            <div class="kova-filter-options" data-type-options>
+              <div class="kova-filter-option">
+                <input
+                  id="searchTypeWater"
+                  type="checkbox"
+                  value="water"
+                  data-filter-kind="type"
+                />
+                <label for="searchTypeWater">Water</label>
+              </div>
+
+              <div class="kova-filter-option">
+                <input
+                  id="searchTypeNature"
+                  type="checkbox"
+                  value="nature"
+                  data-filter-kind="type"
+                />
+                <label for="searchTypeNature">Nature</label>
+              </div>
+
+              <div class="kova-filter-option">
+                <input
+                  id="searchTypeUrban"
+                  type="checkbox"
+                  value="urban"
+                  data-filter-kind="type"
+                />
+                <label for="searchTypeUrban">Urban</label>
+              </div>
             </div>
           </section>
         </div>

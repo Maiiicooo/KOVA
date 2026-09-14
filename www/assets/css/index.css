@@ -52,15 +52,89 @@
 
       .nav-left {
         display: flex;
-        align-items: center;
-        gap: 12px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
         min-width: 0;
+        width: max-content;
+        --kova-logo-width: 118px;
       }
 
       .nav-left img {
         height: 50px;
         width: auto;
         display: block;
+      }
+
+      .nav-left a {
+        display: block;
+        width: max-content;
+      }
+
+      .kova-tagline-roll {
+        width: var(--kova-logo-width, 118px);
+        max-width: var(--kova-logo-width, 118px);
+        overflow: hidden;
+        color: rgba(255, 255, 255, 0.58);
+        font-size: 0.68rem;
+        font-weight: 560;
+        line-height: 1;
+        letter-spacing: 0.8px;
+        text-transform: lowercase;
+        white-space: nowrap;
+        mask-image: linear-gradient(
+          90deg,
+          transparent 0%,
+          #000 9%,
+          #000 91%,
+          transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+          90deg,
+          transparent 0%,
+          #000 9%,
+          #000 91%,
+          transparent 100%
+        );
+      }
+
+      .kova-tagline-current {
+        display: inline-block;
+        width: max-content;
+        white-space: nowrap;
+        transform: translateX(var(--kova-logo-width, 118px));
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+
+      .kova-tagline-current.is-running {
+        animation: kovaTaglinePass 9.5s linear forwards;
+      }
+
+      @keyframes kovaTaglinePass {
+        0% {
+          transform: translateX(var(--kova-logo-width, 118px));
+          opacity: 0;
+        }
+        7% {
+          opacity: 1;
+        }
+        93% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateX(-100%);
+          opacity: 0;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .kova-tagline-current,
+        .kova-tagline-current.is-running {
+          animation: none;
+          transform: none;
+          opacity: 1;
+        }
       }
 
       .beta {
@@ -278,6 +352,31 @@
       .hamburger-menu button:focus-visible {
         outline: 2px solid rgba(139, 113, 8, 0.9);
         outline-offset: 2px;
+      }
+
+      .hamburger-version {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin: 5px 4px 1px;
+        padding: 10px 8px 4px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 0.66rem;
+        font-weight: 650;
+        letter-spacing: 1.1px;
+        text-transform: uppercase;
+        user-select: none;
+        pointer-events: none;
+      }
+
+      .hamburger-version-dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 999px;
+        background: var(--accent);
+        opacity: 0.8;
       }
 
       .kova-tutorial {
@@ -526,6 +625,41 @@
         user-select: none;
       }
 
+      /* KOVA performance mode: while the map is moving, temporarily suspend
+         decorative compositor work. The normal visual styling returns as soon
+         as the camera settles. This is especially useful in mobile WebViews. */
+      body.kova-map-moving .kova-tagline-current {
+        animation-play-state: paused !important;
+      }
+
+      body.kova-map-moving .hamburger-toggle,
+      body.kova-map-moving .hamburger-menu {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+      }
+
+      @media (pointer: coarse), (max-width: 900px) {
+        /* Full-screen blur is expensive in Chromium/WebView. Keep KOVA's
+           glass look on desktop, but use lightweight translucency on mobile. */
+        .kova-library-overlay,
+        .kova-search-overlay,
+        .kova-feed-overlay {
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+        }
+
+        .hamburger-toggle {
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+        }
+
+        .nav-right.open .hamburger-menu {
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+        }
+      }
+
       .maplibregl-control-container,
       .maplibregl-ctrl-bottom-left,
       .maplibregl-ctrl-logo,
@@ -742,6 +876,17 @@
 
       .kova-popup .hero.is-loaded img {
         opacity: 1;
+      }
+
+      /* Fast progressive spot images: thumbnail first, full image second. */
+      .kova-popup .hero.has-preview img {
+        filter: blur(10px) saturate(1.03) contrast(1.03);
+        transform: scale(1.055);
+      }
+
+      .kova-popup .hero.is-full img {
+        filter: saturate(1.05) contrast(1.05);
+        transform: scale(1.01);
       }
 
       .kova-popup .hero::after {
@@ -1225,6 +1370,27 @@
         z-index: 1;
         flex-direction: column;
         gap: 10px;
+        overflow: hidden;
+      }
+
+      .kova-loading::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.07),
+          transparent
+        );
+        animation: kovaImageShimmer 1.15s ease-in-out infinite;
+      }
+
+      @keyframes kovaImageShimmer {
+        to {
+          transform: translateX(100%);
+        }
       }
 
       .kova-loading.hidden,
@@ -1878,6 +2044,11 @@
 
         .nav-left img {
           height: 38px;
+        }
+
+        .kova-tagline-roll {
+          font-size: 0.58rem;
+          letter-spacing: 0.65px;
         }
 
         .beta {
@@ -2849,6 +3020,60 @@
         box-shadow: inset 0 0 0 3px #151515;
       }
 
+      /* Spot type Search colors -------------------------------------- */
+      .kova-filter-option input[data-filter-kind="type"] + label::before {
+        border-radius: 999px;
+        box-shadow: none;
+      }
+
+      .kova-filter-option
+        input[data-filter-kind="type"][value="water"]
+        + label::before {
+        border-color: rgba(59, 130, 196, 0.72);
+        background: #3b82c4;
+      }
+
+      .kova-filter-option
+        input[data-filter-kind="type"][value="nature"]
+        + label::before {
+        border-color: rgba(78, 125, 74, 0.78);
+        background: #4e7d4a;
+      }
+
+      .kova-filter-option
+        input[data-filter-kind="type"][value="urban"]
+        + label::before {
+        border-color: rgba(139, 113, 8, 0.82);
+        background: #8b7108;
+      }
+
+      .kova-filter-option
+        input[data-filter-kind="type"][value="water"]:checked
+        + label {
+        border-color: rgba(59, 130, 196, 0.66);
+        background: rgba(59, 130, 196, 0.14);
+      }
+
+      .kova-filter-option
+        input[data-filter-kind="type"][value="nature"]:checked
+        + label {
+        border-color: rgba(78, 125, 74, 0.72);
+        background: rgba(78, 125, 74, 0.15);
+      }
+
+      .kova-filter-option
+        input[data-filter-kind="type"][value="urban"]:checked
+        + label {
+        border-color: rgba(139, 113, 8, 0.72);
+        background: rgba(139, 113, 8, 0.16);
+      }
+
+      .kova-filter-option
+        input[data-filter-kind="type"]:checked
+        + label::before {
+        box-shadow: inset 0 0 0 3px #151515;
+      }
+
       .kova-filter-option label:hover {
         transform: translateY(-1px);
         border-color: rgba(139, 113, 8, 0.38);
@@ -2982,5 +3207,62 @@
           padding: 7px 10px;
           font-size: 0.8rem;
         }
+      }
+
+      /* KOVA startup preload ------------------------------------------- */
+      .kova-startup {
+        position: fixed;
+        inset: 0;
+        z-index: 20050;
+        display: grid;
+        place-items: center;
+        background: #0b0b0b;
+        opacity: 1;
+        visibility: visible;
+        transition:
+          opacity 0.32s ease,
+          visibility 0.32s ease;
+      }
+
+      .kova-startup.is-hiding {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      .kova-startup-inner {
+        width: min(300px, calc(100vw - 56px));
+        display: grid;
+        justify-items: center;
+        gap: 24px;
+      }
+
+      .kova-startup-logo {
+        width: min(230px, 56vw);
+        max-height: 92px;
+        display: block;
+        object-fit: contain;
+        user-select: none;
+        -webkit-user-drag: none;
+      }
+
+      .kova-startup-track {
+        width: 100%;
+        height: 3px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .kova-startup-progress {
+        width: 100%;
+        height: 100%;
+        display: block;
+        border-radius: inherit;
+        background: var(--accent);
+        transform: scaleX(0.06);
+        transform-origin: left center;
+        transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+        will-change: transform;
       }
     

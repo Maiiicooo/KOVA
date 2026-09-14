@@ -1,8 +1,105 @@
 
       document.addEventListener("DOMContentLoaded", () => {
+        const startupOverlay = document.getElementById("kovaStartup");
+        const startupProgress = document.querySelector(
+          "[data-startup-progress]",
+        );
+        const startupStartedAt = performance.now();
+        let startupFinished = false;
+
+        function wait(ms) {
+          return new Promise((resolve) => window.setTimeout(resolve, ms));
+        }
+
+        function setStartupProgress(value) {
+          if (!startupProgress) return;
+          const clean = Math.max(0.06, Math.min(1, Number(value) || 0));
+          startupProgress.style.transform = `scaleX(${clean})`;
+        }
+
+        async function finishStartupSplash() {
+          if (startupFinished) return;
+          startupFinished = true;
+          setStartupProgress(1);
+
+          const elapsed = performance.now() - startupStartedAt;
+          const remaining = Math.max(0, STARTUP_SPLASH_MIN_MS - elapsed);
+          if (remaining) await wait(remaining);
+
+          // Let the loading bar visibly reach 100% before fading away.
+          await wait(110);
+          startupOverlay?.classList.add("is-hiding");
+          window.setTimeout(() => {
+            if (startupOverlay) startupOverlay.hidden = true;
+          }, 360);
+        }
+
+        setStartupProgress(0.1);
+
         const navRight = document.querySelector(".nav-right");
         const menuToggle = document.querySelector(".hamburger-toggle");
         const menuPanel = document.getElementById("kovaMenu");
+        const navLeft = document.querySelector(".nav-left");
+        const navLogo = document.querySelector(".nav-left img");
+        const navTagline = document.querySelector(".kova-tagline-roll");
+        const navTaglineCurrent = document.querySelector(
+          ".kova-tagline-current",
+        );
+        const navTaglinePhrases = [
+          "every spot is a treasure!",
+          "find your next escape",
+          "hidden gems. real moments.",
+        ];
+        let navTaglinePhraseIndex = 0;
+        let navTaglinePauseTimer = null;
+
+        function runNextNavTagline() {
+          if (!navTaglineCurrent) return;
+          navTaglineCurrent.textContent =
+            navTaglinePhrases[navTaglinePhraseIndex];
+          navTaglinePhraseIndex =
+            (navTaglinePhraseIndex + 1) % navTaglinePhrases.length;
+
+          navTaglineCurrent.classList.remove("is-running");
+          void navTaglineCurrent.offsetWidth;
+          navTaglineCurrent.classList.add("is-running");
+        }
+
+        if (navTaglineCurrent) {
+          navTaglineCurrent.addEventListener("animationend", () => {
+            navTaglineCurrent.classList.remove("is-running");
+            navTaglinePauseTimer = window.setTimeout(runNextNavTagline, 3000);
+          });
+
+          runNextNavTagline();
+        }
+
+        function syncNavTaglineWidth() {
+          if (!navLeft || !navLogo || !navTagline) return;
+          const logoWidth = Math.round(navLogo.getBoundingClientRect().width);
+          if (!logoWidth) return;
+          navLeft.style.setProperty("--kova-logo-width", `${logoWidth}px`);
+          navTagline.style.width = `${logoWidth}px`;
+          navTagline.style.maxWidth = `${logoWidth}px`;
+        }
+
+        if (navLogo && navTagline) {
+          if (navLogo.complete) syncNavTaglineWidth();
+          else {
+            navLogo.addEventListener("load", syncNavTaglineWidth, {
+              once: true,
+            });
+          }
+
+          window.addEventListener("resize", syncNavTaglineWidth);
+
+          if (typeof ResizeObserver === "function") {
+            const navLogoResizeObserver = new ResizeObserver(() => {
+              syncNavTaglineWidth();
+            });
+            navLogoResizeObserver.observe(navLogo);
+          }
+        }
 
         function closeHamburgerMenu() {
           if (!navRight || !menuToggle || !menuPanel) return;
@@ -189,13 +286,249 @@
         const DEFAULT_ZOOM = 7.5;
         const USER_START_ZOOM = 11;
 
+        const KOVA_MOBILE_LIKE = window.matchMedia(
+          "(pointer: coarse), (max-width: 900px)",
+        ).matches;
+
         const SEARCH_RADIUS_KM = 10;
+        const STARTUP_PRELOAD_RADIUS_KM = 25;
+        const STARTUP_THUMB_PREFETCH_LIMIT = KOVA_MOBILE_LIKE ? 8 : 16;
+        const STARTUP_SPLASH_MIN_MS = 800;
+        const STARTUP_GPS_GRACE_MS = 1200;
+        const KOVA_LAST_LOCATION_KEY = "kova_last_location_v1";
+
         const DUPLICATE_BLOCK_RADIUS_M = 80;
         const LOCAL_RATINGS_KEY = "kova_spot_ratings_v1";
         const KOVA_SAVED_SPOTS_KEY = "kova_saved_spots_v1";
         const KOVA_ROUTE_SPOTS_KEY = "kova_route_spots_v1";
         const KOVA_ROUTE_MODE_KEY = "kova_route_mode_v1";
         const KOVA_ROUTE_MAX_SPOTS = 5;
+
+        function readLastKovaLocation() {
+          try {
+            const raw = localStorage.getItem(KOVA_LAST_LOCATION_KEY);
+            const parsed = raw ? JSON.parse(raw) : null;
+            const lat = Number(parsed?.lat);
+            const lng = Number(parsed?.lng);
+
+            if (
+              Number.isFinite(lat) &&
+              Number.isFinite(lng) &&
+              lat >= -90 &&
+              lat <= 90 &&
+              lng >= -180 &&
+              lng <= 180
+            ) {
+              return { lat, lng };
+            }
+          } catch (e) {}
+
+          return null;
+        }
+
+        function rememberLastKovaLocation(lat, lng) {
+          try {
+            localStorage.setItem(
+              KOVA_LAST_LOCATION_KEY,
+              JSON.stringify({ lat, lng, savedAt: Date.now() }),
+            );
+          } catch (e) {}
+        }
+
+        const startupStoredLocation = readLastKovaLocation();
+        const startupMapCenter = startupStoredLocation
+          ? [startupStoredLocation.lng, startupStoredLocation.lat]
+          : DEFAULT_CENTER;
+        const startupMapZoom = startupStoredLocation
+          ? USER_START_ZOOM
+          : DEFAULT_ZOOM;
+
+        // Spot image performance -----------------------------------------
+        // New spots should store a small WebP URL in `thumbURL` and the
+        // normal image in `photoURL`. Older spots without thumbURL still work.
+        const KOVA_IMAGE_PREFETCH_LIMIT = KOVA_MOBILE_LIKE ? 8 : 16;
+        const kovaImagePreloadCache = new Map();
+
+        function getSpotThumbnailURL(spot) {
+          if (!spot) return "";
+          return safeHttpsURL(
+            spot.thumbURL ||
+              spot.thumbnailURL ||
+              spot.photoThumbURL ||
+              spot.photoThumbnailURL ||
+              "",
+          );
+        }
+
+        function getSpotDisplayURL(spot) {
+          return getSpotThumbnailURL(spot) || safeHttpsURL(spot?.photoURL);
+        }
+
+        function preloadKovaImage(url, priority = "low") {
+          const cleanURL = safeHttpsURL(url);
+          if (!cleanURL) return Promise.resolve(false);
+          if (kovaImagePreloadCache.has(cleanURL)) {
+            return kovaImagePreloadCache.get(cleanURL);
+          }
+
+          const promise = new Promise((resolve) => {
+            const img = new Image();
+            img.decoding = "async";
+            try {
+              img.fetchPriority = priority;
+            } catch (e) {}
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(false);
+            img.src = cleanURL;
+          });
+
+          kovaImagePreloadCache.set(cleanURL, promise);
+          return promise;
+        }
+
+        function preloadStartupSpotImages(
+          features,
+          center,
+          limit = STARTUP_THUMB_PREFETCH_LIMIT,
+        ) {
+          if (!Array.isArray(features) || !features.length) {
+            return Promise.resolve([]);
+          }
+
+          const connection =
+            navigator.connection ||
+            navigator.mozConnection ||
+            navigator.webkitConnection ||
+            null;
+
+          if (connection?.saveData) return Promise.resolve([]);
+          if (/2g/i.test(String(connection?.effectiveType || ""))) {
+            return Promise.resolve([]);
+          }
+
+          const ranked = features
+            .map((feature) => {
+              const props = feature?.properties || {};
+              const coords = feature?.geometry?.coordinates || [];
+              const lng = Number(coords[0] ?? props.lng);
+              const lat = Number(coords[1] ?? props.lat);
+              let distance = Number.POSITIVE_INFINITY;
+
+              if (
+                center &&
+                Number.isFinite(center.lat) &&
+                Number.isFinite(center.lng) &&
+                Number.isFinite(lat) &&
+                Number.isFinite(lng)
+              ) {
+                distance = haversineMeters(center.lat, center.lng, lat, lng);
+              }
+
+              return { props, distance };
+            })
+            .sort((a, b) => a.distance - b.distance)
+            .slice(0, limit);
+
+          return Promise.allSettled(
+            ranked.map(({ props }) =>
+              preloadKovaImage(
+                getSpotThumbnailURL(props) || safeHttpsURL(props.photoURL),
+                "low",
+              ),
+            ),
+          );
+        }
+
+        let kovaPrefetchTimer = null;
+        let kovaPrefetchIdleHandle = null;
+
+        function cancelScheduledSpotImagePrefetch() {
+          if (kovaPrefetchTimer) {
+            clearTimeout(kovaPrefetchTimer);
+            kovaPrefetchTimer = null;
+          }
+
+          if (
+            kovaPrefetchIdleHandle !== null &&
+            typeof window.cancelIdleCallback === "function"
+          ) {
+            window.cancelIdleCallback(kovaPrefetchIdleHandle);
+          }
+          kovaPrefetchIdleHandle = null;
+        }
+
+        function scheduleSpotImagePrefetch(features = currentBaseSpotFeatures) {
+          if (!Array.isArray(features) || !features.length) return;
+
+          const connection =
+            navigator.connection ||
+            navigator.mozConnection ||
+            navigator.webkitConnection ||
+            null;
+
+          if (connection?.saveData) return;
+          if (/2g/i.test(String(connection?.effectiveType || ""))) return;
+
+          cancelScheduledSpotImagePrefetch();
+
+          const run = () => {
+            kovaPrefetchTimer = null;
+            kovaPrefetchIdleHandle = null;
+
+            // Never decode/prefetch images while the user is actively moving
+            // the map. moveend will schedule us again once the camera settles.
+            if (typeof map?.isMoving === "function" && map.isMoving()) return;
+
+            let center = null;
+            try {
+              center = map.getCenter();
+            } catch (e) {}
+
+            const ranked = features
+              .map((feature) => {
+                const props = feature?.properties || {};
+                const coords = feature?.geometry?.coordinates || [];
+                const lng = Number(coords[0] ?? props.lng);
+                const lat = Number(coords[1] ?? props.lat);
+                let distance = Number.POSITIVE_INFINITY;
+
+                if (center && Number.isFinite(lat) && Number.isFinite(lng)) {
+                  distance = haversineMeters(
+                    Number(center.lat),
+                    Number(center.lng),
+                    lat,
+                    lng,
+                  );
+                }
+
+                return { props, distance };
+              })
+              .sort((a, b) => a.distance - b.distance)
+              .slice(0, KOVA_IMAGE_PREFETCH_LIMIT);
+
+            ranked.forEach(({ props }) => {
+              const thumbURL = getSpotThumbnailURL(props);
+              const photoURL = safeHttpsURL(props.photoURL);
+              preloadKovaImage(thumbURL || photoURL, "low");
+            });
+          };
+
+          // On modern browsers, use idle time so image decoding cannot steal
+          // frames from a gesture/camera animation. Fallback remains quick.
+          kovaPrefetchTimer = window.setTimeout(
+            () => {
+              kovaPrefetchTimer = null;
+              if (typeof window.requestIdleCallback === "function") {
+                kovaPrefetchIdleHandle = window.requestIdleCallback(run, {
+                  timeout: 550,
+                });
+              } else {
+                run();
+              }
+            },
+            KOVA_MOBILE_LIKE ? 180 : 90,
+          );
+        }
 
         // MANUAL KOVA PICKS:
         // Add as many Firestore spot document IDs as you want.
@@ -215,17 +548,38 @@
           "29fp2fidsHLpMwGtHY25",
         ];
 
+        // Cap very high-density phone screens at 2x. A DPR 3 phone otherwise
+        // asks WebGL to shade more than twice as many pixels as DPR 2.
+        const KOVA_MAP_PIXEL_RATIO = Math.min(
+          Number(window.devicePixelRatio) || 1,
+          2,
+        );
+
         const map = new maptilersdk.Map({
           container: "map",
           style:
             "https://api.maptiler.com/maps/dataviz-dark/style.json?key=7TBqy4hTdFfQeIq7oXKj",
-          center: DEFAULT_CENTER,
-          zoom: DEFAULT_ZOOM,
+          center: startupMapCenter,
+          zoom: startupMapZoom,
           minZoom: 5,
           navigationControl: false,
           projectionControl: false,
           geolocateControl: false,
           doubleClickZoom: false,
+
+          // KOVA is a flat discovery map: disable unused 3D/rotation work and
+          // keep rendering focused on pan + pinch zoom.
+          dragRotate: false,
+          touchPitch: false,
+          pitchWithRotate: false,
+          maxPitch: 0,
+          renderWorldCopies: false,
+
+          // Shorter symbol collision fades feel more immediate and do less
+          // compositing after a camera movement.
+          fadeDuration: 140,
+          pixelRatio: KOVA_MAP_PIXEL_RATIO,
+          validateStyle: false,
         });
 
         if (map.doubleClickZoom) map.doubleClickZoom.disable();
@@ -266,8 +620,10 @@
         let userMarkerEl = null;
         let userLat = null;
         let userLng = null;
+        let userLocationRequestPromise = null;
         let mapLoaded = false;
         let initialNearbyLoaded = false;
+        let startupRegionLoaded = false;
         let userMarkerAdded = false;
         let currentBaseSpotFeatures = [];
 
@@ -334,10 +690,12 @@
             description: String(spot.description || ""),
             addedBy: String(spot.addedBy || spot.added_by || spot.author || ""),
             photoURL: safeHttpsURL(spot.photoURL),
+            thumbURL: getSpotThumbnailURL(spot),
             lat,
             lng,
             avgRating: Number(spot.avgRating || 0),
             ratingCount: Number(spot.ratingCount || 0),
+            type: normalizeSpotType(spot.type),
           };
         }
 
@@ -411,10 +769,12 @@
               description: clean.description,
               addedBy: clean.addedBy,
               photoURL: clean.photoURL,
+              thumbURL: clean.thumbURL,
               lat: clean.lat,
               lng: clean.lng,
               avgRating: clean.avgRating,
               ratingCount: clean.ratingCount,
+              type: clean.type,
               saved: true,
             },
           };
@@ -428,10 +788,12 @@
             description: card.getAttribute("data-spot-description") || "",
             addedBy: card.getAttribute("data-spot-added-by") || "",
             photoURL: card.getAttribute("data-spot-photo") || "",
+            thumbURL: card.getAttribute("data-spot-thumb") || "",
             lat: card.getAttribute("data-spot-lat"),
             lng: card.getAttribute("data-spot-lng"),
             avgRating: card.getAttribute("data-spot-rating"),
             ratingCount: card.getAttribute("data-spot-rating-count"),
+            type: card.getAttribute("data-spot-type"),
           });
         }
 
@@ -508,7 +870,7 @@
         }
 
         function renderSavedSpotItem(spot) {
-          const photo = safeHttpsURL(spot.photoURL);
+          const photo = getSpotDisplayURL(spot);
           return `
             <div class="kova-personal-item">
               ${photo ? `<img class="kova-personal-thumb" src="${escapeHTML(photo)}" alt="" loading="lazy" decoding="async">` : `<span class="kova-personal-thumb"></span>`}
@@ -524,7 +886,7 @@
         }
 
         function renderRouteSpotItem(spot, index, total) {
-          const photo = safeHttpsURL(spot.photoURL);
+          const photo = getSpotDisplayURL(spot);
           const meta =
             index === 0
               ? "Route start"
@@ -684,7 +1046,7 @@
             provider === "apple"
               ? getAppleMultiStopUrl(route)
               : getGoogleMultiStopUrl(route);
-          if (url) window.open(url, "_blank");
+          if (url) window.KovaDevice.openExternal(url).catch(console.warn);
         }
 
         function refreshCurrentMapWithSavedSpots() {
@@ -810,6 +1172,8 @@
           "[data-province-options]",
         );
         const cityOptionsEl = document.querySelector("[data-city-options]");
+        const spotTypeOptionsEl = document.querySelector("[data-type-options]");
+        const spotTypeCountEl = document.querySelector("[data-type-count]");
         const searchStatusEl = document.querySelector("[data-search-status]");
         const searchResultCountEl = document.querySelector(
           "[data-search-result-count]",
@@ -829,6 +1193,7 @@
         let provinceSpotsLoaded = false;
         let provinceSpotsPromise = null;
         let selectedLocationCities = new Set();
+        let selectedSpotTypes = new Set();
 
         function normalizeSearchText(value) {
           return String(value || "")
@@ -868,6 +1233,20 @@
           return [...new Set(values.filter(Boolean))].sort((a, b) =>
             String(a).localeCompare(String(b), "nl", { sensitivity: "base" }),
           );
+        }
+
+        function updateSearchTypeUI() {
+          if (spotTypeCountEl) {
+            spotTypeCountEl.textContent = selectedSpotTypes.size
+              ? `${selectedSpotTypes.size} selected`
+              : "all types";
+          }
+
+          spotTypeOptionsEl
+            ?.querySelectorAll("input[data-filter-kind='type']")
+            .forEach((input) => {
+              input.checked = selectedSpotTypes.has(input.value);
+            });
         }
 
         async function loadSearchRegionIndex() {
@@ -1193,9 +1572,17 @@
 
           return provinceSpots.filter((spot) => {
             const city = String(spot.city || "").trim();
+            const type = normalizeSpotType(spot.type);
 
-            if (selectedLocationCities.size) {
-              return selectedLocationCities.has(city);
+            if (
+              selectedLocationCities.size &&
+              !selectedLocationCities.has(city)
+            ) {
+              return false;
+            }
+
+            if (selectedSpotTypes.size && !selectedSpotTypes.has(type)) {
+              return false;
             }
 
             return true;
@@ -1220,7 +1607,13 @@
 
           const matches = getProvinceSearchMatches();
 
-          searchResultCountEl.textContent = `${matches.length} spot${matches.length === 1 ? "" : "s"} match this province search.`;
+          const typeText = selectedSpotTypes.size
+            ? ` · ${[...selectedSpotTypes]
+                .map((type) => type.charAt(0).toUpperCase() + type.slice(1))
+                .join(" + ")}`
+            : "";
+
+          searchResultCountEl.textContent = `${matches.length} spot${matches.length === 1 ? "" : "s"} match${typeText}.`;
 
           searchSubmitBtn.disabled = matches.length === 0;
         }
@@ -1229,8 +1622,10 @@
           selectedCountryKey = "";
           selectedProvinceKey = "";
           selectedProvinceName = "";
+          selectedSpotTypes.clear();
           resetLoadedProvince();
 
+          updateSearchTypeUI();
           renderSearchCountries();
           renderSearchCities();
           updateSearchResultCount();
@@ -1278,10 +1673,17 @@
               added_by: spot.added_by || "",
               author: spot.author || "",
               photoURL: spot.photoURL || "",
+              thumbURL:
+                spot.thumbURL ||
+                spot.thumbnailURL ||
+                spot.photoThumbURL ||
+                spot.photoThumbnailURL ||
+                "",
               lat: Number(spot.lat),
               lng: Number(spot.lng),
               avgRating: Number(spot.avgRating || 0),
               ratingCount: Number(spot.ratingCount || 0),
+              type: normalizeSpotType(spot.type),
             },
           };
         }
@@ -1301,7 +1703,8 @@
           if (!matches.length) {
             if (searchStatusEl) {
               searchStatusEl.classList.add("error");
-              searchStatusEl.textContent = "No spots match the selected city.";
+              searchStatusEl.textContent =
+                "No spots match the selected filters.";
             }
             return;
           }
@@ -1424,6 +1827,19 @@
           updateSearchResultCount();
         });
 
+        spotTypeOptionsEl?.addEventListener("change", (e) => {
+          const input = e.target.closest("input[data-filter-kind='type']");
+          if (!input) return;
+
+          if (input.checked) selectedSpotTypes.add(input.value);
+          else selectedSpotTypes.delete(input.value);
+
+          updateSearchTypeUI();
+          updateSearchResultCount();
+        });
+
+        updateSearchTypeUI();
+
         document.addEventListener("keydown", (e) => {
           if (e.key === "Escape" && searchOverlay?.classList.contains("open")) {
             closeLocationSearch();
@@ -1460,7 +1876,7 @@
         }
 
         function makeFeedSpotThumb(spot) {
-          const url = safeHttpsURL(spot?.photoURL);
+          const url = getSpotDisplayURL(spot);
           if (!url) return "";
           return `<img class="kova-top-thumb" src="${escapeHTML(url)}" alt="" loading="lazy" decoding="async">`;
         }
@@ -1488,7 +1904,7 @@
               <div class="kova-pick-scroll" aria-label="KOVA picks" data-pick-scroll>
                 ${spots
                   .map((spot) => {
-                    const photoURL = safeHttpsURL(spot.photoURL);
+                    const photoURL = getSpotDisplayURL(spot);
                     const rating = Number(spot.avgRating || 0).toFixed(1);
                     const ratingCount = Number(spot.ratingCount || 0);
 
@@ -1929,6 +2345,13 @@
           return s.startsWith("https://") ? s : "";
         }
 
+        function normalizeSpotType(type) {
+          const value = String(type || "")
+            .trim()
+            .toLowerCase();
+          return ["water", "nature", "urban"].includes(value) ? value : "urban";
+        }
+
         function setStatus(el, message = "", type = "") {
           if (!el) return;
           el.textContent = message;
@@ -1937,17 +2360,23 @@
         }
 
         function initUserLocationFlow() {
-          if (!navigator.geolocation) {
+          if (!window.KovaDevice.geolocation) {
             console.warn("Geolocation is not supported on this device.");
-            return;
+            return Promise.resolve(false);
           }
 
-          window.setTimeout(() => {
-            requestUserLocation();
-          }, 250);
+          if (!userLocationRequestPromise) {
+            userLocationRequestPromise = requestUserLocation();
+          }
+
+          return userLocationRequestPromise;
         }
 
         function openNavigation(lat, lng) {
+          if (window.KovaDevice.native) {
+            window.KovaDevice.openExternal(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`).catch(console.warn);
+            return;
+          }
           const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent);
           const isAndroid = /Android/.test(navigator.userAgent);
           const q = `${lat},${lng}`;
@@ -2019,6 +2448,17 @@
           }
           updateFooterVisibility();
         }
+
+        window.addEventListener('kova:back', event => {
+          if (tutorialOverlay?.classList.contains('open')) closeTutorial();
+          else if (libraryOverlay?.classList.contains('open')) closeLibrary();
+          else if (searchOverlay?.classList.contains('open')) closeLocationSearch();
+          else if (feedOverlay?.classList.contains('open')) closeFeed();
+          else if (navRight?.classList.contains('open')) closeHamburgerMenu();
+          else if (activePopup || activeCoordPopup || userPopup?.isOpen()) closeAll();
+          else return;
+          event.preventDefault();
+        });
 
         function closeAll() {
           if (activePopup) {
@@ -2208,32 +2648,131 @@
             const hero = popupEl.querySelector(".hero[data-photo-url]");
             if (!hero) return;
 
-            const photoURL = hero.getAttribute("data-photo-url") || "";
+            const photoURL = safeHttpsURL(
+              hero.getAttribute("data-photo-url") || "",
+            );
+
+            const thumbURL = safeHttpsURL(
+              hero.getAttribute("data-thumb-url") || "",
+            );
+
             const img = hero.querySelector("img[data-spot-image]");
             const loading = hero.querySelector(".kova-loading");
             const fallback = hero.querySelector(".kova-fallback");
 
-            if (!photoURL || !img) {
+            if ((!photoURL && !thumbURL) || !img) {
               if (loading) loading.classList.add("hidden");
               if (fallback) fallback.classList.remove("hidden");
               return;
             }
 
-            const preload = new Image();
+            const initialURL = thumbURL || photoURL;
+            const initialIsPreview = Boolean(thumbURL) && thumbURL !== photoURL;
 
-            preload.onload = () => {
-              img.src = photoURL;
+            let fullImageStarted = false;
+            let initialHandled = false;
+
+            function showLoadedImage(preview = false) {
               hero.classList.add("is-loaded");
+              hero.classList.toggle("has-preview", preview);
+              hero.classList.toggle("is-full", !preview);
+
               if (loading) loading.classList.add("hidden");
               if (fallback) fallback.classList.add("hidden");
-            };
+            }
 
-            preload.onerror = () => {
+            function loadFullImage() {
+              if (fullImageStarted || !photoURL || photoURL === initialURL) {
+                return;
+              }
+
+              fullImageStarted = true;
+
+              const full = new Image();
+              full.decoding = "async";
+
+              try {
+                full.fetchPriority = "low";
+              } catch (e) {}
+
+              full.onload = () => {
+                if (!popup.getElement()) return;
+
+                img.src = photoURL;
+                hero.classList.remove("has-preview");
+                hero.classList.add("is-loaded", "is-full");
+
+                if (loading) loading.classList.add("hidden");
+                if (fallback) fallback.classList.add("hidden");
+              };
+
+              full.onerror = () => {
+                // Keep the already visible thumbnail if full-res fails.
+                if (!hero.classList.contains("is-loaded")) {
+                  if (loading) loading.classList.add("hidden");
+                  if (fallback) fallback.classList.remove("hidden");
+                }
+              };
+
+              full.src = photoURL;
+            }
+
+            function handleInitialLoaded() {
+              if (initialHandled) return;
+              initialHandled = true;
+
+              showLoadedImage(initialIsPreview);
+
+              if (initialIsPreview) {
+                loadFullImage();
+              }
+            }
+
+            function handleInitialError() {
+              if (initialHandled) return;
+              initialHandled = true;
+
+              // If the thumbnail ever fails, fall back to the normal image.
+              if (initialIsPreview && photoURL) {
+                const fallbackFull = new Image();
+                fallbackFull.decoding = "async";
+
+                try {
+                  fallbackFull.fetchPriority = "high";
+                } catch (e) {}
+
+                fallbackFull.onload = () => {
+                  if (!popup.getElement()) return;
+
+                  img.src = photoURL;
+                  showLoadedImage(false);
+                };
+
+                fallbackFull.onerror = () => {
+                  if (loading) loading.classList.add("hidden");
+                  if (fallback) fallback.classList.remove("hidden");
+                };
+
+                fallbackFull.src = photoURL;
+                return;
+              }
+
               if (loading) loading.classList.add("hidden");
               if (fallback) fallback.classList.remove("hidden");
-            };
+            }
 
-            preload.src = photoURL;
+            img.addEventListener("load", handleInitialLoaded, { once: true });
+            img.addEventListener("error", handleInitialError, { once: true });
+
+            // The browser may have finished the thumbnail before the popup
+            // loader attached (especially after our nearby prefetch).
+            if (img.complete) {
+              if (img.naturalWidth > 0) {
+                handleInitialLoaded();
+              } else {
+                handleInitialError();
+              }
+            }
           });
         }
 
@@ -2253,6 +2792,8 @@
             props.addedBy || props.added_by || props.author || "";
           const addedBy = escapeHTML(addedByRaw || "unknown");
           const photoURL = safeHttpsURL(props.photoURL);
+          const thumbURL = getSpotThumbnailURL(props);
+          const initialImageURL = thumbURL || photoURL;
 
           return `
             <div
@@ -2262,10 +2803,12 @@
               data-spot-description="${escapeHTML(props.description || "")}"
               data-spot-added-by="${escapeHTML(addedByRaw || "")}"
               data-spot-photo="${escapeHTML(photoURL)}"
+              data-spot-thumb="${escapeHTML(thumbURL)}"
               data-spot-lat="${Number(props.lat)}"
               data-spot-lng="${Number(props.lng)}"
               data-spot-rating="${Number(props.avgRating || 0)}"
               data-spot-rating-count="${Number(props.ratingCount || 0)}"
+              data-spot-type="${escapeHTML(normalizeSpotType(props.type))}"
             >
               <div class="sheet-grabber" data-sheet-grabber aria-hidden="true"><span></span></div>
               <button
@@ -2274,7 +2817,11 @@
                 data-action="close-spot"
                 aria-label="Close spot"
               >×</button>
-              <div class="hero" data-photo-url="${escapeHTML(photoURL)}">
+              <div
+                class="hero"
+                data-photo-url="${escapeHTML(photoURL)}"
+                data-thumb-url="${escapeHTML(thumbURL)}"
+              >
                 <div class="kova-loading">
                   <div class="kova-spinner"></div>
                   <div class="kova-loading-text">Loading image...</div>
@@ -2284,10 +2831,11 @@
 
                 <img
                   data-spot-image
+                  ${initialImageURL ? `src="${escapeHTML(initialImageURL)}"` : ""}
                   alt="${name}"
-                  loading="lazy"
+                  loading="eager"
                   decoding="async"
-                  fetchpriority="low"
+                  fetchpriority="high"
                 />
               </div>
 
@@ -2313,6 +2861,7 @@
                 </div>
 
                 <div class="spot-actions">
+                  <button class="kova-btn spot-action-btn" data-action="share-spot" data-lat="${props.lat}" data-lng="${props.lng}" type="button">Share</button>
                   <button class="kova-btn spot-action-btn ${isSpotSaved(props.id) ? "is-active" : ""}" data-action="save-spot" type="button">
                     <span class="spot-action-icon">♡</span>
                     <span data-action-label>${isSpotSaved(props.id) ? "Saved" : "Save"}</span>
@@ -2399,10 +2948,14 @@
             if (spotId) byId.set(spotId, feature);
           });
 
+          const mergedFeatures = [...byId.values()];
+
           src.setData({
             type: "FeatureCollection",
-            features: [...byId.values()],
+            features: mergedFeatures,
           });
+
+          scheduleSpotImagePrefetch(mergedFeatures);
         }
 
         function toRad(x) {
@@ -2876,10 +3429,17 @@
                 added_by: spot.added_by || "",
                 author: spot.author || "",
                 photoURL: spot.photoURL || "",
+                thumbURL:
+                  spot.thumbURL ||
+                  spot.thumbnailURL ||
+                  spot.photoThumbURL ||
+                  spot.photoThumbnailURL ||
+                  "",
                 lat: spot.lat,
                 lng: spot.lng,
                 avgRating: Number(spot.avgRating || 0),
                 ratingCount: Number(spot.ratingCount || 0),
+                type: normalizeSpotType(spot.type),
               },
             });
           });
@@ -2981,6 +3541,79 @@
           }
         }
 
+        async function getStartupPreloadCenter() {
+          if (typeof userLat === "number" && typeof userLng === "number") {
+            return { lat: userLat, lng: userLng, source: "live" };
+          }
+
+          if (startupStoredLocation) {
+            return {
+              lat: startupStoredLocation.lat,
+              lng: startupStoredLocation.lng,
+              source: "stored",
+            };
+          }
+
+          if (userLocationRequestPromise) {
+            await Promise.race([
+              userLocationRequestPromise.catch(() => false),
+              wait(STARTUP_GPS_GRACE_MS),
+            ]);
+          }
+
+          if (typeof userLat === "number" && typeof userLng === "number") {
+            return { lat: userLat, lng: userLng, source: "live" };
+          }
+
+          return null;
+        }
+
+        async function preloadStartupRegion() {
+          if (!mapLoaded || startupRegionLoaded) return false;
+
+          const center = await getStartupPreloadCenter();
+          if (!center) return false;
+
+          startupRegionLoaded = true;
+          setStartupProgress(0.46);
+
+          if (center.source === "live") {
+            syncUserMarker();
+            initialNearbyLoaded = true;
+          }
+
+          map.jumpTo({
+            center: [center.lng, center.lat],
+            zoom: USER_START_ZOOM,
+          });
+
+          await fetchSpotsInRadius(
+            center.lat,
+            center.lng,
+            STARTUP_PRELOAD_RADIUS_KM,
+            {
+              recenter: false,
+              showEmptyPopup: false,
+            },
+          );
+
+          setStartupProgress(0.74);
+
+          // Start warming a larger set of nearby thumbnails. We only wait
+          // briefly for them; any remaining image requests continue in cache
+          // after the splash disappears.
+          const imageWarmup = preloadStartupSpotImages(
+            currentBaseSpotFeatures,
+            center,
+            STARTUP_THUMB_PREFETCH_LIMIT,
+          );
+
+          await Promise.race([imageWarmup, wait(KOVA_MOBILE_LIKE ? 320 : 500)]);
+          setStartupProgress(0.92);
+
+          return true;
+        }
+
         async function maybeLoadInitialNearbySpots() {
           if (
             initialNearbyLoaded ||
@@ -2999,10 +3632,15 @@
             zoom: USER_START_ZOOM,
           });
 
-          await fetchSpotsInRadius(userLat, userLng, SEARCH_RADIUS_KM, {
-            recenter: false,
-            showEmptyPopup: false,
-          });
+          await fetchSpotsInRadius(
+            userLat,
+            userLng,
+            STARTUP_PRELOAD_RADIUS_KM,
+            {
+              recenter: false,
+              showEmptyPopup: false,
+            },
+          );
         }
 
         async function refreshNearbyUserSpots() {
@@ -3028,20 +3666,27 @@
         }
 
         function requestUserLocation() {
-          if (!navigator.geolocation) {
+          if (!window.KovaDevice.geolocation) {
             return Promise.resolve(false);
           }
 
           return new Promise((resolve) => {
-            navigator.geolocation.getCurrentPosition(
+            window.KovaDevice.geolocation.getCurrentPosition(
               async (pos) => {
                 userLng = pos.coords.longitude;
                 userLat = pos.coords.latitude;
+                rememberLastKovaLocation(userLat, userLng);
 
-                console.log("KOVA location:", userLat, userLng);
+                // Do not log precise user coordinates.
 
                 syncUserMarker();
-                await maybeLoadInitialNearbySpots();
+
+                // During startup, the splash orchestration decides which
+                // region to preload. After startup, a fresh GPS fix can refine
+                // the map immediately.
+                if (startupFinished) {
+                  await maybeLoadInitialNearbySpots();
+                }
 
                 resolve(true);
               },
@@ -3060,7 +3705,7 @@
           });
         }
 
-        if (navigator.geolocation) {
+        if (window.KovaDevice.geolocation) {
           userMarkerEl = document.createElement("img");
           userMarkerEl.src = "./images/playericon.png";
           userMarkerEl.alt = "Current location";
@@ -3090,6 +3735,17 @@
         initUserLocationFlow();
 
         document.addEventListener("click", async (e) => {
+          const shareBtn = e.target.closest('[data-action="share-spot"]');
+          if (shareBtn) {
+            e.preventDefault();
+            const lat = Number(shareBtn.dataset.lat), lng = Number(shareBtn.dataset.lng);
+            if (Number.isFinite(lat) && Number.isFinite(lng)) {
+              try {
+                await window.KovaDevice.share({ title: 'KOVA spot', text: 'Discover this spot with KOVA: https://www.kova.spot', url: 'https://www.google.com/maps/search/?api=1&query=' + lat + ',' + lng });
+              } catch (error) { if (!/cancel|abort/i.test(error.message || '')) console.warn('Sharing unavailable'); }
+            }
+            return;
+          }
           const closeSpotBtn = e.target.closest("[data-action='close-spot']");
           if (closeSpotBtn) {
             e.preventDefault();
@@ -3280,7 +3936,17 @@
               "text-ignore-placement": true,
             },
             paint: {
-              "text-color": "rgba(139, 113, 8, 1)",
+              "text-color": [
+                "match",
+                ["get", "type"],
+                "water",
+                "#3B82C4",
+                "nature",
+                "#4E7D4A",
+                "urban",
+                "#8B7108",
+                "#8B7108",
+              ],
             },
           });
 
@@ -3392,11 +4058,46 @@
             });
           });
 
-          await maybeLoadInitialNearbySpots();
-          updateFooterVisibility();
+          setStartupProgress(0.34);
+
+          try {
+            const didPreloadRegion = await preloadStartupRegion();
+
+            if (!didPreloadRegion) {
+              setStartupProgress(0.82);
+            }
+          } catch (err) {
+            console.warn("KOVA startup preload failed:", err);
+            setStartupProgress(0.86);
+          } finally {
+            updateFooterVisibility();
+            await finishStartupSplash();
+
+            // If GPS became available while a stored region was preloading,
+            // refine to the real current region after the map is visible.
+            if (
+              !initialNearbyLoaded &&
+              typeof userLat === "number" &&
+              typeof userLng === "number"
+            ) {
+              maybeLoadInitialNearbySpots().catch((err) =>
+                console.warn("KOVA live-region refresh failed:", err),
+              );
+            }
+          }
         });
 
         map.on("dragstart", closeAll);
+
+        map.on("movestart", () => {
+          document.body.classList.add("kova-map-moving");
+          cancelScheduledSpotImagePrefetch();
+        });
+
+        map.on("moveend", () => {
+          document.body.classList.remove("kova-map-moving");
+          scheduleSpotImagePrefetch(currentBaseSpotFeatures);
+        });
 
         let longPressTimer = null;
         let longPressVisualTimer = null;
@@ -3609,7 +4310,7 @@
           centerLng,
           centerLat,
           radiusKm,
-          steps = 128,
+          steps = KOVA_MOBILE_LIKE ? 64 : 96,
         ) {
           if (!Number.isFinite(centerLng) || !Number.isFinite(centerLat)) {
             return emptyGeoJSON();
@@ -3673,9 +4374,18 @@
           const targetRadiusKm = Number(radiusKm) || SEARCH_RADIUS_KM;
           const duration = 560;
           const start = performance.now();
+          const minFrameInterval = KOVA_MOBILE_LIKE ? 32 : 16;
+          let lastDrawAt = 0;
 
           function frame(now) {
             const progress = Math.min(1, (now - start) / duration);
+
+            if (progress < 1 && now - lastDrawAt < minFrameInterval) {
+              searchRadiusAnimationFrame = window.requestAnimationFrame(frame);
+              return;
+            }
+
+            lastDrawAt = now;
             const animatedRadiusKm = Math.max(
               0.08,
               targetRadiusKm * easeOutCubic(progress),

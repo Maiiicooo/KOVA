@@ -408,6 +408,94 @@
         cursor: pointer;
       }
 
+      /* KOVA spot type selector -------------------------------------- */
+      .spot-type-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 9px;
+        margin-top: 7px;
+      }
+
+      .spot-type-option {
+        position: relative;
+      }
+
+      .spot-type-option input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .spot-type-option label {
+        min-height: 62px;
+        margin: 0;
+        padding: 11px 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.035);
+        color: rgba(255, 255, 255, 0.72);
+        cursor: pointer;
+        user-select: none;
+        transition:
+          transform 0.16s ease,
+          border-color 0.16s ease,
+          background 0.16s ease,
+          color 0.16s ease;
+      }
+
+      .spot-type-option label:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.055);
+      }
+
+      .spot-type-dot {
+        width: 13px;
+        height: 13px;
+        flex: 0 0 13px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.035);
+      }
+
+      .spot-type-dot.water {
+        background: #3b82c4;
+      }
+      .spot-type-dot.nature {
+        background: #4e7d4a;
+      }
+      .spot-type-dot.urban {
+        background: #8b7108;
+      }
+
+      .spot-type-name {
+        font-size: 0.88rem;
+        font-weight: 720;
+        color: rgba(255, 255, 255, 0.88);
+      }
+
+      .spot-type-option input[value="water"]:checked + label {
+        border-color: rgba(59, 130, 196, 0.7);
+        background: rgba(59, 130, 196, 0.13);
+      }
+
+      .spot-type-option input[value="nature"]:checked + label {
+        border-color: rgba(78, 125, 74, 0.76);
+        background: rgba(78, 125, 74, 0.15);
+      }
+
+      .spot-type-option input[value="urban"]:checked + label {
+        border-color: rgba(139, 113, 8, 0.76);
+        background: rgba(139, 113, 8, 0.14);
+      }
+
+      .spot-type-option input:focus-visible + label {
+        outline: 2px solid rgba(255, 255, 255, 0.7);
+        outline-offset: 3px;
+      }
+
       .btn {
         width: 100%;
         min-height: 48px;
@@ -775,6 +863,14 @@
           grid-template-columns: 1fr;
         }
 
+        .spot-type-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .spot-type-option label {
+          min-height: 50px;
+        }
+
         .mini-map {
           height: 245px;
         }
@@ -802,6 +898,8 @@
         }
       }
     </style>
+  <link rel="stylesheet" href="../../assets/css/device.css" />
+    <script src="../../assets/js/device.js"></script>
   </head>
 
   <body>
@@ -848,17 +946,12 @@
       <section class="hero">
         <div class="eyebrow">KOVA submit</div>
         <h1>Add a spot.</h1>
-        <p>
-          Four quick steps: choose the exact location, add a clear photo,
-          describe the spot, then send it for review.
-        </p>
       </section>
 
       <form id="spotForm" class="layout">
         <section class="card">
           <div class="section-title">
             <h2>Add your spot</h2>
-            <span class="pill">pending review</span>
           </div>
 
           <div class="flow-step">
@@ -866,10 +959,6 @@
               <div class="step-number">1</div>
               <div class="step-copy">
                 <h3>Choose the location</h3>
-                <p>
-                  The map is ready below. Use GPS when you want to place the
-                  exact spot.
-                </p>
               </div>
             </div>
 
@@ -908,7 +997,6 @@
               <div class="step-number">2</div>
               <div class="step-copy">
                 <h3>Add a photo</h3>
-                <p>Use one clear image that shows the vibe of the spot.</p>
               </div>
             </div>
 
@@ -922,9 +1010,58 @@
               <div class="step-number">3</div>
               <div class="step-copy">
                 <h3>Describe the spot</h3>
-                <p>Keep it short, useful and easy to understand.</p>
               </div>
             </div>
+
+            <label>Spot type</label>
+            <div
+              class="spot-type-grid"
+              role="radiogroup"
+              aria-label="Spot type"
+            >
+              <div class="spot-type-option">
+                <input
+                  id="spotTypeWater"
+                  type="radio"
+                  name="spotType"
+                  value="water"
+                  required
+                />
+                <label for="spotTypeWater">
+                  <span class="spot-type-dot water" aria-hidden="true"></span>
+                  <span class="spot-type-name">Water</span>
+                </label>
+              </div>
+
+              <div class="spot-type-option">
+                <input
+                  id="spotTypeNature"
+                  type="radio"
+                  name="spotType"
+                  value="nature"
+                  required
+                />
+                <label for="spotTypeNature">
+                  <span class="spot-type-dot nature" aria-hidden="true"></span>
+                  <span class="spot-type-name">Nature</span>
+                </label>
+              </div>
+
+              <div class="spot-type-option">
+                <input
+                  id="spotTypeUrban"
+                  type="radio"
+                  name="spotType"
+                  value="urban"
+                  required
+                />
+                <label for="spotTypeUrban">
+                  <span class="spot-type-dot urban" aria-hidden="true"></span>
+                  <span class="spot-type-name">Urban</span>
+                </label>
+              </div>
+            </div>
+            <div class="small">This controls the X color on the KOVA map.</div>
 
             <label for="name">Spot name</label>
             <input id="name" placeholder="Hidden sunset bench" required />
@@ -937,7 +1074,7 @@
             ></textarea>
 
             <label for="addedBy">Added by</label>
-            <input id="addedBy" value="Maico" />
+            <input id="addedBy" placeholder="Your name" required />
           </div>
 
           <div class="flow-step">
@@ -945,7 +1082,6 @@
               <div class="step-number">4</div>
               <div class="step-copy">
                 <h3>Send for review</h3>
-                <p>The spot stays offline until it has been approved.</p>
               </div>
             </div>
 
@@ -1074,6 +1210,30 @@
         const nameInput = document.getElementById("name");
         const descriptionInput = document.getElementById("description");
         const addedByInput = document.getElementById("addedBy");
+        const spotTypeInputs = document.querySelectorAll(
+          'input[name="spotType"]',
+        );
+
+        const SPOT_TYPE_COLORS = {
+          water: "#3B82C4",
+          nature: "#4E7D4A",
+          urban: "#8B7108",
+        };
+
+        function getSelectedSpotType() {
+          return (
+            document.querySelector('input[name="spotType"]:checked')?.value ||
+            ""
+          );
+        }
+
+        function syncMarkerTypeColor() {
+          const markerEl = spotMarker?.getElement?.();
+          if (!markerEl) return;
+
+          const type = getSelectedSpotType();
+          markerEl.style.color = SPOT_TYPE_COLORS[type] || "#8B7108";
+        }
 
         let miniMap = null;
         let spotMarker = null;
@@ -1252,6 +1412,8 @@
               .setLngLat([lng, lat])
               .addTo(miniMap);
 
+            syncMarkerTypeColor();
+
             spotMarker.on("dragend", () => {
               const pos = spotMarker.getLngLat();
               latInput.value = pos.lat.toFixed(6);
@@ -1299,20 +1461,135 @@
           });
         }
 
-        async function uploadPhoto(file, docId) {
-          const fileName = makeSafeFileName(file.name);
-          const path = `spot_photos/${docId}/${Date.now()}-${fileName}`;
-          const ref = storage.ref().child(path);
+        function loadImageForOptimization(file) {
+          return new Promise((resolve, reject) => {
+            const objectURL = URL.createObjectURL(file);
+            const img = new Image();
 
-          const snapshot = await ref.put(file, {
-            contentType: file.type || "image/jpeg",
+            img.onload = () => {
+              URL.revokeObjectURL(objectURL);
+              resolve(img);
+            };
+
+            img.onerror = () => {
+              URL.revokeObjectURL(objectURL);
+              reject(new Error("Could not read this image."));
+            };
+
+            img.src = objectURL;
           });
+        }
 
-          return await snapshot.ref.getDownloadURL();
+        function canvasToBlob(canvas, type, quality) {
+          return new Promise((resolve) => {
+            canvas.toBlob(resolve, type, quality);
+          });
+        }
+
+        async function makeImageVariant(img, maxDimension, quality) {
+          const sourceWidth = img.naturalWidth || img.width;
+          const sourceHeight = img.naturalHeight || img.height;
+
+          if (!sourceWidth || !sourceHeight) {
+            throw new Error("Invalid image dimensions.");
+          }
+
+          const scale = Math.min(
+            1,
+            maxDimension / Math.max(sourceWidth, sourceHeight),
+          );
+          const width = Math.max(1, Math.round(sourceWidth * scale));
+          const height = Math.max(1, Math.round(sourceHeight * scale));
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d", { alpha: false });
+          if (!ctx)
+            throw new Error(
+              "Image optimization is not supported on this device.",
+            );
+
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          ctx.drawImage(img, 0, 0, width, height);
+
+          let blob = await canvasToBlob(canvas, "image/webp", quality);
+
+          // Very old browsers may not support WebP export. JPEG is a safe fallback.
+          if (!blob) {
+            blob = await canvasToBlob(
+              canvas,
+              "image/jpeg",
+              Math.min(0.9, quality + 0.05),
+            );
+          }
+
+          if (!blob) throw new Error("Could not optimize this image.");
+
+          return { blob, width, height };
+        }
+
+        async function optimizeSpotPhoto(file) {
+          if (!file || !String(file.type || "").startsWith("image/")) {
+            throw new Error("Please choose a valid image file.");
+          }
+
+          const img = await loadImageForOptimization(file);
+
+          // Full image for the spot popup.
+          const full = await makeImageVariant(img, 1600, 0.82);
+
+          // Small image used for instant loading/preloading in KOVA.
+          const thumb = await makeImageVariant(img, 640, 0.72);
+
+          return { full, thumb };
+        }
+
+        async function uploadPhotoVariants(file, docId) {
+          const optimized = await optimizeSpotPhoto(file);
+          const stamp = Date.now();
+          const cacheControl = "public,max-age=31536000,immutable";
+
+          const fullExt =
+            optimized.full.blob.type === "image/webp" ? "webp" : "jpg";
+          const thumbExt =
+            optimized.thumb.blob.type === "image/webp" ? "webp" : "jpg";
+
+          const fullRef = storage
+            .ref()
+            .child(`spot_photos/${docId}/${stamp}-full.${fullExt}`);
+          const thumbRef = storage
+            .ref()
+            .child(`spot_photos/${docId}/${stamp}-thumb.${thumbExt}`);
+
+          const [fullSnapshot, thumbSnapshot] = await Promise.all([
+            fullRef.put(optimized.full.blob, {
+              contentType: optimized.full.blob.type,
+              cacheControl,
+            }),
+            thumbRef.put(optimized.thumb.blob, {
+              contentType: optimized.thumb.blob.type,
+              cacheControl,
+            }),
+          ]);
+
+          const [photoURL, thumbURL] = await Promise.all([
+            fullSnapshot.ref.getDownloadURL(),
+            thumbSnapshot.ref.getDownloadURL(),
+          ]);
+
+          return {
+            photoURL,
+            thumbURL,
+            photoWidth: optimized.full.width,
+            photoHeight: optimized.full.height,
+          };
         }
 
         gpsBtn.addEventListener("click", () => {
-          if (!navigator.geolocation) {
+          if (!window.KovaDevice.geolocation) {
             status("GPS not supported on this device.", "bad");
             return;
           }
@@ -1320,7 +1597,7 @@
           gpsBtn.disabled = true;
           status("Getting location...");
 
-          navigator.geolocation.getCurrentPosition(
+          window.KovaDevice.geolocation.getCurrentPosition(
             (pos) => {
               const lat = pos.coords.latitude;
               const lng = pos.coords.longitude;
@@ -1347,6 +1624,10 @@
 
         latInput.addEventListener("change", updateMarkerFromInputs);
         lngInput.addEventListener("change", updateMarkerFromInputs);
+
+        spotTypeInputs.forEach((input) => {
+          input.addEventListener("change", syncMarkerTypeColor);
+        });
 
         photoFileInput.addEventListener("change", () => {
           const file = photoFileInput.files && photoFileInput.files[0];
@@ -1386,10 +1667,16 @@
 
           const name = nameInput.value.trim();
           const description = descriptionInput.value.trim();
-          const addedBy = addedByInput.value.trim() || "Maico";
+          const addedBy = addedByInput.value.trim();
+          const type = getSelectedSpotType();
 
-          if (!name || !description) {
-            status("Name and description are required.", "bad");
+          if (!type || !SPOT_TYPE_COLORS[type]) {
+            status("Choose Water, Nature or Urban.", "bad");
+            return;
+          }
+
+          if (!name || !description || !addedBy) {
+            status("Name, description and added by are required.", "bad");
             return;
           }
 
@@ -1400,8 +1687,9 @@
             const docRef = db.collection("pending_spots").doc();
             const geohash = encodeGeohash(lat, lng, 9);
 
-            status("Uploading photo...");
-            const photoURL = await uploadPhoto(file, docRef.id);
+            status("Optimizing and uploading photo...");
+            const { photoURL, thumbURL, photoWidth, photoHeight } =
+              await uploadPhotoVariants(file, docRef.id);
 
             status("Sending spot for review...");
 
@@ -1409,7 +1697,11 @@
               name,
               description,
               photoURL,
+              thumbURL,
+              photoWidth,
+              photoHeight,
               addedBy,
+              type,
               lat,
               lng,
               geohash,
@@ -1427,6 +1719,11 @@
 
             nameInput.value = "";
             descriptionInput.value = "";
+            addedByInput.value = "";
+            spotTypeInputs.forEach((input) => {
+              input.checked = false;
+            });
+            syncMarkerTypeColor();
             photoFileInput.value = "";
             photoPreview.style.display = "none";
             photoPreview.removeAttribute("src");

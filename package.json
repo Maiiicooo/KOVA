@@ -1,12 +1,37 @@
 {
   "dependencies": {
-    "@capacitor/android": "^8.5.0",
-    "@capacitor/core": "^8.5.0",
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/browser": "^8.0.4",
+    "@capacitor/camera": "^8.2.4",
+    "@capacitor/core": "^8.5.2",
     "@capacitor/geolocation": "^8.2.2",
+    "@capacitor/keyboard": "^8.0.5",
+    "@capacitor/network": "^8.0.1",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/share": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.2",
     "firebase-admin": "^14.3.0",
     "sharp": "^0.35.4"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.5.0"
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.2"
+  },
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-web.js && node scripts/check-paths.js",
+    "cap:sync": "npm run build && cap sync android",
+    "android:open": "cap open android",
+    "android:run": "npm run cap:sync && cap run android",
+    "cap:doctor": "cap doctor",
+    "assets:android": "node scripts/android-assets.js",
+    "test": "node --test tests/*.test.cjs"
+  },
+  "overrides": {
+    "@capacitor/assets": {
+      "@capacitor/cli": "$@capacitor/cli",
+      "sharp": "$sharp"
+    }
   }
 }

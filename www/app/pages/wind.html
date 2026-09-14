@@ -132,7 +132,9 @@
       opacity: 0 !important;
     }
   </style>
-</head>
+<link rel="stylesheet" href="../../assets/css/device.css" />
+    <script src="../../assets/js/device.js"></script>
+  </head>
 
 <body>
   <!-- Navbar -->
@@ -177,7 +179,7 @@
 
 
     // GEOLOCATIE
-    if (navigator.geolocation) {
+    if (window.KovaDevice.geolocation) {
       const userMarkerEl = document.createElement("img");
       userMarkerEl.src = "../../images/playericon.png";
       userMarkerEl.style.width = "28px";
@@ -199,7 +201,7 @@
         .setPopup(userPopup)
         .addTo(map);
 
-      navigator.geolocation.getCurrentPosition(
+      window.KovaDevice.geolocation.getCurrentPosition(
         (position) => {
           const lng = position.coords.longitude;
           const lat = position.coords.latitude;

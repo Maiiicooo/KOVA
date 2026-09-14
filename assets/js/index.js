@@ -1046,7 +1046,7 @@
             provider === "apple"
               ? getAppleMultiStopUrl(route)
               : getGoogleMultiStopUrl(route);
-          if (url) window.open(url, "_blank");
+          if (url) window.KovaDevice.openExternal(url).catch(console.warn);
         }
 
         function refreshCurrentMapWithSavedSpots() {
@@ -2360,7 +2360,7 @@
         }
 
         function initUserLocationFlow() {
-          if (!navigator.geolocation) {
+          if (!window.KovaDevice.geolocation) {
             console.warn("Geolocation is not supported on this device.");
             return Promise.resolve(false);
           }
@@ -2373,6 +2373,10 @@
         }
 
         function openNavigation(lat, lng) {
+          if (window.KovaDevice.native) {
+            window.KovaDevice.openExternal(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`).catch(console.warn);
+            return;
+          }
           const isApple = /iPad|iPhone|iPod/.test(navigator.userAgent);
           const isAndroid = /Android/.test(navigator.userAgent);
           const q = `${lat},${lng}`;
@@ -2444,6 +2448,17 @@
           }
           updateFooterVisibility();
         }
+
+        window.addEventListener('kova:back', event => {
+          if (tutorialOverlay?.classList.contains('open')) closeTutorial();
+          else if (libraryOverlay?.classList.contains('open')) closeLibrary();
+          else if (searchOverlay?.classList.contains('open')) closeLocationSearch();
+          else if (feedOverlay?.classList.contains('open')) closeFeed();
+          else if (navRight?.classList.contains('open')) closeHamburgerMenu();
+          else if (activePopup || activeCoordPopup || userPopup?.isOpen()) closeAll();
+          else return;
+          event.preventDefault();
+        });
 
         function closeAll() {
           if (activePopup) {
@@ -2846,6 +2861,7 @@
                 </div>
 
                 <div class="spot-actions">
+                  <button class="kova-btn spot-action-btn" data-action="share-spot" data-lat="${props.lat}" data-lng="${props.lng}" type="button">Share</button>
                   <button class="kova-btn spot-action-btn ${isSpotSaved(props.id) ? "is-active" : ""}" data-action="save-spot" type="button">
                     <span class="spot-action-icon">♡</span>
                     <span data-action-label>${isSpotSaved(props.id) ? "Saved" : "Save"}</span>
@@ -3650,18 +3666,18 @@
         }
 
         function requestUserLocation() {
-          if (!navigator.geolocation) {
+          if (!window.KovaDevice.geolocation) {
             return Promise.resolve(false);
           }
 
           return new Promise((resolve) => {
-            navigator.geolocation.getCurrentPosition(
+            window.KovaDevice.geolocation.getCurrentPosition(
               async (pos) => {
                 userLng = pos.coords.longitude;
                 userLat = pos.coords.latitude;
                 rememberLastKovaLocation(userLat, userLng);
 
-                console.log("KOVA location:", userLat, userLng);
+                // Do not log precise user coordinates.
 
                 syncUserMarker();
 
@@ -3689,7 +3705,7 @@
           });
         }
 
-        if (navigator.geolocation) {
+        if (window.KovaDevice.geolocation) {
           userMarkerEl = document.createElement("img");
           userMarkerEl.src = "./images/playericon.png";
           userMarkerEl.alt = "Current location";
@@ -3719,6 +3735,17 @@
         initUserLocationFlow();
 
         document.addEventListener("click", async (e) => {
+          const shareBtn = e.target.closest('[data-action="share-spot"]');
+          if (shareBtn) {
+            e.preventDefault();
+            const lat = Number(shareBtn.dataset.lat), lng = Number(shareBtn.dataset.lng);
+            if (Number.isFinite(lat) && Number.isFinite(lng)) {
+              try {
+                await window.KovaDevice.share({ title: 'KOVA spot', text: 'Discover this spot with KOVA: https://www.kova.spot', url: 'https://www.google.com/maps/search/?api=1&query=' + lat + ',' + lng });
+              } catch (error) { if (!/cancel|abort/i.test(error.message || '')) console.warn('Sharing unavailable'); }
+            }
+            return;
+          }
           const closeSpotBtn = e.target.closest("[data-action='close-spot']");
           if (closeSpotBtn) {
             e.preventDefault();
