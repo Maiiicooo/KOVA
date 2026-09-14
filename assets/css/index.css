@@ -628,10 +628,6 @@
       /* KOVA performance mode: while the map is moving, temporarily suspend
          decorative compositor work. The normal visual styling returns as soon
          as the camera settles. This is especially useful in mobile WebViews. */
-      body.kova-map-moving .kova-tagline-current {
-        animation-play-state: paused !important;
-      }
-
       body.kova-map-moving .hamburger-toggle,
       body.kova-map-moving .hamburger-menu {
         backdrop-filter: none !important;
