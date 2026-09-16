@@ -6,6 +6,7 @@
     "@capacitor/camera": "^8.2.4",
     "@capacitor/core": "^8.5.2",
     "@capacitor/geolocation": "^8.2.2",
+    "@capacitor/ios": "^8.5.2",
     "@capacitor/keyboard": "^8.0.5",
     "@capacitor/network": "^8.0.1",
     "@capacitor/preferences": "^8.0.1",
@@ -22,6 +23,10 @@
   "scripts": {
     "build": "node scripts/build-web.js && node scripts/check-paths.js",
     "cap:sync": "npm run build && cap sync android",
+    "ios:sync": "npm run build && cap sync ios",
+    "ios:open": "cap open ios",
+    "ios:run": "npm run ios:sync && cap run ios",
+    "assets:ios": "node scripts/android-assets.js ios",
     "android:open": "cap open android",
     "android:run": "npm run cap:sync && cap run android",
     "cap:doctor": "cap doctor",

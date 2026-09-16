@@ -4,10 +4,10 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const source = fs.readFileSync(require('node:path').join(__dirname, '../assets/js/device.js'), 'utf8');
 
-function boot({ native = true, geo = {}, inputs = [] } = {}) {
+function boot({ native = true, platform = 'android', geo = {}, inputs = [] } = {}) {
   const events = {}, listeners = {}, nodes = {}, calls = [];
   const window = new EventTarget();
-  window.Capacitor = { isNativePlatform: () => native, registerPlugin: name => plugins[name] };
+  window.Capacitor = { isNativePlatform: () => native, getPlatform: () => platform, registerPlugin: name => plugins[name] };
   const element = () => ({ handlers: {}, classList: { add() {}, toggle() {} }, setAttribute() {}, addEventListener(name, fn) { this.handlers[name] = fn; }, append() {}, remove() {} });
   const document = {
     documentElement: element(),
@@ -98,6 +98,25 @@ test('offline/online events expose state and update the banner', async () => {
   b.listeners.networkStatusChange({ connected: true, connectionType: 'wifi' });
   assert.equal(b.nodes.kovaNetworkStatus.hidden, true);
 });
+
+test('iOS starts shared listeners without Android-only app events', async () => {
+  const b = boot({ platform: 'ios' });
+  b.events.DOMContentLoaded(); await Promise.resolve();
+  assert.equal(b.listeners.backButton, undefined);
+  assert.equal(b.listeners.appRestoredResult, undefined);
+  assert.equal(typeof b.listeners.appStateChange, 'function');
+  assert.equal(typeof b.listeners.keyboardDidShow, 'function');
+  assert.equal(b.device.network.connected, true);
+});
+
+test('iOS restricted location remains a recoverable permission error', async () => {
+  const b = boot({ platform: 'ios', geo: {
+    checkPermissions: async () => { throw { code: 'OS-PLUG-GLOC-0008' }; },
+  } });
+  const { error } = await position(b.device);
+  assert.equal(error.code, 1);
+  assert.equal(error.reason, 'restricted');
+});
 test('native browser rejects script and cleartext URLs and opens HTTPS externally', async () => {
   const b = boot();
   await assert.rejects(b.device.openExternal('javascript:alert(1)'));
@@ -105,16 +124,16 @@ test('native browser rejects script and cleartext URLs and opens HTTPS externall
   await b.device.openExternal('https://www.kova.spot');
   assert.deepEqual(b.calls, ['https://www.kova.spot/']);
 });
-test('official JS client registers plugins over the injected Android transport', async () => {
+for (const platform of ['android', 'ios']) test(`official JS client registers plugins over the injected ${platform} transport`, async () => {
   const core = fs.readFileSync(require('node:path').join(__dirname, '../node_modules/@capacitor/core/dist/capacitor.js'), 'utf8');
   const calls = [];
   const context = {
     console, URL, CustomEvent, setTimeout, clearTimeout,
-    androidBridge: {},
+    ...(platform === 'android' ? { androidBridge: {} } : { webkit: { messageHandlers: { bridge: {} } } }),
     navigator: { onLine: true },
     document: { documentElement: { classList: { add() {} } }, addEventListener() {} },
     Capacitor: {
-      getPlatform: () => 'android',
+      getPlatform: () => platform,
       PluginHeaders: [{ name: 'Geolocation', methods: [
         { name: 'checkPermissions', rtype: 'promise' }, { name: 'getCurrentPosition', rtype: 'promise' },
       ] }],

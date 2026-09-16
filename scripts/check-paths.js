@@ -8,7 +8,7 @@ const errors = [];
 
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    if ([".git", "node_modules", "android", "scripts", "www"].includes(entry.name)) return [];
+    if ([".git", "node_modules", "android", "ios", "scripts", "www"].includes(entry.name)) return [];
     const file = path.join(dir, entry.name);
     return entry.isDirectory() ? walk(file) : [file];
   });

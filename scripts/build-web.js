@@ -14,7 +14,7 @@ for (const name of ['index.html', 'manifest.json', 'assets', 'images', 'app', 'w
   if (fs.existsSync(source)) fs.cpSync(source, path.join(output, name), { recursive: true });
 }
 console.log('Production web assets copied to www. No admin/server code included.');
-// Android injects the native transport, not the registerPlugin JS client.
+// Capacitor injects the native transport, not the registerPlugin JS client.
 // Prepend the official local core bundle; the plain website needs no native runtime.
 const client = fs.readFileSync(path.join(root, 'node_modules/@capacitor/core/dist/capacitor.js'), 'utf8')
   .replace(/^\/\/# sourceMappingURL=.*$/gm, '');

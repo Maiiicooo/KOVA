@@ -3,11 +3,12 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
 
 
 /* Shared, dependency-free adapter. Capacitor injects its bridge before this script.
- * The website keeps browser APIs; Android uses the installed official plugins. */
+ * The website keeps browser APIs; Android and iOS use the official plugins. */
 (() => {
   'use strict';
   const cap = window.Capacitor;
   const native = Boolean(cap?.isNativePlatform());
+  const android = native && cap.getPlatform() === 'android';
   const plugin = (name) => native ? cap.registerPlugin(name) : null;
   const App = plugin('App');
   const Geo = plugin('Geolocation');
@@ -28,7 +29,10 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
     let message = 'No location available. Try outside or choose a place on the map.';
     if (original === 'OS-PLUG-GLOC-0003' || original === '1') {
       code = 1; reason = 'denied';
-      message = 'Location access was denied. You can enable it in Android app settings or use the map manually.';
+      message = 'Location access was denied. You can enable it in app settings or use the map manually.';
+    } else if (original === 'OS-PLUG-GLOC-0008') {
+      code = 1; reason = 'restricted';
+      message = 'Location access is restricted on this device. You can still use the map manually.';
     } else if (['OS-PLUG-GLOC-0007', 'OS-PLUG-GLOC-0009', 'OS-PLUG-GLOC-0017'].includes(original)) {
       reason = 'disabled'; message = 'Location services are off. Enable Location on your phone or use the map manually.';
     } else if (original === 'OS-PLUG-GLOC-0010' || original === '3') {
@@ -135,7 +139,7 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
     listen(App, 'appStateChange', ({ isActive }) => {
       if (isActive) Network.getStatus().then(updateNetwork).catch(report);
     });
-    listen(App, 'backButton', ({ canGoBack }) => {
+    if (android) listen(App, 'backButton', ({ canGoBack }) => {
       const event = new CustomEvent('kova:back', { cancelable: true });
       if (!window.dispatchEvent(event)) return;
       if (canGoBack) history.back();
@@ -145,7 +149,7 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
     listen(Keyboard, 'keyboardDidShow', () => {
       document.activeElement?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
     });
-    listen(App, 'appRestoredResult', async result => {
+    if (android) listen(App, 'appRestoredResult', async result => {
       if (result.pluginId !== 'Camera') return;
       try {
         const { value } = await Preferences.get({ key: draftKey });
