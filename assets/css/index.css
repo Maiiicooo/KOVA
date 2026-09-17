@@ -992,27 +992,84 @@
 
       .spot-actions {
         display: grid;
-        grid-template-columns: 1fr 1fr 1.18fr;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
         margin-top: 10px;
       }
 
       .spot-action-btn {
+        position: relative;
+        appearance: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
         min-width: 0;
-        margin: 0 !important;
+        min-height: 48px;
+        margin: 0;
+        padding: 5px 8px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.72);
+        font-family: inherit;
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 14px;
+        text-align: center;
+        cursor: pointer;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        transition: color 0.15s ease, background 0.15s ease;
+      }
+
+      @media (hover: hover) {
+        .spot-action-btn:hover {
+          background: rgba(255, 255, 255, 0.045);
+        }
+      }
+
+      .spot-action-btn:active {
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .spot-action-btn:focus-visible {
+        outline: 1px solid var(--accent);
+        outline-offset: 2px;
       }
 
       .spot-action-btn.is-active {
-        border-color: rgba(139, 113, 8, 0.72);
-        background: rgba(139, 113, 8, 0.16);
-        color: #fff;
+        color: #d7b84c;
+      }
+
+      .spot-action-btn.is-active::after {
+        content: "";
+        position: absolute;
+        top: 7px;
+        left: calc(50% + 11px);
+        width: 6px;
+        height: 3px;
+        border-left: 1.5px solid currentColor;
+        border-bottom: 1.5px solid currentColor;
+        transform: rotate(-45deg);
+        pointer-events: none;
+      }
+
+      .spot-action-btn[data-action="save-spot"].is-active .spot-action-icon {
+        fill: currentColor;
       }
 
       .spot-action-icon {
         display: block;
-        margin-bottom: 2px;
-        font-size: 1rem;
-        line-height: 1;
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
       }
 
       .kova-library-overlay {
@@ -1284,12 +1341,6 @@
       }
 
       @media (max-width: 700px) {
-        .spot-actions {
-          grid-template-columns: 1fr 1fr;
-        }
-        .spot-actions .spot-route-primary {
-          grid-column: 1 / -1;
-        }
         .kova-library-overlay {
           align-items: end;
           padding: 0;
@@ -2183,10 +2234,6 @@
           display: none !important;
         }
 
-        .spot-sheet-popup .maplibregl-popup-content {
-          animation: kovaSpotSheetIn 0.28s cubic-bezier(0.2, 0.9, 0.2, 1) both;
-        }
-
         .spot-sheet-popup .maplibregl-popup-close-button {
           display: none !important;
         }
@@ -2194,11 +2241,6 @@
         .kova-popup {
           max-height: min(82dvh, 700px) !important;
           border-radius: 24px 24px 0 0 !important;
-        }
-
-        .kova-popup.sheet-closing {
-          transform: translateY(112%) !important;
-          transition: transform 0.22s cubic-bezier(0.4, 0, 1, 1) !important;
         }
 
         .spot-close-btn {
@@ -2336,10 +2378,70 @@
         }
       }
 
+      .spot-sheet-popup .maplibregl-popup-content {
+        animation: kovaSpotSheetIn 250ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+
+      .spot-sheet-popup.spot-closing .maplibregl-popup-content {
+        animation: kovaSpotSheetOut 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        pointer-events: none;
+      }
+
+      @keyframes kovaSpotSheetOut {
+        from {
+          transform: var(--spot-close-transform, translateY(0));
+          opacity: var(--spot-close-opacity, 1);
+        }
+        to {
+          transform: translateY(16px);
+          opacity: 0;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .spot-sheet-popup .maplibregl-popup-content,
+        .spot-sheet-popup.spot-closing .maplibregl-popup-content {
+          animation: none;
+        }
+      }
+
+      .spot-heading {
+        display: flex;
+        align-items: baseline;
+        gap: 6px 10px;
+      }
+
+      .spot-heading .title {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .spot-type {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        flex-shrink: 0;
+        color: rgba(255, 255, 255, 0.65);
+        font-size: 0.72rem;
+        line-height: 1.2;
+      }
+
+      .spot-type::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--spot-type-color);
+      }
+
+      .spot-type-water { --spot-type-color: #3b82c4; }
+      .spot-type-nature { --spot-type-color: #4e7d4a; }
+      .spot-type-urban { --spot-type-color: #8b7108; }
+
       @keyframes kovaSpotSheetIn {
         from {
-          transform: translateY(100%);
-          opacity: 0.96;
+          transform: translateY(16px);
+          opacity: 0;
         }
         to {
           transform: translateY(0);

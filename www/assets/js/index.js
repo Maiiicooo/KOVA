@@ -983,22 +983,11 @@
               const inRoute = isSpotInRoute(spotId);
               if (saveBtn) {
                 saveBtn.classList.toggle("is-active", saved);
-                const label = saveBtn.querySelector("[data-action-label]");
-                const sub = saveBtn.querySelector(".sub");
-                if (label) label.textContent = saved ? "Saved" : "Save";
-                if (sub)
-                  sub.textContent = saved ? "kept on map" : "keep this spot";
+                saveBtn.setAttribute("aria-pressed", String(saved));
               }
               if (routeBtn) {
                 routeBtn.classList.toggle("is-active", inRoute);
-                const label = routeBtn.querySelector("[data-action-label]");
-                const sub = routeBtn.querySelector(".sub");
-                if (label)
-                  label.textContent = inRoute ? "In route" : "Add to route";
-                if (sub)
-                  sub.textContent = inRoute
-                    ? "tap to remove"
-                    : `link up to ${KOVA_ROUTE_MAX_SPOTS}`;
+                routeBtn.setAttribute("aria-pressed", String(inRoute));
               }
             });
         }
@@ -2218,12 +2207,12 @@
             attachMobileSheetGestures(popup);
             updateFooterVisibility();
             easeToSpotWithPopupSpace(lng, lat);
-            await hydratePopupData(popup, props);
-
             popup.once("close", () => {
               if (activePopup === popup) activePopup = null;
               updateFooterVisibility();
             });
+
+            await hydratePopupData(popup, props);
           } catch (err) {
             console.error("Open feed spot error:", err);
           }
@@ -2461,10 +2450,7 @@
         });
 
         function closeAll() {
-          if (activePopup) {
-            activePopup.remove();
-            activePopup = null;
-          }
+          if (activePopup) closeActiveSpotPopup();
 
           if (activeCoordPopup) {
             activeCoordPopup.remove();
@@ -2537,14 +2523,22 @@
           const card = popupEl?.querySelector?.(".kova-popup[data-spot-id]");
           activePopup = null;
 
-          if (animate && isMobileSpotSheet() && card) {
-            card.classList.add("sheet-closing");
+          if (
+            animate && card &&
+            !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ) {
+            const content = popupEl.querySelector(".maplibregl-popup-content");
+            const currentStyle = window.getComputedStyle(content);
+            content.style.setProperty("--spot-close-transform", currentStyle.transform);
+            content.style.setProperty("--spot-close-opacity", currentStyle.opacity);
+            popupEl.classList.add("spot-closing");
+            popupEl.inert = true;
             window.setTimeout(() => {
               try {
                 popup.remove();
               } catch (e) {}
               updateFooterVisibility();
-            }, 210);
+            }, 180);
           } else {
             popup.remove();
             updateFooterVisibility();
@@ -2787,6 +2781,8 @@
 
         function makeSpotPopupHTML(props) {
           const name = escapeHTML(props.name);
+          const type = normalizeSpotType(props.type);
+          const typeLabel = type[0].toUpperCase() + type.slice(1);
           const desc = escapeHTML(props.description);
           const addedByRaw =
             props.addedBy || props.added_by || props.author || "";
@@ -2840,7 +2836,10 @@
               </div>
 
               <div class="body">
-                <h3 class="title">${name}</h3>
+                <div class="spot-heading">
+                  <h3 class="title">${name}</h3>
+                  <span class="spot-type spot-type-${type}">${typeLabel}</span>
+                </div>
                 <p class="desc">${desc || "No description yet."}</p>
                 <p class="byline">added by <b>${addedBy}</b></p>
 
@@ -2861,21 +2860,25 @@
                 </div>
 
                 <div class="spot-actions">
-                  <button class="kova-btn spot-action-btn" data-action="share-spot" data-lat="${props.lat}" data-lng="${props.lng}" type="button">Share</button>
-                  <button class="kova-btn spot-action-btn ${isSpotSaved(props.id) ? "is-active" : ""}" data-action="save-spot" type="button">
-                    <span class="spot-action-icon">♡</span>
-                    <span data-action-label>${isSpotSaved(props.id) ? "Saved" : "Save"}</span>
-                    <span class="sub">${isSpotSaved(props.id) ? "kept on map" : "keep this spot"}</span>
+                  <button class="spot-action-btn ${isSpotSaved(props.id) ? "is-active" : ""}" data-action="save-spot" aria-pressed="${isSpotSaved(props.id)}" type="button">
+                    <svg class="spot-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <path d="M6.5 4.5h11v15l-5.5-3.4-5.5 3.4v-15z"></path>
+                    </svg>
+                    <span>Save</span>
                   </button>
-                  <button class="kova-btn spot-action-btn ${isSpotInRoute(props.id) ? "is-active" : ""}" data-action="toggle-route-spot" type="button">
-                    <span class="spot-action-icon">＋</span>
-                    <span data-action-label>${isSpotInRoute(props.id) ? "In route" : "Add to route"}</span>
-                    <span class="sub">${isSpotInRoute(props.id) ? "tap to remove" : `link up to ${KOVA_ROUTE_MAX_SPOTS}`}</span>
+                  <button class="spot-action-btn ${isSpotInRoute(props.id) ? "is-active" : ""}" data-action="toggle-route-spot" aria-pressed="${isSpotInRoute(props.id)}" type="button">
+                    <svg class="spot-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <circle cx="6" cy="18" r="2"></circle>
+                      <circle cx="18" cy="6" r="2"></circle>
+                      <path d="M7.5 16.5c2-4 4.5-5 9-8.5"></path>
+                    </svg>
+                    <span>Route</span>
                   </button>
-                  <button class="kova-btn primary spot-action-btn spot-route-primary" data-action="nav" data-lat="${props.lat}" data-lng="${props.lng}" type="button">
-                    <span class="spot-action-icon">↗</span>
-                    Route
-                    <span class="sub">open GPS</span>
+                  <button class="spot-action-btn" data-action="nav" data-lat="${props.lat}" data-lng="${props.lng}" type="button">
+                    <svg class="spot-action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <path d="M20 4l-6 16-3-7-7-3L20 4z"></path>
+                    </svg>
+                    <span>Navigate</span>
                   </button>
                 </div>
               </div>
@@ -3984,10 +3987,7 @@
             closeCoordPopup();
             closeUserPopup();
 
-            if (activePopup) {
-              activePopup.remove();
-              activePopup = null;
-            }
+            if (activePopup) closeActiveSpotPopup();
 
             const coords = feature.geometry.coordinates;
             await zoomToClusterSpots(clusterId, coords);
@@ -4003,10 +4003,7 @@
             closeCoordPopup();
             closeUserPopup();
 
-            if (activePopup) {
-              activePopup.remove();
-              activePopup = null;
-            }
+            if (activePopup) closeActiveSpotPopup();
 
             const coords = feature.geometry.coordinates;
             await zoomToClusterSpots(clusterId, coords);
@@ -4050,12 +4047,12 @@
 
             easeToSpotWithPopupSpace(coords[0], coords[1]);
 
-            await hydratePopupData(popup, props);
-
             popup.once("close", () => {
-              activePopup = null;
+              if (activePopup === popup) activePopup = null;
               updateFooterVisibility();
             });
+
+            await hydratePopupData(popup, props);
           });
 
           setStartupProgress(0.34);
@@ -4149,10 +4146,7 @@
         function clearMapPopupsForSearch() {
           closeUserPopup();
 
-          if (activePopup) {
-            activePopup.remove();
-            activePopup = null;
-          }
+          if (activePopup) closeActiveSpotPopup();
 
           if (activeCoordPopup) {
             activeCoordPopup.remove();
