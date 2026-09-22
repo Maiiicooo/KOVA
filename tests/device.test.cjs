@@ -174,3 +174,61 @@ test('cancelled camera releases the button without changing the selected file', 
   b.events.DOMContentLoaded(); await buttons[0].handlers.click();
   assert.equal(changes, 0); assert.equal(buttons[0].disabled, false);
 });
+
+
+test('iOS first launch requests permission and then returns the native position', async () => {
+  let requests = 0;
+  const b = boot({ platform: 'ios', geo: {
+    checkPermissions: async () => ({ location: 'prompt' }),
+    requestPermissions: async () => { requests++; return { location: 'granted' }; },
+    getCurrentPosition: async () => ({ coords: { latitude: 50, longitude: 4 } }),
+  } });
+  assert.equal((await position(b.device)).value.coords.latitude, 50);
+  assert.equal(requests, 1);
+});
+
+test('iOS resume emits a recovery event and location errors are visible', () => {
+  const b = boot({ platform: 'ios' });
+  let resumed = 0;
+  b.window.addEventListener('kova:resume', () => resumed++);
+  b.events.DOMContentLoaded();
+  b.listeners.appStateChange({ isActive: false });
+  assert.equal(resumed, 0);
+  b.listeners.appStateChange({ isActive: true });
+  assert.equal(resumed, 1);
+  b.window.dispatchEvent(new CustomEvent('kova:location-error', { detail: { message: 'Location services are off.' } }));
+  assert.equal(b.nodes.kovaDeviceNotice.textContent, 'Location services are off.');
+});
+
+const mapSource = fs.readFileSync(require('node:path').join(__dirname, '../assets/js/index.js'), 'utf8');
+const startupFunctions = mapSource.slice(
+  mapSource.indexOf('        async function getStartupPreloadCenter()'),
+  mapSource.indexOf('        async function maybeLoadInitialNearbySpots()'),
+);
+for (const mode of ['denied', 'pending', 'stored', 'live']) {
+  test(`startup loads a region with ${mode} location`, async () => {
+    const queries = [], jumps = [];
+    const context = {
+      userLat: mode === 'live' ? 51 : null,
+      userLng: mode === 'live' ? 5 : null,
+      startupStoredLocation: mode === 'stored' ? { lat: 50, lng: 4 } : null,
+      userLocationRequestPromise: mode === 'pending' ? new Promise(() => {}) : Promise.resolve(false),
+      wait: async () => {}, STARTUP_GPS_GRACE_MS: 1200,
+      mapLoaded: true, startupRegionLoaded: false, initialNearbyLoaded: false,
+      map: { getCenter: () => ({ lat: 49, lng: 3 }), jumpTo: value => jumps.push(value) },
+      setStartupProgress() {}, syncUserMarker() {}, USER_START_ZOOM: 11,
+      STARTUP_PRELOAD_RADIUS_KM: 25, STARTUP_THUMB_PREFETCH_LIMIT: 8, KOVA_MOBILE_LIKE: true,
+      currentBaseSpotFeatures: [], preloadStartupSpotImages: async () => {},
+      fetchSpotsInRadius: async (...args) => queries.push(args),
+    };
+    vm.createContext(context);
+    vm.runInContext(startupFunctions, context);
+    assert.equal(await context.preloadStartupRegion(), true);
+    assert.equal(queries.length, 1);
+    assert.equal(queries[0][0], mode === 'live' ? 51 : mode === 'stored' ? 50 : 49);
+    assert.equal(jumps.length, ['live', 'stored'].includes(mode) ? 1 : 0);
+    assert.equal(context.initialNearbyLoaded, mode === 'live');
+    await context.preloadStartupRegion();
+    assert.equal(queries.length, 1, 'the same startup region is not fetched twice');
+  });
+}

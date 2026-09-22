@@ -2352,7 +2352,9 @@
           }
 
           if (!userLocationRequestPromise) {
-            userLocationRequestPromise = requestUserLocation();
+            userLocationRequestPromise = requestUserLocation().finally(() => {
+              userLocationRequestPromise = null;
+            });
           }
 
           return userLocationRequestPromise;
@@ -3565,7 +3567,8 @@
             return { lat: userLat, lng: userLng, source: "live" };
           }
 
-          return null;
+          const center = map.getCenter();
+          return { lat: center.lat, lng: center.lng, source: "map" };
         }
 
         async function preloadStartupRegion() {
@@ -3582,10 +3585,12 @@
             initialNearbyLoaded = true;
           }
 
-          map.jumpTo({
-            center: [center.lng, center.lat],
-            zoom: USER_START_ZOOM,
-          });
+          if (center.source !== "map") {
+            map.jumpTo({
+              center: [center.lng, center.lat],
+              zoom: USER_START_ZOOM,
+            });
+          }
 
           await fetchSpotsInRadius(
             center.lat,
@@ -3684,11 +3689,12 @@
                 // During startup, the splash orchestration decides which
                 // region to preload. After startup, a fresh GPS fix can refine
                 // the map immediately.
-                if (startupFinished) {
-                  await maybeLoadInitialNearbySpots();
-                }
-
                 resolve(true);
+                if (startupFinished) {
+                  maybeLoadInitialNearbySpots().catch((err) =>
+                    console.warn("KOVA live-region refresh failed:", err),
+                  );
+                }
               },
               (err) => {
                 console.warn("KOVA location unavailable:", err.message);
@@ -3733,6 +3739,11 @@
         }
 
         initUserLocationFlow();
+
+        // Returning from Settings can make a previously unavailable GPS usable.
+        window.addEventListener("kova:resume", () => {
+          if (userLat === null || userLng === null) initUserLocationFlow();
+        });
 
         document.addEventListener("click", async (e) => {
           const shareBtn = e.target.closest('[data-action="share-spot"]');
