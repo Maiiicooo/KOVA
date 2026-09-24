@@ -149,8 +149,12 @@
     listen(Network, 'networkStatusChange', updateNetwork);
     Network.getStatus().then(updateNetwork).catch(report);
     listen(App, 'appStateChange', ({ isActive }) => {
-      if (isActive) Network.getStatus().then(updateNetwork).catch(report);
+      if (isActive) {
+        Network.getStatus().then(updateNetwork).catch(report);
+        emit('kova:resume');
+      }
     });
+    window.addEventListener('kova:location-error', event => notice(event.detail.message));
     if (android) listen(App, 'backButton', ({ canGoBack }) => {
       const event = new CustomEvent('kova:back', { cancelable: true });
       if (!window.dispatchEvent(event)) return;
