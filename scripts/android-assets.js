@@ -31,8 +31,8 @@ if (process.exitCode === 0 && platform === 'ios') {
   const sharp = require('sharp');
   const file = path.join(root, 'ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png');
   sharp(file)
-    .resize(870, 870)
-    .extend({ top: 77, bottom: 77, left: 77, right: 77, background: '#0b0b0b' })
+    .resize(360, 360)
+    .extend({ top: 332, bottom: 332, left: 332, right: 332, background: '#0b0b0b' })
     .removeAlpha()
     .png()
     .toBuffer()
