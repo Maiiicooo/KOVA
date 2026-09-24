@@ -25,14 +25,14 @@ if (process.exitCode === 0 && platform === 'android') {
   }
 }
 
-// Give the iOS home-screen mark more breathing room inside Apple's rounded mask.
-// The generator above starts from the original each time, so padding never accumulates.
+// Fit the complete rectangular source inside the icon without cropping its tips.
 if (process.exitCode === 0 && platform === 'ios') {
   const sharp = require('sharp');
   const file = path.join(root, 'ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png');
-  sharp(file)
-    .resize(360, 360)
-    .extend({ top: 332, bottom: 332, left: 332, right: 332, background: '#0b0b0b' })
+  sharp(path.join(root, 'images/kova_alleen_x_png.png'))
+    .resize(720, 720, { fit: 'contain', background: '#0b0b0b' })
+    .extend({ top: 152, bottom: 152, left: 152, right: 152, background: '#0b0b0b' })
+    .flatten({ background: '#0b0b0b' })
     .removeAlpha()
     .png()
     .toBuffer()
