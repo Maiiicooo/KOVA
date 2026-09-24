@@ -1,5 +1,4 @@
-/* Without viewport-fit=cover Capacitor 8 fits the WebView inside system bars.
-   SystemBars also handles IME insets; no duplicate manual safe-area padding. */
+/* Android uses Capacitor SystemBars insets; iOS navigation uses WKWebView safe areas. */
 html.kova-native { background: #0b0b0b; color-scheme: dark; }
 .kova-native input, .kova-native textarea, .kova-native select { scroll-margin-block: 24px; }
 #kovaNetworkStatus, #kovaDeviceNotice {
@@ -11,3 +10,12 @@ html.kova-native { background: #0b0b0b; color-scheme: dark; }
 #kovaNetworkStatus[hidden] { display: none; }
 #kovaDeviceNotice { bottom: 66px; cursor: pointer; }
 .kova-native-photo { margin-top: 8px; padding: 10px 14px; border-radius: 8px; background: #29261a; color: white; border: 1px solid #675825; }
+
+/* Keep the native iOS header below the status bar and inside landscape cutouts.
+   Existing navigation padding remains the spacing within the safe area. */
+.kova-ios body > nav {
+  top: env(safe-area-inset-top, 0px);
+  left: env(safe-area-inset-left, 0px);
+  right: env(safe-area-inset-right, 0px);
+  width: auto;
+}

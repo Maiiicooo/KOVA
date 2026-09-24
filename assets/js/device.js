@@ -83,8 +83,24 @@
     locationError,
   };
 
+  // Begin GPS while the map SDK and page are still loading. Resolve failures
+  // here so an unavailable location cannot produce an unhandled rejection.
+  if (native && cap.getPlatform() === 'ios' && document.currentScript?.hasAttribute('data-preload-location')) {
+    device.startupLocation = currentPosition({
+      enableHighAccuracy: false, timeout: 15000, maximumAge: 60000,
+    }).then(position => ({ position }), error => ({ error }));
+  }
+
   if (!native) return;
   document.documentElement.classList.add('kova-native');
+  if (cap.getPlatform() === 'ios') {
+    document.documentElement.classList.add('kova-ios');
+    // Expose WKWebView's safe-area insets before the page is laid out.
+    const viewport = document.querySelector('meta[name="viewport"]');
+    if (viewport && !/viewport-fit\s*=/.test(viewport.content)) {
+      viewport.content += ', viewport-fit=cover';
+    }
+  }
   // Native-only preferences store transient photo/form recovery, not Firestore data.
   const draftKey = 'kova.native.photoDraft.v1';
   async function savePhotoDraft(input) {

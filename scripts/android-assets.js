@@ -24,3 +24,21 @@ if (process.exitCode === 0 && platform === 'android') {
     }
   }
 }
+
+// Give the iOS home-screen mark more breathing room inside Apple's rounded mask.
+// The generator above starts from the original each time, so padding never accumulates.
+if (process.exitCode === 0 && platform === 'ios') {
+  const sharp = require('sharp');
+  const file = path.join(root, 'ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png');
+  sharp(file)
+    .resize(870, 870)
+    .extend({ top: 77, bottom: 77, left: 77, right: 77, background: '#0b0b0b' })
+    .removeAlpha()
+    .png()
+    .toBuffer()
+    .then(buffer => fs.writeFileSync(file, buffer))
+    .catch(error => {
+      console.error('Could not apply iOS app icon padding:', error);
+      process.exitCode = 1;
+    });
+}

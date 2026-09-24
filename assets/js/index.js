@@ -160,7 +160,7 @@
           {
             icon: "⌁",
             title: "Search the map.",
-            text: "Desktop: click an empty point. Phone or tablet: <b>long press</b>. KOVA searches spots in a 10 km radius.",
+            text: "Open <b>search</b> in the hamburger menu to find spots by location and category.",
           },
           {
             icon: "+",
@@ -319,7 +319,7 @@
               lng >= -180 &&
               lng <= 180
             ) {
-              return { lat, lng };
+              return { lat, lng, savedAt: Number(parsed.savedAt) || 0 };
             }
           } catch (e) {}
 
@@ -1839,9 +1839,6 @@
         const LAYER_CLUSTERS_X = "spots-clusters-x";
         const LAYER_CLUSTERS_COUNT = "spots-clusters-count";
         const LAYER_POINTS = "spots-points";
-        const SEARCH_RADIUS_SOURCE_ID = "kova-search-radius-preview";
-        const SEARCH_RADIUS_FILL_LAYER = "kova-search-radius-fill";
-        const SEARCH_RADIUS_LINE_LAYER = "kova-search-radius-line";
 
         function closeFeed() {
           if (!feedOverlay) return;
@@ -2355,7 +2352,9 @@
           }
 
           if (!userLocationRequestPromise) {
-            userLocationRequestPromise = requestUserLocation();
+            userLocationRequestPromise = requestUserLocation().finally(() => {
+              userLocationRequestPromise = null;
+            });
           }
 
           return userLocationRequestPromise;
@@ -3568,7 +3567,8 @@
             return { lat: userLat, lng: userLng, source: "live" };
           }
 
-          return null;
+          const center = map.getCenter();
+          return { lat: center.lat, lng: center.lng, source: "map" };
         }
 
         async function preloadStartupRegion() {
@@ -3585,10 +3585,12 @@
             initialNearbyLoaded = true;
           }
 
-          map.jumpTo({
-            center: [center.lng, center.lat],
-            zoom: USER_START_ZOOM,
-          });
+          if (center.source !== "map") {
+            map.jumpTo({
+              center: [center.lng, center.lat],
+              zoom: USER_START_ZOOM,
+            });
+          }
 
           await fetchSpotsInRadius(
             center.lat,
@@ -3674,12 +3676,15 @@
           }
 
           return new Promise((resolve) => {
-            window.KovaDevice.geolocation.getCurrentPosition(
-              async (pos) => {
+            const applyPosition = (pos) => {
                 userLng = pos.coords.longitude;
                 userLat = pos.coords.latitude;
                 rememberLastKovaLocation(userLat, userLng);
 
+                if (userMarkerEl) {
+                  userMarkerEl.alt = 'Current location';
+                  userMarkerEl.style.opacity = '';
+                }
                 // Do not log precise user coordinates.
 
                 syncUserMarker();
@@ -3687,24 +3692,37 @@
                 // During startup, the splash orchestration decides which
                 // region to preload. After startup, a fresh GPS fix can refine
                 // the map immediately.
-                if (startupFinished) {
-                  await maybeLoadInitialNearbySpots();
-                }
-
                 resolve(true);
-              },
-              (err) => {
-                console.warn("KOVA location unavailable:", err.message);
-
-                // No popup: KOVA stays usable without location.
-                resolve(false);
-              },
-              {
-                enableHighAccuracy: true,
-                timeout: 15000,
-                maximumAge: 60000,
-              },
-            );
+                if (startupFinished) {
+                  maybeLoadInitialNearbySpots().catch((err) =>
+                    console.warn("KOVA live-region refresh failed:", err),
+                  );
+                }
+            };
+            const unavailable = (err) => {
+              if (userMarkerAdded && userLat === null) {
+                userMarker.remove();
+                userMarkerAdded = false;
+              }
+              console.warn("KOVA location unavailable:", err.message);
+              // No popup: KOVA stays usable without location.
+              resolve(false);
+            };
+            const options = { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 };
+            const preload = window.KovaDevice.startupLocation;
+            if (preload) {
+              window.KovaDevice.startupLocation = null;
+              preload.then(({ position, error }) => {
+                if (error) { unavailable(error); return; }
+                applyPosition(position);
+                // Refine the fast fix without holding the splash or reloading spots.
+                window.KovaDevice.geolocation.getCurrentPosition(
+                  applyPosition, () => {}, { ...options, maximumAge: 0 },
+                );
+              });
+            } else {
+              window.KovaDevice.geolocation.getCurrentPosition(applyPosition, unavailable, options);
+            }
           });
         }
 
@@ -3735,7 +3753,22 @@
           );
         }
 
+        // A recent saved fix is only a visual preview, never a new live position.
+        if (window.Capacitor?.getPlatform() === 'ios' && userMarker && startupStoredLocation &&
+            Date.now() - startupStoredLocation.savedAt >= 0 &&
+            Date.now() - startupStoredLocation.savedAt < 5 * 60 * 1000) {
+          userMarkerEl.alt = 'Last known location';
+          userMarkerEl.style.opacity = '0.55';
+          userMarker.setLngLat([startupStoredLocation.lng, startupStoredLocation.lat]).addTo(map);
+          userMarkerAdded = true;
+        }
+
         initUserLocationFlow();
+
+        // Returning from Settings can make a previously unavailable GPS usable.
+        window.addEventListener("kova:resume", () => {
+          if (userLat === null || userLng === null) initUserLocationFlow();
+        });
 
         document.addEventListener("click", async (e) => {
           const shareBtn = e.target.closest('[data-action="share-spot"]');
@@ -3835,18 +3868,9 @@
             const radiusKm =
               Number(showBtn.getAttribute("data-radius")) || SEARCH_RADIUS_KM;
 
-            const popupEl = showBtn.closest(".maplibregl-popup");
-            const noSpotsAutoCloseAt = Date.now() + 980;
-            showSearchRadiusPulse(lng, lat, radiusKm);
-
-            if (popupEl) {
-              popupEl.classList.add("is-searching");
-            }
-
             await fetchSpotsInRadius(lat, lng, radiusKm, {
               recenter: false,
               showEmptyPopup: true,
-              noSpotsAutoCloseAt,
             });
             return;
           }
@@ -4096,19 +4120,6 @@
           scheduleSpotImagePrefetch(currentBaseSpotFeatures);
         });
 
-        let longPressTimer = null;
-        let longPressVisualTimer = null;
-        let longPressPointer = null;
-        let suppressNextMapClick = false;
-
-        const LONG_PRESS_MS = 650;
-        const LONG_PRESS_VISUAL_DELAY_MS = 220;
-        const LONG_PRESS_MOVE_TOLERANCE_PX = 24;
-
-        function needsLongPressForMapSearch() {
-          return window.matchMedia("(pointer: coarse), (hover: none)").matches;
-        }
-
         function isMapOverlayTarget(target) {
           return (
             target &&
@@ -4143,476 +4154,11 @@
           }
         }
 
-        function clearMapPopupsForSearch() {
-          closeUserPopup();
-
-          if (activePopup) closeActiveSpotPopup();
-
-          if (activeCoordPopup) {
-            activeCoordPopup.remove();
-            activeCoordPopup = null;
-          }
-        }
-
-        function showSearchPopupAt(lng, lat) {
-          clearMapPopupsForSearch();
-          placeClickPin(lng, lat);
-
-          const popupHTML = `
-            <div class="coord-popup coord-popup-search compact-search">
-              <div class="btn-row single">
-                <button class="primary search-cta" data-action="show-spots" data-lat="${lat}" data-lng="${lng}" data-radius="${SEARCH_RADIUS_KM}">
-                  Search spots here
-                </button>
-              </div>
-            </div>
-          `;
-
-          activeCoordPopup = new maptilersdk.Popup({
-            offset: 18,
-            closeButton: true,
-            closeOnClick: false,
-            maxWidth: "320px",
-            className: "coord-map-popup",
-          })
-            .setLngLat([lng, lat])
-            .setHTML(popupHTML)
-            .addTo(map);
-
-          updateFooterVisibility();
-
-          activeCoordPopup.once("close", () => {
-            activeCoordPopup = null;
-            removeClickPin();
-            updateFooterVisibility();
-          });
-        }
-
-        map.on("click", async (event) => {
-          if (suppressNextMapClick) {
-            suppressNextMapClick = false;
-            return;
-          }
-
-          if (needsLongPressForMapSearch()) return;
-
-          const target = event.originalEvent?.target;
-          if (isMapOverlayTarget(target)) return;
-
-          const hits = getSpotHitsAtPoint(event.point);
-          if (hits && hits.length) return;
-
-          if (activePopup && closeActiveSpotPopup({ animate: true })) return;
-
-          const { lng, lat } = event.lngLat;
-          showSearchPopupAt(lng, lat);
+        map.on("click", (event) => {
+          if (isMapOverlayTarget(event.originalEvent?.target)) return;
+          if (getSpotHitsAtPoint(event.point).length) return;
+          if (activePopup) closeActiveSpotPopup({ animate: true });
         });
-
-        const mapContainer = map.getContainer();
-        const mapCanvas = map.getCanvas();
-        let longPressIndicator = null;
-        let searchRadiusPulseEl = null;
-
-        function ensureLongPressIndicator() {
-          if (longPressIndicator) return longPressIndicator;
-
-          const el = document.createElement("div");
-          el.className = "long-press-indicator";
-          el.innerHTML =
-            '<div class="long-press-ring"></div><div class="long-press-core"></div><div class="long-press-hint">Hold to search</div>';
-          mapContainer.appendChild(el);
-          longPressIndicator = el;
-          return el;
-        }
-
-        function showLongPressIndicator(point) {
-          const el = ensureLongPressIndicator();
-          el.style.left = point.x + "px";
-          el.style.top = point.y + "px";
-          el.style.setProperty("--long-press-ms", LONG_PRESS_MS + "ms");
-          el.classList.toggle("hint-below", point.y < 110);
-          el.classList.remove("ready");
-          void el.offsetWidth;
-          el.classList.add("show");
-        }
-
-        function flashLongPressIndicator(point) {
-          const el = ensureLongPressIndicator();
-          el.style.left = point.x + "px";
-          el.style.top = point.y + "px";
-          el.classList.toggle("hint-below", point.y < 110);
-          el.classList.add("show", "ready");
-          window.setTimeout(() => {
-            if (!longPressIndicator) return;
-            longPressIndicator.classList.remove("show", "ready");
-          }, 260);
-        }
-
-        function hideLongPressIndicator() {
-          if (!longPressIndicator) return;
-          longPressIndicator.classList.remove("show", "ready");
-        }
-
-        let searchRadiusAnimationFrame = null;
-        let searchRadiusHideTimer = null;
-
-        function ensureSearchRadiusPulse() {
-          if (!mapLoaded) return null;
-
-          if (!map.getSource(SEARCH_RADIUS_SOURCE_ID)) {
-            map.addSource(SEARCH_RADIUS_SOURCE_ID, {
-              type: "geojson",
-              data: emptyGeoJSON(),
-            });
-          }
-
-          if (!map.getLayer(SEARCH_RADIUS_FILL_LAYER)) {
-            map.addLayer(
-              {
-                id: SEARCH_RADIUS_FILL_LAYER,
-                type: "fill",
-                source: SEARCH_RADIUS_SOURCE_ID,
-                paint: {
-                  "fill-color": "rgba(139, 113, 8, 1)",
-                  "fill-opacity": 0.11,
-                },
-              },
-              map.getLayer(LAYER_CLUSTERS_X) ? LAYER_CLUSTERS_X : undefined,
-            );
-          }
-
-          if (!map.getLayer(SEARCH_RADIUS_LINE_LAYER)) {
-            map.addLayer(
-              {
-                id: SEARCH_RADIUS_LINE_LAYER,
-                type: "line",
-                source: SEARCH_RADIUS_SOURCE_ID,
-                paint: {
-                  "line-color": "rgba(214, 177, 62, 0.95)",
-                  "line-width": 1.5,
-                  "line-opacity": 0.72,
-                },
-              },
-              map.getLayer(LAYER_CLUSTERS_X) ? LAYER_CLUSTERS_X : undefined,
-            );
-          }
-
-          return map.getSource(SEARCH_RADIUS_SOURCE_ID);
-        }
-
-        function makeRadiusCircleGeoJSON(
-          centerLng,
-          centerLat,
-          radiusKm,
-          steps = KOVA_MOBILE_LIKE ? 64 : 96,
-        ) {
-          if (!Number.isFinite(centerLng) || !Number.isFinite(centerLat)) {
-            return emptyGeoJSON();
-          }
-
-          const earthRadiusKm = 6371.0088;
-          const angularDistance = radiusKm / earthRadiusKm;
-          const lat1 = toRad(centerLat);
-          const lng1 = toRad(centerLng);
-          const coords = [];
-
-          for (let i = 0; i <= steps; i++) {
-            const bearing = (2 * Math.PI * i) / steps;
-            const lat2 = Math.asin(
-              Math.sin(lat1) * Math.cos(angularDistance) +
-                Math.cos(lat1) * Math.sin(angularDistance) * Math.cos(bearing),
-            );
-            const lng2 =
-              lng1 +
-              Math.atan2(
-                Math.sin(bearing) * Math.sin(angularDistance) * Math.cos(lat1),
-                Math.cos(angularDistance) - Math.sin(lat1) * Math.sin(lat2),
-              );
-
-            coords.push([(lng2 * 180) / Math.PI, (lat2 * 180) / Math.PI]);
-          }
-
-          return {
-            type: "FeatureCollection",
-            features: [
-              {
-                type: "Feature",
-                geometry: {
-                  type: "Polygon",
-                  coordinates: [coords],
-                },
-                properties: {},
-              },
-            ],
-          };
-        }
-
-        function easeOutCubic(t) {
-          return 1 - Math.pow(1 - t, 3);
-        }
-
-        function showSearchRadiusPulse(lng, lat, radiusKm = SEARCH_RADIUS_KM) {
-          const src = ensureSearchRadiusPulse();
-          if (!src) return;
-
-          if (searchRadiusAnimationFrame) {
-            window.cancelAnimationFrame(searchRadiusAnimationFrame);
-            searchRadiusAnimationFrame = null;
-          }
-
-          if (searchRadiusHideTimer) {
-            window.clearTimeout(searchRadiusHideTimer);
-            searchRadiusHideTimer = null;
-          }
-
-          const targetRadiusKm = Number(radiusKm) || SEARCH_RADIUS_KM;
-          const duration = 560;
-          const start = performance.now();
-          const minFrameInterval = KOVA_MOBILE_LIKE ? 32 : 16;
-          let lastDrawAt = 0;
-
-          function frame(now) {
-            const progress = Math.min(1, (now - start) / duration);
-
-            if (progress < 1 && now - lastDrawAt < minFrameInterval) {
-              searchRadiusAnimationFrame = window.requestAnimationFrame(frame);
-              return;
-            }
-
-            lastDrawAt = now;
-            const animatedRadiusKm = Math.max(
-              0.08,
-              targetRadiusKm * easeOutCubic(progress),
-            );
-            src.setData(makeRadiusCircleGeoJSON(lng, lat, animatedRadiusKm));
-
-            if (progress < 1) {
-              searchRadiusAnimationFrame = window.requestAnimationFrame(frame);
-              return;
-            }
-
-            src.setData(makeRadiusCircleGeoJSON(lng, lat, targetRadiusKm));
-            searchRadiusAnimationFrame = null;
-            searchRadiusHideTimer = window.setTimeout(() => {
-              const liveSource = map.getSource(SEARCH_RADIUS_SOURCE_ID);
-              if (liveSource) liveSource.setData(emptyGeoJSON());
-            }, 420);
-          }
-
-          src.setData(makeRadiusCircleGeoJSON(lng, lat, 0.08));
-          searchRadiusAnimationFrame = window.requestAnimationFrame(frame);
-        }
-
-        function clearLongPressTimer() {
-          if (longPressTimer) {
-            window.clearTimeout(longPressTimer);
-            longPressTimer = null;
-          }
-
-          if (longPressVisualTimer) {
-            window.clearTimeout(longPressVisualTimer);
-            longPressVisualTimer = null;
-          }
-
-          longPressPointer = null;
-          hideLongPressIndicator();
-        }
-
-        function getPointFromClient(clientX, clientY) {
-          const rect = mapCanvas.getBoundingClientRect();
-          return {
-            x: clientX - rect.left,
-            y: clientY - rect.top,
-          };
-        }
-
-        function pointIsInsideMap(point) {
-          if (!point) return false;
-          return (
-            point.x >= 0 &&
-            point.y >= 0 &&
-            point.x <= mapCanvas.clientWidth &&
-            point.y <= mapCanvas.clientHeight
-          );
-        }
-
-        function startLongPress(event) {
-          if (!needsLongPressForMapSearch()) return;
-          if (event.pointerType && event.pointerType === "mouse") return;
-          if (event.isPrimary === false) return;
-          if (isMapOverlayTarget(event.target)) return;
-
-          const point = getPointFromClient(event.clientX, event.clientY);
-          if (!pointIsInsideMap(point)) return;
-
-          const hits = getSpotHitsAtPoint(point);
-          if (hits && hits.length) return;
-
-          clearLongPressTimer();
-
-          longPressPointer = {
-            id: event.pointerId,
-            clientX: event.clientX,
-            clientY: event.clientY,
-            point,
-            lngLat: map.unproject([point.x, point.y]),
-          };
-
-          longPressVisualTimer = window.setTimeout(() => {
-            if (!longPressPointer) return;
-            showLongPressIndicator(longPressPointer.point);
-          }, LONG_PRESS_VISUAL_DELAY_MS);
-
-          longPressTimer = window.setTimeout(() => {
-            if (!longPressPointer) return;
-
-            const lngLat = longPressPointer.lngLat;
-            suppressNextMapClick = true;
-
-            if (navigator.vibrate) {
-              try {
-                navigator.vibrate(10);
-              } catch (e) {}
-            }
-
-            flashLongPressIndicator(longPressPointer.point);
-            showSearchPopupAt(lngLat.lng, lngLat.lat);
-            clearLongPressTimer();
-
-            window.setTimeout(() => {
-              suppressNextMapClick = false;
-            }, 900);
-          }, LONG_PRESS_MS);
-        }
-
-        function moveLongPress(event) {
-          if (!longPressPointer) return;
-          if (event.pointerId !== longPressPointer.id) return;
-
-          const dx = Math.abs(event.clientX - longPressPointer.clientX);
-          const dy = Math.abs(event.clientY - longPressPointer.clientY);
-
-          if (
-            dx > LONG_PRESS_MOVE_TOLERANCE_PX ||
-            dy > LONG_PRESS_MOVE_TOLERANCE_PX
-          ) {
-            clearLongPressTimer();
-          }
-        }
-
-        function endLongPress(event) {
-          if (!longPressPointer) return;
-          if (event.pointerId !== longPressPointer.id) return;
-          clearLongPressTimer();
-        }
-
-        if (window.PointerEvent) {
-          mapContainer.addEventListener("pointerdown", startLongPress, {
-            passive: true,
-            capture: true,
-          });
-
-          mapContainer.addEventListener("pointermove", moveLongPress, {
-            passive: true,
-            capture: true,
-          });
-
-          mapContainer.addEventListener("pointerup", endLongPress, {
-            passive: true,
-            capture: true,
-          });
-
-          mapContainer.addEventListener("pointercancel", endLongPress, {
-            passive: true,
-            capture: true,
-          });
-        } else {
-          mapContainer.addEventListener(
-            "touchstart",
-            (event) => {
-              if (!needsLongPressForMapSearch()) return;
-              if (event.touches.length !== 1) {
-                clearLongPressTimer();
-                return;
-              }
-
-              if (isMapOverlayTarget(event.target)) return;
-
-              const touch = event.touches[0];
-              const point = getPointFromClient(touch.clientX, touch.clientY);
-              if (!pointIsInsideMap(point)) return;
-
-              const hits = getSpotHitsAtPoint(point);
-              if (hits && hits.length) return;
-
-              clearLongPressTimer();
-
-              longPressPointer = {
-                id: "touch",
-                clientX: touch.clientX,
-                clientY: touch.clientY,
-                point,
-                lngLat: map.unproject([point.x, point.y]),
-              };
-
-              longPressVisualTimer = window.setTimeout(() => {
-                if (!longPressPointer) return;
-                showLongPressIndicator(longPressPointer.point);
-              }, LONG_PRESS_VISUAL_DELAY_MS);
-
-              longPressTimer = window.setTimeout(() => {
-                if (!longPressPointer) return;
-
-                const lngLat = longPressPointer.lngLat;
-                suppressNextMapClick = true;
-
-                if (navigator.vibrate) {
-                  try {
-                    navigator.vibrate(10);
-                  } catch (e) {}
-                }
-
-                flashLongPressIndicator(longPressPointer.point);
-                showSearchPopupAt(lngLat.lng, lngLat.lat);
-                clearLongPressTimer();
-
-                window.setTimeout(() => {
-                  suppressNextMapClick = false;
-                }, 900);
-              }, LONG_PRESS_MS);
-            },
-            { passive: true, capture: true },
-          );
-
-          mapContainer.addEventListener(
-            "touchmove",
-            (event) => {
-              if (!longPressPointer || !event.touches.length) return;
-
-              const touch = event.touches[0];
-              const dx = Math.abs(touch.clientX - longPressPointer.clientX);
-              const dy = Math.abs(touch.clientY - longPressPointer.clientY);
-
-              if (
-                dx > LONG_PRESS_MOVE_TOLERANCE_PX ||
-                dy > LONG_PRESS_MOVE_TOLERANCE_PX
-              ) {
-                clearLongPressTimer();
-              }
-            },
-            { passive: true, capture: true },
-          );
-
-          mapContainer.addEventListener("touchend", clearLongPressTimer, {
-            passive: true,
-            capture: true,
-          });
-
-          mapContainer.addEventListener("touchcancel", clearLongPressTimer, {
-            passive: true,
-            capture: true,
-          });
-        }
 
         updateFooterVisibility();
       });
