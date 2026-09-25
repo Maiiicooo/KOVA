@@ -6,7 +6,8 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
  * The website keeps browser APIs; Android and iOS use the official plugins. */
 (() => {
   'use strict';
-  const cap = window.Capacitor;
+  const pageHost = window.parent && window.parent !== window && window.parent.KovaPageNavigation;
+  const cap = pageHost ? window.parent.Capacitor : window.Capacitor;
   const native = Boolean(cap?.isNativePlatform());
   const android = native && cap.getPlatform() === 'android';
   const plugin = (name) => native ? cap.registerPlugin(name) : null;
@@ -86,6 +87,19 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
     },
     locationError,
   };
+
+  if (pageHost) {
+    document.addEventListener('click', event => {
+      const link = event.target.closest('a[href]');
+      if (!link || event.defaultPrevented || link.target || link.hasAttribute('download') || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      const url = new URL(link.href, location.href);
+      if (url.origin !== location.origin || url.pathname === location.pathname) return;
+      if (pageHost.open(url.href)) event.preventDefault();
+    });
+    window.addEventListener('keydown', event => {
+      if (event.key === 'Escape') pageHost.back();
+    });
+  }
 
   // Begin GPS while the map SDK and page are still loading. Resolve failures
   // here so an unavailable location cannot produce an unhandled rejection.
@@ -176,6 +190,7 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
       if (!window.dispatchEvent(new CustomEvent('kova:back', { cancelable: true }))) return;
       const menu = document.querySelector('.nav-right.open .hamburger-toggle');
       if (menu) { menu.click(); return; }
+      if (pageHost) { pageHost.back(); return; }
       // Swiping on the home screen must never leave or minimize KOVA.
       if (['/', '/index.html'].includes(location.pathname)) return;
       navigatingBack = true;
@@ -184,7 +199,17 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
     }, { passive: false });
     window.addEventListener('pagehide', cancelSwipe);
     window.addEventListener('pageshow', () => { navigatingBack = false; cancelSwipe(); });
-    const listen = (p, name, callback) => p.addListener(name, callback).catch(report);
+    const handles = [];
+    let disposed = false;
+    const listen = (p, name, callback) => p.addListener(name, callback).then(handle => {
+      if (!pageHost) return;
+      if (disposed) handle.remove();
+      else handles.push(handle);
+    }).catch(report);
+    if (pageHost) window.addEventListener('pagehide', () => {
+      disposed = true;
+      handles.splice(0).forEach(handle => handle.remove().catch(report));
+    }, { once: true });
     const updateNetwork = status => {
       device.network = status;
       document.documentElement.classList.toggle('kova-offline', !status.connected);
@@ -206,7 +231,7 @@ var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.
       }
     });
     window.addEventListener('kova:location-error', event => notice(event.detail.message));
-    if (android) listen(App, 'backButton', ({ canGoBack }) => {
+    if (android && !pageHost) listen(App, 'backButton', ({ canGoBack }) => {
       const event = new CustomEvent('kova:back', { cancelable: true });
       if (!window.dispatchEvent(event)) return;
       if (canGoBack) history.back();

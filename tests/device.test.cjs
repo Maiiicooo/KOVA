@@ -304,3 +304,63 @@ test('website, Android and other iOS pages do not preload location', () => {
     { platform: 'ios' },
   ]) assert.equal(boot(options).device.startupLocation, undefined);
 });
+
+test('secondary page navigation preserves the map document and unwinds to it', () => {
+  const events = {}, frames = [], entries = [];
+  const map = { inert: false }, nav = { inert: false };
+  let focused = 0, back = 0, jump;
+  const context = {
+    URL, location: { href: 'https://localhost/index.html' },
+    closeHamburgerMenu() {},
+    history: { state: null, pushState: state => entries.push(state), back: () => back++, go: n => { jump = n; } },
+    document: {
+      activeElement: { focus: () => focused++ },
+      body: { children: [map, nav], append: frame => frames.push(frame) },
+      createElement: () => ({ focus() {}, remove() { this.removed = true; } }),
+      addEventListener() {},
+    },
+    window: { addEventListener: (name, fn) => { events[name] = fn; } },
+  };
+  const start = mapSource.indexOf('        const homeURL');
+  const end = mapSource.indexOf('        const startupOverlay');
+  vm.runInNewContext(mapSource.slice(start, end), context);
+  const navigation = context.window.KovaPageNavigation;
+  assert.equal(navigation.open('https://localhost/app/pages/about.html'), true);
+  assert.equal(map.inert, true);
+  navigation.open('https://localhost/app/pages/privacy.html');
+  assert.equal(frames[0].removed, true);
+  assert.equal(entries.length, 2);
+  navigation.back();
+  assert.equal(back, 1);
+  events.popstate({ state: entries[0] });
+  assert.equal(frames.at(-1).src, 'https://localhost/app/pages/about.html');
+  navigation.open('https://localhost/index.html');
+  assert.equal(jump, -1);
+  events.popstate({ state: null });
+  assert.equal(map.inert, false);
+  assert.equal(nav.inert, false);
+  assert.equal(focused, 1);
+  assert.equal(context.document.body.children[0], map);
+  assert.equal(navigation.open('https://example.com/'), false);
+});
+
+test('sheet drag dismisses from the header or top without swallowing content scrolling', () => {
+  const start = mapSource.indexOf('        function enableSwipeDown(');
+  const end = mapSource.indexOf('        enableSwipeDown(feedOverlay', start);
+  for (const mode of ['header', 'top', 'scrolled', 'horizontal', 'short', 'cancel']) {
+    const events = {};
+    let closed = 0;
+    const panel = { style: { removeProperty() {} }, addEventListener: (name, fn) => { events[name] = fn; } };
+    const overlay = { querySelector: () => panel, classList: { contains: () => true } };
+    const context = { overlay, close: () => closed++ };
+    vm.runInNewContext(mapSource.slice(start, end) + '\nenableSwipeDown(overlay, close);', context);
+    const target = { closest: selector => selector.startsWith('button') || mode === 'header' ? null : { scrollTop: mode === 'scrolled' ? 50 : 0 } };
+    const touch = (x, y) => ({ identifier: 1, clientX: x, clientY: y });
+    events.touchstart({ target, touches: [touch(100, 100)] });
+    const finish = touch(mode === 'horizontal' ? 250 : 100, mode === 'short' ? 140 : 220);
+    events.touchmove({ touches: [finish], cancelable: true, preventDefault() {} });
+    if (mode === 'cancel') events.touchcancel();
+    events.touchend({ touches: [], changedTouches: [finish] });
+    assert.equal(closed, ['header', 'top'].includes(mode) ? 1 : 0, mode);
+  }
+});

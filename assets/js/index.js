@@ -1,5 +1,75 @@
 
       document.addEventListener("DOMContentLoaded", () => {
+        if (window.parent !== window && window.parent.KovaPageNavigation) {
+          window.parent.KovaPageNavigation.open(location.href);
+          return;
+        }
+        // Keep this document (and its map) alive while visiting secondary pages.
+        const homeURL = new URL(location.href);
+        const pageRoot = new URL('./', homeURL);
+        let pageFrame = null;
+        let pageDepth = history.state?.kovaDepth || 0;
+        let pageFocus = null;
+        const coveredElements = [];
+        function showPage(url) {
+          pageFrame?.remove();
+          pageFrame = null;
+          if (!url) {
+            coveredElements.splice(0).forEach(([node, inert]) => { node.inert = inert; });
+            pageFocus?.focus();
+            return;
+          }
+          if (!coveredElements.length) {
+            pageFocus = document.activeElement;
+            Array.from(document.body.children).forEach(node => {
+              coveredElements.push([node, node.inert]);
+              node.inert = true;
+            });
+          }
+          pageFrame = document.createElement('iframe');
+          pageFrame.className = 'kova-page-frame';
+          pageFrame.title = 'KOVA';
+          pageFrame.src = url;
+          document.body.append(pageFrame);
+          pageFrame.focus();
+        }
+        window.KovaPageNavigation = {
+          open(value) {
+            const url = new URL(value, homeURL);
+            if (url.origin !== homeURL.origin) return false;
+            if (url.pathname === homeURL.pathname || url.pathname === pageRoot.pathname) {
+              if (pageDepth) history.go(-pageDepth);
+              return true;
+            }
+            if (!['app/pages/', 'web/'].some(path => url.pathname.startsWith(pageRoot.pathname + path))) return false;
+            closeHamburgerMenu();
+            history.pushState({ kovaPage: url.href, kovaDepth: ++pageDepth }, '');
+            showPage(url.href);
+            return true;
+          },
+          back() { if (pageDepth) history.back(); },
+        };
+        window.addEventListener('popstate', event => {
+          pageDepth = event.state?.kovaDepth || 0;
+          showPage(event.state?.kovaPage || null);
+        });
+        window.addEventListener('kova:back', event => {
+          if (!pageFrame) return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          const child = pageFrame.contentWindow;
+          if (!child.dispatchEvent(new child.CustomEvent('kova:back', { cancelable: true }))) return;
+          const menu = child.document.querySelector('.nav-right.open .hamburger-toggle');
+          if (menu) menu.click();
+          else window.KovaPageNavigation.back();
+        });
+        document.addEventListener('click', event => {
+          const link = event.target.closest('a[href]');
+          if (!link || event.defaultPrevented || link.target || link.hasAttribute('download') || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+          if (window.KovaPageNavigation.open(link.href)) event.preventDefault();
+        });
+        if (history.state?.kovaPage) showPage(history.state.kovaPage);
+
         const startupOverlay = document.getElementById("kovaStartup");
         const startupProgress = document.querySelector(
           "[data-startup-progress]",
@@ -2225,6 +2295,51 @@
 
         feedCloseBtn?.addEventListener("click", closeFeed);
 
+        // Drag a sheet down from its header, or from content already at the top.
+        function enableSwipeDown(overlay, close) {
+          const panel = overlay?.querySelector('section');
+          if (!panel) return;
+          let drag = null;
+          const reset = () => {
+            drag = null;
+            panel.style.removeProperty('transform');
+            panel.style.removeProperty('transition');
+          };
+          panel.addEventListener('touchstart', event => {
+            reset();
+            if (!overlay.classList.contains('open') || event.touches.length !== 1) return;
+            if (event.target.closest('button, a, input, textarea, select')) return;
+            const body = event.target.closest('.kova-feed-body, .kova-library-body');
+            if (body && body.scrollTop > 0) return;
+            const touch = event.touches[0];
+            drag = { x: touch.clientX, y: touch.clientY, id: touch.identifier, distance: 0 };
+          }, { passive: true });
+          panel.addEventListener('touchmove', event => {
+            if (!drag) return;
+            if (event.touches.length !== 1) return reset();
+            const touch = event.touches[0];
+            const dx = Math.abs(touch.clientX - drag.x);
+            const dy = touch.clientY - drag.y;
+            if (touch.identifier !== drag.id || dy < -8 || (dx > 10 && dx > dy)) return reset();
+            if (dy < 10 || dy < dx * 1.5) return;
+            if (!event.cancelable) return reset();
+            event.preventDefault();
+            drag.distance = dy;
+            panel.style.transition = 'none';
+            panel.style.transform = `translateY(${Math.min(dy, 260)}px)`;
+          }, { passive: false });
+          panel.addEventListener('touchend', event => {
+            const touch = drag && Array.from(event.changedTouches).find(t => t.identifier === drag.id);
+            const dismiss = touch && !event.touches.length && drag.distance >= 90 &&
+              touch.clientY - drag.y >= 90 && touch.clientY - drag.y > Math.abs(touch.clientX - drag.x) * 1.5;
+            reset();
+            if (dismiss) close();
+          }, { passive: true });
+          panel.addEventListener('touchcancel', reset, { passive: true });
+        }
+        enableSwipeDown(feedOverlay, closeFeed);
+        enableSwipeDown(libraryOverlay, closeLibrary);
+
         feedOverlay?.addEventListener("click", (e) => {
           if (e.target === feedOverlay) closeFeed();
         });
@@ -4214,4 +4329,3 @@
 
         updateFooterVisibility();
       });
-    
