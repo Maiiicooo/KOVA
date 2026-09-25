@@ -133,6 +133,53 @@
     box.textContent = message;
   }
   document.addEventListener('DOMContentLoaded', () => {
+    // Edge swipe for the native WebView. Browsers keep their own back gesture.
+    let swipe = null;
+    let navigatingBack = false;
+    const cancelSwipe = () => { swipe = null; };
+    document.addEventListener('touchstart', event => {
+      cancelSwipe();
+      if (navigatingBack || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      if (touch.clientX > 28) return;
+      if (event.target.closest('input, textarea, select, [contenteditable], canvas, .maplibregl-canvas-container, .mapboxgl-canvas-container')) return;
+      // Leave horizontal galleries and other scrolling controls alone.
+      for (let node = event.target; node && node !== document.body; node = node.parentElement) {
+        if (node.scrollWidth > node.clientWidth && /auto|scroll/.test(getComputedStyle(node).overflowX)) return;
+      }
+      swipe = { id: touch.identifier, x: touch.clientX, y: touch.clientY, claimed: false };
+    }, { passive: true });
+    document.addEventListener('touchmove', event => {
+      if (!swipe) return;
+      if (event.touches.length !== 1) return cancelSwipe();
+      const touch = event.touches[0];
+      const dx = touch.clientX - swipe.x;
+      const dy = Math.abs(touch.clientY - swipe.y);
+      if (touch.identifier !== swipe.id || dx < -8 || (!swipe.claimed && dy > 10 && dy > dx)) return cancelSwipe();
+      if (dx > 12 && dx > dy * 2) swipe.claimed = true;
+      if (swipe.claimed && event.cancelable) event.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchcancel', cancelSwipe, { passive: true });
+    document.addEventListener('touchend', event => {
+      const gesture = swipe;
+      cancelSwipe();
+      if (!gesture?.claimed || event.touches.length) return;
+      const touch = Array.from(event.changedTouches).find(t => t.identifier === gesture.id);
+      if (!touch) return;
+      const dx = touch.clientX - gesture.x;
+      if (dx < 80 || dx < Math.abs(touch.clientY - gesture.y) * 2) return;
+      if (event.cancelable) event.preventDefault();
+      if (!window.dispatchEvent(new CustomEvent('kova:back', { cancelable: true }))) return;
+      const menu = document.querySelector('.nav-right.open .hamburger-toggle');
+      if (menu) { menu.click(); return; }
+      // Swiping on the home screen must never leave or minimize KOVA.
+      if (['/', '/index.html'].includes(location.pathname)) return;
+      navigatingBack = true;
+      if (history.length > 1 && document.referrer && new URL(document.referrer).origin === location.origin) history.back();
+      else location.replace('/index.html');
+    }, { passive: false });
+    window.addEventListener('pagehide', cancelSwipe);
+    window.addEventListener('pageshow', () => { navigatingBack = false; cancelSwipe(); });
     const listen = (p, name, callback) => p.addListener(name, callback).catch(report);
     const updateNetwork = status => {
       device.network = status;

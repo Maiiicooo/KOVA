@@ -32,14 +32,52 @@ function boot({ native = true, platform = 'android', geo = {}, inputs = [], prel
   const context = {
     window, document, navigator: { onLine: true, geolocation: browserGeo },
     location: { href: 'https://localhost/index.html', pathname: '/index.html', origin: 'https://localhost' },
-    history: { back: () => calls.push('back') }, CustomEvent, URL, console, setTimeout, clearTimeout,
+    history: { length: 2, back: () => calls.push('back') }, CustomEvent, URL, console, setTimeout, clearTimeout,
+    getComputedStyle: () => ({ overflowX: 'auto' }),
     requestAnimationFrame: fn => fn(), File, Blob, Event,
     fetch: async () => ({ ok: true, blob: async () => new Blob(['photo'], { type: 'image/jpeg' }) }),
     DataTransfer: class { constructor() { this.files = []; this.items = { add: file => this.files.push(file) }; } },
   };
   vm.runInNewContext(source, context);
-  return { device: window.KovaDevice, window, events, listeners, calls, nodes, browserGeo, plugins };
+  return { device: window.KovaDevice, window, events, listeners, calls, nodes, browserGeo, plugins, context };
 }
+
+test('native edge swipe goes back, respects panels and safely handles direct entry', () => {
+  for (const mode of ['back', 'panel', 'home', 'direct', 'external', 'menu']) {
+    const b = boot({ platform: 'ios' });
+    b.context.location.pathname = mode === 'home' ? '/index.html' : '/app/pages/about.html';
+    b.context.location.replace = path => b.calls.push(path);
+    b.context.document.referrer = mode === 'direct' ? '' : mode === 'external' ? 'https://example.com/' : 'https://localhost/index.html';
+    if (mode === 'panel') b.window.addEventListener('kova:back', e => { e.preventDefault(); b.calls.push('panel'); });
+    b.events.DOMContentLoaded();
+    if (mode === 'menu') b.context.document.querySelector = () => ({ click: () => b.calls.push('menu') });
+    const target = { closest: () => null };
+    const touch = x => ({ identifier: 1, clientX: x, clientY: 100 });
+    b.events.touchstart({ touches: [touch(10)], target });
+    b.events.touchmove({ touches: [touch(110)], cancelable: true, preventDefault() {} });
+    b.events.touchend({ touches: [], changedTouches: [touch(110)], cancelable: true, preventDefault() {} });
+    assert.deepEqual(b.calls, mode === 'home' ? [] : [mode === 'direct' || mode === 'external' ? '/index.html' : mode]);
+  }
+});
+
+test('swipe ignores scrolling, short drags, maps, controls, multitouch and cancellation', () => {
+  for (const mode of ['vertical', 'short', 'middle', 'map', 'control', 'gallery', 'multitouch', 'cancel', 'left']) {
+    const b = boot({ platform: 'ios' });
+    b.events.DOMContentLoaded();
+    let backs = 0;
+    b.window.addEventListener('kova:back', () => backs++);
+    const touch = (x, y = 100) => ({ identifier: 1, clientX: x, clientY: y });
+    const target = { closest: () => ['map', 'control'].includes(mode) ? {} : null,
+      scrollWidth: mode === 'gallery' ? 200 : 0, clientWidth: 100 };
+    b.events.touchstart({ touches: [touch(mode === 'middle' ? 150 : 10)], target });
+    const end = touch(mode === 'short' ? 45 : mode === 'left' ? 0 : 120, mode === 'vertical' ? 300 : 100);
+    b.events.touchmove({ touches: mode === 'multitouch' ? [end, end] : [end], cancelable: true, preventDefault() {} });
+    if (mode === 'cancel') b.events.touchcancel();
+    b.events.touchend({ touches: [], changedTouches: [end], cancelable: true, preventDefault() {} });
+    assert.equal(backs, 0, mode);
+  }
+  assert.equal(boot({ native: false }).events.touchstart, undefined);
+});
 function position(device, options) {
   return new Promise(resolve => device.geolocation.getCurrentPosition(
     value => resolve({ value }), error => resolve({ error }), options));
