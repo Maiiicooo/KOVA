@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#161515" />
+    <meta name="description" content="What KOVA processes, why it is needed, and the choices you have." />
+    <title>KOVA - Privacy Policy</title>
+    <link rel="manifest" href="../../manifest.json" />
+    <link rel="icon" href="../../images/kova_alleen_x_png.png" />
+    <style>
+      :root { color-scheme: dark; --accent: #8b7108; font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; background: #161515; color: #fff; }
+      * { box-sizing: border-box; }
+      body { margin: 0; line-height: 1.75; }
+      a { color: #cfb658; text-underline-offset: 4px; }
+      a:hover { color: #fff; }
+      a:focus-visible { outline: 2px solid #cfb658; outline-offset: 5px; }
+      main { width: min(760px, 100%); margin: 0 auto; padding: calc(132px + env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-right, 0px)) 40px max(24px, env(safe-area-inset-left, 0px)); overflow-wrap: anywhere; }
+      .eyebrow { color: #cfb658; font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; }
+      h1 { margin: 12px 0; font-size: clamp(2.2rem, 8vw, 3.8rem); line-height: 1.08; letter-spacing: -.04em; }
+      .intro { font-size: 1.1rem; color: #ffffffcc; }
+      .updated { color: #ffffff99; font-size: .85rem; margin-bottom: 40px; }
+      h2 { font-size: 1.18rem; line-height: 1.4; margin: 32px 0 12px; }
+      p, li, dd { color: #ffffffbf; }
+      p { margin: 12px 0; }
+      ul { padding-left: 22px; }
+      li + li { margin-top: 14px; }
+      strong, dt { color: #fff; font-weight: 650; }
+      dt { margin-top: 20px; }
+      dd { margin: 4px 0 0; }
+      code { font-size: .85em; color: #e0cf91; }
+      @media (max-width: 480px) { main { padding-top: calc(108px + env(safe-area-inset-top, 0px)); } }
+      body > nav {
+        width: 100%;
+        padding: 22px 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-sizing: border-box;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: transparent;
+        z-index: 1000;
+        pointer-events: none;
+      }
+
+      body > nav > * {
+        pointer-events: auto;
+      }
+
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .nav-left img {
+        height: 50px;
+        width: auto;
+        display: block;
+      }
+
+      .nav-right {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        min-width: 0;
+      }
+
+      .hamburger-toggle {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.22);
+        color: rgba(255, 255, 255, 0.9);
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+        font-family: inherit;
+        appearance: none;
+        -webkit-appearance: none;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.24);
+        transition:
+          transform 0.2s ease,
+          background 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .hamburger-toggle span {
+        width: 17px;
+        height: 2px;
+        display: block;
+        border-radius: 999px;
+        background: currentColor;
+        transition:
+          transform 0.22s ease,
+          opacity 0.18s ease,
+          width 0.2s ease;
+      }
+
+      .hamburger-toggle:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(139, 113, 8, 0.72);
+        color: var(--accent);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+      }
+
+      .hamburger-toggle:focus-visible {
+        outline: 2px solid rgba(139, 113, 8, 0.9);
+        outline-offset: 4px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(1) {
+        transform: translateY(6px) rotate(45deg);
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(2) {
+        opacity: 0;
+        width: 8px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(3) {
+        transform: translateY(-6px) rotate(-45deg);
+      }
+
+      .hamburger-menu {
+        position: absolute;
+        top: 54px;
+        right: 0;
+        width: min(230px, calc(100vw - 28px));
+        padding: 9px;
+        display: grid;
+        gap: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        background: rgba(8, 8, 8, 0.72);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 22px 58px rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+        transform-origin: top right;
+        pointer-events: none;
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .nav-right.open .hamburger-menu {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+
+      .hamburger-menu a {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 0.94rem;
+        font-weight: 520;
+        line-height: 1.2;
+        letter-spacing: 0.15px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 13px;
+        cursor: pointer;
+        padding: 12px 13px;
+        margin: 0;
+        font-family: inherit;
+        white-space: nowrap;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          color 0.18s ease;
+      }
+
+      .hamburger-item-main {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .hamburger-item-icon {
+        width: 19px;
+        height: 19px;
+        flex: 0 0 19px;
+        display: grid;
+        place-items: center;
+        color: rgba(255, 255, 255, 0.62);
+        transition:
+          color 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .hamburger-item-icon svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .hamburger-menu a:hover .hamburger-item-icon {
+        color: var(--accent);
+        transform: scale(1.05);
+      }
+
+      .hamburger-menu a::after {
+        content: "→";
+        color: var(--accent);
+        opacity: 0;
+        transform: translateX(-5px);
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .hamburger-menu a:hover {
+        color: #fff;
+        background: rgba(139, 113, 8, 0.18);
+        border-color: rgba(139, 113, 8, 0.28);
+        transform: translateX(2px);
+      }
+
+      .hamburger-menu a:hover::after {
+        opacity: 0.9;
+        transform: translateX(0);
+      }
+
+      @media (max-width: 900px) {
+        body > nav { padding: 16px 18px; }
+        .nav-left img { height: 40px; }
+        .hamburger-toggle { width: 40px; height: 40px; }
+        .hamburger-menu { top: 50px; width: min(220px, calc(100vw - 28px)); }
+      }
+      .hamburger-menu { visibility: hidden; }
+      .nav-right.open .hamburger-menu { visibility: visible; }
+      .footer {
+        width: 100%;
+        margin: 0;
+        padding: 48px clamp(20px, 4vw, 46px);
+        background: #8b7108;
+        color: white;
+      }
+
+      .footer-inner {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 26px;
+        align-items: start;
+      }
+
+      .footer-brand p {
+        margin: 0 0 8px;
+        font-size: 0.98rem;
+        font-weight: 720;
+      }
+
+      .footer-brand span {
+        display: block;
+        color: rgba(255, 255, 255, 0.72);
+        max-width: 38ch;
+        font-size: 0.92rem;
+        line-height: 1.5;
+      }
+
+      .footer-group {
+        display: grid;
+        gap: 8px;
+      }
+
+      .footer-group a {
+        color: white;
+        text-decoration: none;
+        opacity: 0.86;
+        font-size: 0.92rem;
+      }
+
+      .footer-group a:hover {
+        opacity: 1;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .footer { line-height: normal; }
+      .footer-brand p { color: inherit; }
+      @media (max-width: 900px) {
+        .footer {
+          padding: 26px 20px calc(env(safe-area-inset-bottom, 0px) + 26px);
+        }
+
+        .footer-inner {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="../../assets/css/device.css" />
+    <script src="../../assets/js/device.js"></script>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-left">
+        <a href="../../index.html" aria-label="KOVA home">
+          <img src="../../images/kova_wit_x_png.png" alt="KOVA logo" />
+        </a>
+      </div>
+
+      <div class="nav-right">
+        <button
+          class="hamburger-toggle"
+          type="button"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="kovaMenu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="hamburger-menu" id="kovaMenu" aria-hidden="true" inert>
+          <a href="./about.html">
+            <span class="hamburger-item-main">
+              <span class="hamburger-item-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="8"></circle>
+                  <path d="M12 11v5"></path>
+                  <path d="M12 8h.01"></path>
+                </svg>
+              </span>
+              <span>back to about</span>
+            </span>
+          </a>
+        </div>
+      </div>
+    </nav>
+    <main id="main">
+      <p class="eyebrow">KOVA / Legal</p>
+      <h1>Privacy Policy</h1>
+      <p class="intro">What KOVA processes, why it is needed, and the choices you have.</p>
+      <p class="updated">Last updated: <time datetime="2026-09-25">25 September 2026</time></p>
+
+      <h2>1. Who to contact</h2>
+      <p>KOVA is maintained by <a href="https://www.instagram.com/maicowave_/" rel="noopener noreferrer">@MAICOWAVE</a>. For questions about personal data, access or deletion, contact <a href="mailto:hello@kova.spot">hello@kova.spot</a>. This notice covers the KOVA website and app.</p>
+      <!-- Complete the controller's verified legal name and postal address before publication. -->
+      <h2>2. Data used by KOVA</h2>
+      <ul>
+        <li><strong>Location:</strong> with device or browser permission, KOVA uses your coordinates to centre the map and find nearby spots. The last known coordinates and a timestamp are saved on your device for the next visit. Map requests and nearby searches reveal the area being viewed to the relevant service providers. Browsing remains possible without location permission.</li>
+        <li><strong>Submitted spots:</strong> the spot name, description, category, coordinates, photo, contributor name and submission time are sent to Firebase for moderation. Approved details may be shown publicly. Use a contributor name you are comfortable publishing. Uploaded images are stored separately and may be accessible to anyone with their download link.</li>
+        <li><strong>Saved spots, routes and ratings:</strong> saved spots, planned routes, transport preference and your previous ratings are stored on your device. A rating also updates the public spot's aggregate score and rating count.</li>
+        <li><strong>Accounts, if used:</strong> the account page processes your email, password, display name and optional profile photo through Firebase Authentication and associated storage. You do not need an account to browse the map.</li>
+        <li><strong>Technical data:</strong> hosting, map, content-delivery and security services receive connection information such as IP address, browser or device details and requested resources. Firebase App Check and Google's reCAPTCHA Enterprise process security signals and tokens to help prevent abuse.</li>
+        <li><strong>Messages:</strong> if you contact us, we receive the contact details and information you include.</li>
+      </ul>
+      <h2>3. Purposes and legal bases</h2>
+      <p>We process information needed to provide features you request, such as reviewing a spot submission or managing an account, to perform the relevant service. Optional device location is used with your permission; you can withdraw that permission in your device or browser settings.</p>
+      <p>Our legitimate interests are operating and securing KOVA, moderating contributions and answering enquiries, balanced against your rights. Legal obligations may require us to retain or disclose certain information. Where consent is required for optional processing or device storage, that processing requires a separate choice; reading this notice does not constitute consent.</p>
+      <h2>4. Providers and disclosure</h2>
+      <p>KOVA uses Google Firebase for spot data, uploaded images, account features and app security, and MapTiler for maps and weather layers. Page resources also come from content-delivery providers, including Google and jsDelivr. These providers process the information needed to deliver their services.</p>
+      <p>Opening directions in Google Maps or Apple Maps sends the destination or route you selected to that service. External social and donation links take you to services with their own privacy practices. We may also disclose information when legally required or necessary to address abuse or protect legal rights.</p>
+      <p>Providers may process data outside your country, including outside the European Economic Area. Their applicable data-processing terms describe transfer safeguards, such as standard contractual clauses or an applicable adequacy framework. See <a href="https://firebase.google.com/support/privacy">Firebase privacy information</a>, <a href="https://cloud.google.com/terms/data-processing-addendum">Google Cloud's Data Processing Addendum</a> and <a href="https://www.maptiler.com/privacy-policy/">MapTiler's Privacy Policy</a>. Contact us for information about the safeguards relevant to your data.</p>
+      <h2>5. How long data is kept</h2>
+      <p>Local KOVA preferences and the last known location have no automatic expiry: they remain until overwritten, removed through a feature, or cleared in your browser or app settings. Clearing them does not delete submissions or accounts held on the server.</p>
+      <p>Published spot contributions are kept while they are part of the map, subject to correction and removal requests. Pending submissions and uploaded photos are retained for moderation and require separate removal; there is no automatic deletion period in the current app. Account information remains until the account is deleted. Contact us to request review or deletion of information associated with you.</p>
+      <p>Messages are retained as needed to handle the enquiry and any related dispute or legal obligation. Provider logs, security tokens and backup copies follow the applicable provider's retention arrangements. Deletion from backups may take longer than removal from the live service.</p>
+      <h2>6. Your choices and rights</h2>
+      <p>Depending on the applicable law, you can request access, correction, deletion, restriction and portability of your personal data. You can object to processing based on legitimate interests and withdraw consent without affecting processing that was lawful before withdrawal. We may need proportionate information to verify a request.</p>
+      <p>Email <a href="mailto:hello@kova.spot">hello@kova.spot</a> and identify the account or contribution concerned. Do not send passwords. We normally respond to GDPR requests within one month and explain any permitted extension. You can complain to your local data-protection authority; in Belgium this is the <a href="https://www.dataprotectionauthority.be/citizen">Data Protection Authority</a>.</p>
+      <p>Disable location in your device settings at any time. Remove saved spots or routes within KOVA, or clear site/app data to remove local records. KOVA does not use automated decisions that produce legal or similarly significant effects about you.</p>
+      <h2>7. Updates</h2>
+      <p>We will update this notice when data practices change. See the date above and our <a href="./cookies.html">Cookie Policy</a> for information about storage on your device.</p>
+    </main>
+      <footer class="footer" id="siteFooter">
+        <div class="footer-inner">
+          <div class="footer-brand">
+            <p>kova corp © 2026</p>
+            <span>Quiet maps, real spots, low-key exploring.</span>
+          </div>
+
+          <div class="footer-group">
+            <a href="./about.html">About</a>
+            <a
+              href="https://www.instagram.com/maiiicooo/"
+              target="_blank"
+              rel="noopener"
+              >Instagram</a
+            >
+            <a
+              href="https://discord.gg/zDP2HasPv"
+              target="_blank"
+              rel="noopener"
+              >Discord</a
+            >
+
+            <a href="../../web/Contribute/contribute.html">Contribute</a>
+
+            <a href="../../web/pages/mobile.html">App</a>
+          </div>
+
+          <div class="footer-group">
+            <a href="./terms.html">Terms of use</a>
+            <a href="./privacy.html">Privacy Policy</a>
+            <a href="./cookies.html">Cookie Policy</a>
+            <a
+              href="https://www.maptiler.com/cloud/"
+              target="_blank"
+              rel="noopener"
+              >MapTiler APIs</a
+            >
+          </div>
+        </div>
+      </footer>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const navRight = document.querySelector(".nav-right");
+        const menuToggle = document.querySelector(".hamburger-toggle");
+        const menuPanel = document.getElementById("kovaMenu");
+
+        function closeHamburgerMenu() {
+          if (!navRight || !menuToggle || !menuPanel) return;
+          navRight.classList.remove("open");
+          menuToggle.setAttribute("aria-expanded", "false");
+          menuPanel.setAttribute("aria-hidden", "true");
+          menuPanel.inert = true;
+        }
+
+        window.addEventListener("kova:back", (event) => {
+          if (navRight?.classList.contains("open")) {
+            event.preventDefault();
+            closeHamburgerMenu();
+          }
+        });
+
+        if (navRight && menuToggle && menuPanel) {
+          menuToggle.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isOpen = navRight.classList.toggle("open");
+            menuToggle.setAttribute("aria-expanded", String(isOpen));
+            menuPanel.setAttribute("aria-hidden", String(!isOpen));
+            menuPanel.inert = !isOpen;
+          });
+
+          menuPanel.addEventListener("click", (e) => {
+            if (e.target.closest("a")) closeHamburgerMenu();
+          });
+
+          document.addEventListener("click", (e) => {
+            if (!navRight.contains(e.target)) closeHamburgerMenu();
+          });
+
+          document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeHamburgerMenu();
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

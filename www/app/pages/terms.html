@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#161515" />
+    <meta name="description" content="Explore thoughtfully. Respect the place and the people around it." />
+    <title>KOVA - Terms of Use</title>
+    <link rel="manifest" href="../../manifest.json" />
+    <link rel="icon" href="../../images/kova_alleen_x_png.png" />
+    <style>
+      :root { color-scheme: dark; --accent: #8b7108; font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; background: #161515; color: #fff; }
+      * { box-sizing: border-box; }
+      body { margin: 0; line-height: 1.75; }
+      a { color: #cfb658; text-underline-offset: 4px; }
+      a:hover { color: #fff; }
+      a:focus-visible { outline: 2px solid #cfb658; outline-offset: 5px; }
+      main { width: min(760px, 100%); margin: 0 auto; padding: calc(132px + env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-right, 0px)) 40px max(24px, env(safe-area-inset-left, 0px)); overflow-wrap: anywhere; }
+      .eyebrow { color: #cfb658; font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; }
+      h1 { margin: 12px 0; font-size: clamp(2.2rem, 8vw, 3.8rem); line-height: 1.08; letter-spacing: -.04em; }
+      .intro { font-size: 1.1rem; color: #ffffffcc; }
+      .updated { color: #ffffff99; font-size: .85rem; margin-bottom: 40px; }
+      h2 { font-size: 1.18rem; line-height: 1.4; margin: 32px 0 12px; }
+      p, li, dd { color: #ffffffbf; }
+      p { margin: 12px 0; }
+      ul { padding-left: 22px; }
+      li + li { margin-top: 14px; }
+      strong, dt { color: #fff; font-weight: 650; }
+      dt { margin-top: 20px; }
+      dd { margin: 4px 0 0; }
+      code { font-size: .85em; color: #e0cf91; }
+      @media (max-width: 480px) { main { padding-top: calc(108px + env(safe-area-inset-top, 0px)); } }
+      body > nav {
+        width: 100%;
+        padding: 22px 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-sizing: border-box;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: transparent;
+        z-index: 1000;
+        pointer-events: none;
+      }
+
+      body > nav > * {
+        pointer-events: auto;
+      }
+
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .nav-left img {
+        height: 50px;
+        width: auto;
+        display: block;
+      }
+
+      .nav-right {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        min-width: 0;
+      }
+
+      .hamburger-toggle {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.22);
+        color: rgba(255, 255, 255, 0.9);
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+        font-family: inherit;
+        appearance: none;
+        -webkit-appearance: none;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.24);
+        transition:
+          transform 0.2s ease,
+          background 0.2s ease,
+          border-color 0.2s ease,
+          color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .hamburger-toggle span {
+        width: 17px;
+        height: 2px;
+        display: block;
+        border-radius: 999px;
+        background: currentColor;
+        transition:
+          transform 0.22s ease,
+          opacity 0.18s ease,
+          width 0.2s ease;
+      }
+
+      .hamburger-toggle:hover {
+        transform: translateY(-1px);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(139, 113, 8, 0.72);
+        color: var(--accent);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+      }
+
+      .hamburger-toggle:focus-visible {
+        outline: 2px solid rgba(139, 113, 8, 0.9);
+        outline-offset: 4px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(1) {
+        transform: translateY(6px) rotate(45deg);
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(2) {
+        opacity: 0;
+        width: 8px;
+      }
+
+      .nav-right.open .hamburger-toggle span:nth-child(3) {
+        transform: translateY(-6px) rotate(-45deg);
+      }
+
+      .hamburger-menu {
+        position: absolute;
+        top: 54px;
+        right: 0;
+        width: min(230px, calc(100vw - 28px));
+        padding: 9px;
+        display: grid;
+        gap: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 18px;
+        background: rgba(8, 8, 8, 0.72);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 22px 58px rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+        transform-origin: top right;
+        pointer-events: none;
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .nav-right.open .hamburger-menu {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+
+      .hamburger-menu a {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 0.94rem;
+        font-weight: 520;
+        line-height: 1.2;
+        letter-spacing: 0.15px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 13px;
+        cursor: pointer;
+        padding: 12px 13px;
+        margin: 0;
+        font-family: inherit;
+        white-space: nowrap;
+        transition:
+          transform 0.18s ease,
+          background 0.18s ease,
+          border-color 0.18s ease,
+          color 0.18s ease;
+      }
+
+      .hamburger-item-main {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .hamburger-item-icon {
+        width: 19px;
+        height: 19px;
+        flex: 0 0 19px;
+        display: grid;
+        place-items: center;
+        color: rgba(255, 255, 255, 0.62);
+        transition:
+          color 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .hamburger-item-icon svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .hamburger-menu a:hover .hamburger-item-icon {
+        color: var(--accent);
+        transform: scale(1.05);
+      }
+
+      .hamburger-menu a::after {
+        content: "→";
+        color: var(--accent);
+        opacity: 0;
+        transform: translateX(-5px);
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .hamburger-menu a:hover {
+        color: #fff;
+        background: rgba(139, 113, 8, 0.18);
+        border-color: rgba(139, 113, 8, 0.28);
+        transform: translateX(2px);
+      }
+
+      .hamburger-menu a:hover::after {
+        opacity: 0.9;
+        transform: translateX(0);
+      }
+
+      @media (max-width: 900px) {
+        body > nav { padding: 16px 18px; }
+        .nav-left img { height: 40px; }
+        .hamburger-toggle { width: 40px; height: 40px; }
+        .hamburger-menu { top: 50px; width: min(220px, calc(100vw - 28px)); }
+      }
+      .hamburger-menu { visibility: hidden; }
+      .nav-right.open .hamburger-menu { visibility: visible; }
+      .footer {
+        width: 100%;
+        margin: 0;
+        padding: 48px clamp(20px, 4vw, 46px);
+        background: #8b7108;
+        color: white;
+      }
+
+      .footer-inner {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 26px;
+        align-items: start;
+      }
+
+      .footer-brand p {
+        margin: 0 0 8px;
+        font-size: 0.98rem;
+        font-weight: 720;
+      }
+
+      .footer-brand span {
+        display: block;
+        color: rgba(255, 255, 255, 0.72);
+        max-width: 38ch;
+        font-size: 0.92rem;
+        line-height: 1.5;
+      }
+
+      .footer-group {
+        display: grid;
+        gap: 8px;
+      }
+
+      .footer-group a {
+        color: white;
+        text-decoration: none;
+        opacity: 0.86;
+        font-size: 0.92rem;
+      }
+
+      .footer-group a:hover {
+        opacity: 1;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .footer { line-height: normal; }
+      .footer-brand p { color: inherit; }
+      @media (max-width: 900px) {
+        .footer {
+          padding: 26px 20px calc(env(safe-area-inset-bottom, 0px) + 26px);
+        }
+
+        .footer-inner {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="../../assets/css/device.css" />
+    <script src="../../assets/js/device.js"></script>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-left">
+        <a href="../../index.html" aria-label="KOVA home">
+          <img src="../../images/kova_wit_x_png.png" alt="KOVA logo" />
+        </a>
+      </div>
+
+      <div class="nav-right">
+        <button
+          class="hamburger-toggle"
+          type="button"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="kovaMenu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="hamburger-menu" id="kovaMenu" aria-hidden="true" inert>
+          <a href="./about.html">
+            <span class="hamburger-item-main">
+              <span class="hamburger-item-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="8"></circle>
+                  <path d="M12 11v5"></path>
+                  <path d="M12 8h.01"></path>
+                </svg>
+              </span>
+              <span>back to about</span>
+            </span>
+          </a>
+        </div>
+      </div>
+    </nav>
+    <main id="main">
+      <p class="eyebrow">KOVA / Legal</p>
+      <h1>Terms of Use</h1>
+      <p class="intro">Explore thoughtfully. Respect the place and the people around it.</p>
+      <p class="updated">Last updated: <time datetime="2026-09-25">25 September 2026</time></p>
+
+      <h2>1. About these terms</h2>
+      <p>These terms cover the KOVA website and app, a location-discovery project maintained by <a href="https://www.instagram.com/maicowave_/" rel="noopener noreferrer">@MAICOWAVE</a>. Contact <a href="mailto:hello@kova.spot">hello@kova.spot</a> with questions or concerns. Please read these terms before using KOVA or submitting a spot.</p>
+      <h2>2. Explore responsibly</h2>
+      <p>A spot appearing on KOVA does not mean that it is publicly accessible, safe, open or suitable for swimming. Check access rights, signs, local rules, weather and current conditions yourself. Never trespass, enter restricted areas, disturb wildlife or leave waste. Respect residents and other visitors.</p>
+      <p>Maps, coordinates, descriptions, ratings and weather information can be incomplete or out of date. KOVA is not an emergency service, a safety assessment or a substitute for professional guidance. In an emergency, contact the local emergency services.</p>
+      <h2>3. Fair use</h2>
+      <p>Do not use KOVA for unlawful activity, harassment, misleading submissions, rating manipulation or attempts to bypass security. Do not upload private information about other people without a lawful basis, expose sensitive locations, or interfere with the service.</p>
+      <h2>4. Your submissions</h2>
+      <p>Only submit text and photos you own or have permission to share. Make sure your information is accurate to the best of your knowledge. Avoid identifiable people, vehicle plates and private addresses unless you have the necessary permission to publish them.</p>
+      <p>You keep ownership of your contributions. By submitting them, you give KOVA a non-exclusive, worldwide, royalty-free permission to store, resize, display and distribute them as part of operating and presenting KOVA. This permission is limited to those purposes and does not transfer ownership.</p>
+      <p>New spots are sent for review. Submission does not guarantee publication. Approved spot names, descriptions, coordinates, photos and contributor names may become public. KOVA may correct, decline or remove content to protect quality, safety, privacy or legal rights. To request removal or report a problem, email us with the spot name or coordinates and the reason. Copies already saved or shared by others may remain outside our control.</p>
+      <h2>5. Accounts and third-party services</h2>
+      <p>If you use an account, keep your login details secure and contact us if you suspect misuse. Maps, navigation, external websites and optional donations may be provided by other services, whose own terms apply when you use them. KOVA does not control their availability or content.</p>
+      <h2>6. Availability and responsibility</h2>
+      <p>KOVA is in beta. Features and content may change, and uninterrupted or error-free availability is not guaranteed. You remain responsible for your decisions when visiting a place.</p>
+      <p>To the extent permitted by applicable law, KOVA is not responsible for losses caused by inaccurate third-party information, service interruptions or your misuse of the service. Nothing in these terms excludes liability that cannot legally be excluded, or limits your mandatory consumer rights.</p>
+      <h2>7. Changes and contact</h2>
+      <p>We may update these terms as KOVA changes. The date at the top identifies the latest version. Material changes will be brought to users' attention where required; an update does not remove rights you already have under applicable law. For content reports or questions, contact <a href="mailto:hello@kova.spot">hello@kova.spot</a>.</p>
+    </main>
+      <footer class="footer" id="siteFooter">
+        <div class="footer-inner">
+          <div class="footer-brand">
+            <p>kova corp © 2026</p>
+            <span>Quiet maps, real spots, low-key exploring.</span>
+          </div>
+
+          <div class="footer-group">
+            <a href="./about.html">About</a>
+            <a
+              href="https://www.instagram.com/maiiicooo/"
+              target="_blank"
+              rel="noopener"
+              >Instagram</a
+            >
+            <a
+              href="https://discord.gg/zDP2HasPv"
+              target="_blank"
+              rel="noopener"
+              >Discord</a
+            >
+
+            <a href="../../web/Contribute/contribute.html">Contribute</a>
+
+            <a href="../../web/pages/mobile.html">App</a>
+          </div>
+
+          <div class="footer-group">
+            <a href="./terms.html">Terms of use</a>
+            <a href="./privacy.html">Privacy Policy</a>
+            <a href="./cookies.html">Cookie Policy</a>
+            <a
+              href="https://www.maptiler.com/cloud/"
+              target="_blank"
+              rel="noopener"
+              >MapTiler APIs</a
+            >
+          </div>
+        </div>
+      </footer>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const navRight = document.querySelector(".nav-right");
+        const menuToggle = document.querySelector(".hamburger-toggle");
+        const menuPanel = document.getElementById("kovaMenu");
+
+        function closeHamburgerMenu() {
+          if (!navRight || !menuToggle || !menuPanel) return;
+          navRight.classList.remove("open");
+          menuToggle.setAttribute("aria-expanded", "false");
+          menuPanel.setAttribute("aria-hidden", "true");
+          menuPanel.inert = true;
+        }
+
+        window.addEventListener("kova:back", (event) => {
+          if (navRight?.classList.contains("open")) {
+            event.preventDefault();
+            closeHamburgerMenu();
+          }
+        });
+
+        if (navRight && menuToggle && menuPanel) {
+          menuToggle.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isOpen = navRight.classList.toggle("open");
+            menuToggle.setAttribute("aria-expanded", String(isOpen));
+            menuPanel.setAttribute("aria-hidden", String(!isOpen));
+            menuPanel.inert = !isOpen;
+          });
+
+          menuPanel.addEventListener("click", (e) => {
+            if (e.target.closest("a")) closeHamburgerMenu();
+          });
+
+          document.addEventListener("click", (e) => {
+            if (!navRight.contains(e.target)) closeHamburgerMenu();
+          });
+
+          document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeHamburgerMenu();
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
