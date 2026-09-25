@@ -7,6 +7,7 @@
         // Keep this document (and its map) alive while visiting secondary pages.
         const homeURL = new URL(location.href);
         const pageRoot = new URL('./', homeURL);
+        const mapPath = new URL('index.html', pageRoot).pathname;
         let pageFrame = null;
         let pageDepth = history.state?.kovaDepth || 0;
         let pageFocus = null;
@@ -37,7 +38,9 @@
           open(value) {
             const url = new URL(value, homeURL);
             if (url.origin !== homeURL.origin) return false;
-            if (url.pathname === homeURL.pathname || url.pathname === pageRoot.pathname) {
+            // Capacitor starts at '/', while menu/logo links point to '/index.html'.
+            // Both addresses must reveal the existing map, never load it in the frame.
+            if (url.pathname === mapPath || url.pathname === pageRoot.pathname) {
               if (pageDepth) history.go(-pageDepth);
               return true;
             }

@@ -305,12 +305,17 @@ test('website, Android and other iOS pages do not preload location', () => {
   ]) assert.equal(boot(options).device.startupLocation, undefined);
 });
 
-test('secondary page navigation preserves the map document and unwinds to it', () => {
+for (const homeHref of ['https://localhost/', 'https://localhost/index.html', 'https://localhost/kova/', 'https://localhost/kova/index.html', 'capacitor://localhost/']) {
+test(`secondary page navigation preserves the map opened at ${homeHref}`, () => {
+  const root = new URL('./', homeHref);
+  const aboutURL = new URL('app/pages/about.html', root).href;
+  const privacyURL = new URL('app/pages/privacy.html', root).href;
+  const mapURL = new URL('index.html', root).href;
   const events = {}, frames = [], entries = [];
   const map = { inert: false }, nav = { inert: false };
   let focused = 0, back = 0, jump;
   const context = {
-    URL, location: { href: 'https://localhost/index.html' },
+    URL, location: { href: homeHref },
     closeHamburgerMenu() {},
     history: { state: null, pushState: state => entries.push(state), back: () => back++, go: n => { jump = n; } },
     document: {
@@ -325,16 +330,16 @@ test('secondary page navigation preserves the map document and unwinds to it', (
   const end = mapSource.indexOf('        const startupOverlay');
   vm.runInNewContext(mapSource.slice(start, end), context);
   const navigation = context.window.KovaPageNavigation;
-  assert.equal(navigation.open('https://localhost/app/pages/about.html'), true);
+  assert.equal(navigation.open(aboutURL), true);
   assert.equal(map.inert, true);
-  navigation.open('https://localhost/app/pages/privacy.html');
+  navigation.open(privacyURL);
   assert.equal(frames[0].removed, true);
   assert.equal(entries.length, 2);
   navigation.back();
   assert.equal(back, 1);
   events.popstate({ state: entries[0] });
-  assert.equal(frames.at(-1).src, 'https://localhost/app/pages/about.html');
-  navigation.open('https://localhost/index.html');
+  assert.equal(frames.at(-1).src, aboutURL);
+  assert.equal(navigation.open(mapURL), true, 'Back to map must be handled without loading index.html');
   assert.equal(jump, -1);
   events.popstate({ state: null });
   assert.equal(map.inert, false);
@@ -343,6 +348,7 @@ test('secondary page navigation preserves the map document and unwinds to it', (
   assert.equal(context.document.body.children[0], map);
   assert.equal(navigation.open('https://example.com/'), false);
 });
+}
 
 test('sheet drag dismisses from the header or top without swallowing content scrolling', () => {
   const start = mapSource.indexOf('        function enableSwipeDown(');
