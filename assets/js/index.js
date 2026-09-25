@@ -3977,6 +3977,58 @@
             },
           });
 
+          // The old 22px font has a visible X height of about 16px.
+          // Share three small, high-resolution textures across every spot.
+          Promise.all(["nature", "water", "urban"].map((type) =>
+            new Promise((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => {
+                try {
+                  const canvas = document.createElement("canvas");
+                  canvas.height = 64;
+                  canvas.width = Math.round(64 * img.naturalWidth / img.naturalHeight);
+                  const ctx = canvas.getContext("2d");
+                  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                  map.addImage(
+                    "spot-" + type,
+                    ctx.getImageData(0, 0, canvas.width, canvas.height),
+                    { pixelRatio: 4 },
+                  );
+                  resolve();
+                } catch (err) {
+                  reject(err);
+                }
+              };
+              img.onerror = () => reject(new Error("Could not load " + type + " spot icon"));
+              img.src = "./images/" + type + "_x.png";
+            }),
+          )).then(() => {
+            for (const layer of [LAYER_POINTS, LAYER_CLUSTERS_X]) {
+              map.setLayoutProperty(layer, "icon-anchor", "center");
+              map.setLayoutProperty(layer, "icon-offset", [0, 0]);
+              map.setLayoutProperty(layer, "icon-allow-overlap", true);
+              map.setLayoutProperty(layer, "icon-ignore-placement", true);
+              map.setLayoutProperty(layer, "icon-rotation-alignment", "viewport");
+              map.setLayoutProperty(layer, "icon-pitch-alignment", "viewport");
+            }
+            map.setLayoutProperty(LAYER_POINTS, "icon-image", [
+              "match", ["get", "type"],
+              "nature", "spot-nature",
+              "water", "spot-water",
+              "spot-urban",
+            ]);
+            map.setLayoutProperty(LAYER_CLUSTERS_X, "icon-image", "spot-urban");
+            map.setLayoutProperty(LAYER_CLUSTERS_X, "icon-size", [
+              "step", ["get", "point_count"],
+              1, 10, 24 / 22, 25, 26 / 22, 75, 29 / 22, 200, 33 / 22,
+            ]);
+            map.setLayoutProperty(LAYER_POINTS, "text-field", "");
+            map.setLayoutProperty(LAYER_CLUSTERS_X, "text-field", "");
+          }).catch((err) => {
+            // Keep the original markers usable if an asset cannot load.
+            console.warn("KOVA spot icons unavailable:", err);
+          });
+
           map.on("mouseenter", LAYER_POINTS, () => {
             map.getCanvas().style.cursor = "pointer";
           });
